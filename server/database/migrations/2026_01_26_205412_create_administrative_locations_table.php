@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('type_pay_sheets', function (Blueprint $table) {
+        Schema::create('administrative_locations', function (Blueprint $table) {
             $table->id();
-            $table->integer('code');
-            $table->string('name');
-            $table->string('type_personal');
             $table->timestamps();
         });
     }
@@ -25,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('type_pay_sheets');
+        Schema::dropIfExists('administrative_locations');
     }
 };

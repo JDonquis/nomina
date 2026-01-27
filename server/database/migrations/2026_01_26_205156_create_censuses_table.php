@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('type_pay_sheets', function (Blueprint $table) {
+        Schema::create('censuses', function (Blueprint $table) {
             $table->id();
-            $table->integer('code');
-            $table->string('name');
-            $table->string('type_personal');
+            $table->foreignId('pay_sheets_id');
+            $table->boolean('status')->default(false);
+            $table->timestamp('expiration_date');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('type_pay_sheets');
+        Schema::dropIfExists('censuses');
     }
 };
