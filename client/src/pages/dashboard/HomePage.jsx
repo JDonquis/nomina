@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { examsAPI } from "../../services/api";
 import { ResponsiveBar } from "@nivo/bar";
 import { ResponsivePie } from "@nivo/pie";
 import { Icon } from "@iconify/react";

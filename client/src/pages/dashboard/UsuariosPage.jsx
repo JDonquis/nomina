@@ -16,11 +16,9 @@ export default function UsuariosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const defaultFormData = {
     email: "",
-    first_name: "",
-    last_name: "",
-    allow_validate_exam: false,
-    allow_handle_users: false,
-    allow_handle_exams: false,
+    full_name: "",
+    is_admin: false,
+    charge: "",
   };
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Crear");
@@ -113,7 +111,7 @@ export default function UsuariosPage() {
     },
 
     {
-      accessorKey: "allow_handle_users",
+      accessorKey: "is_admin",
       header: "Gestión de Usuarios",
       size: 180,
       Cell: ({ cell }) => cell.getValue() ? <Icon className="text-color2" icon="iconamoon:check-fill" width={20} height={20} /> :  <Icon className="text-red-300" icon="line-md:close" width={18} height={17} />,
@@ -145,6 +143,17 @@ export default function UsuariosPage() {
 
             <Icon icon="material-symbols:edit" width={20} height={20} />
           </button>
+
+          <button
+            onClick={() => {
+              usersAPI.deleteUser(row.original.id);
+              fetchData();
+            }}
+            className="mx-1 p-1 hover:p-2 duration-75 text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-full"
+
+            title="Eliminar"
+          > <Icon icon="material-symbols:delete-outline" width={20} height={20} />
+          </button>
         </div>
       ),
     }
@@ -155,8 +164,7 @@ export default function UsuariosPage() {
   const fetchData = useCallback(async () => {
     try {
       const res = await usersAPI.getAllUsers();
-      console.log(res.data);
-      setRowData(res.data.users);
+      setRowData(res.users);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -176,6 +184,7 @@ export default function UsuariosPage() {
             onClick={() => {
               if (submitString === "Actualizar") {
                 setSubmitString("Crear");
+                setFormData(structuredClone(defaultFormData));
               }
               setIsModalOpen(true);
             }}
