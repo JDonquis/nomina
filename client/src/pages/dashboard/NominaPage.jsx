@@ -5,9 +5,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import {
-  payrollAPI
-} from "../../services/api";
+import { payrollAPI } from "../../services/api";
 import externalApi from "../../services/saludfalcon.api";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
@@ -41,7 +39,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey]
+      [onChange, testKey],
     );
 
     return (
@@ -64,7 +62,7 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  }
+  },
 );
 
 export default function ExamenesPage() {
@@ -81,7 +79,53 @@ export default function ExamenesPage() {
   const { user } = useAuth();
 
   // Form configuration for ReusableForm
+
+  {
+    /* 
+    
+    $table->id();
+            $table->enum('nac', ['V', 'E']);
+            $table->string('ci');
+            $table->string('full_name');
+            $table->string('date_birth')->nullable();
+            $table->string('sex')->nullable()->default('Sin asignar');
+            $table->string('city')->nullable()->default('Sin asignar');
+            $table->string('state')->default('Falcon');
+            $table->foreignId('administrative_location')->nullable();
+            $table->string('phone_number')->nullable();
+            //Pension Data
+            $table->enum('type_pension', ['Jubilacion', 'Incapacidad', 'Sobrevivencia']);
+            $table->foreignId('type_pay_sheet_id');
+            $table->string('last_charge')->nullable();
+            $table->enum('civil_status', ['S', 'C', 'V']);
+            $table->integer('minor_child_nro')->default(0);
+            $table->integer('disabled_child_nro')->default(0);
+            $table->boolean('receive_pension_from_another_organization_status')->default(false);
+            $table->string('another_organization_name')->nullable();
+            $table->boolean('has_authorizations')->default(false);
+            // Pension Survived
+            $table->string('fullname_causative')->nullable();
+            $table->integer('age_causative')->nullable();
+            $table->enum('parent_causative', ['Padre', 'Madre', 'Conyuge', 'Concubino'])->nullable();
+            $table->enum('sex_causative', ['M', 'F']);
+            $table->string('ci_causative')->nullable();
+            $table->date('decease_date')->nullable();
+            $table->boolean('suspend_payment_status')->default(false);
+            $table->date('last_payment')->nullable();
+            $table->$table->timestamps();
+    */
+  }
   const patientFormFields = useMemo(() => [
+    {
+      name: "nac",
+      label: "Nacionalidad",
+      type: "select",
+      options: [
+        { value: "V", label: "V" },
+        { value: "E", label: "E" },
+      ],
+      className: "col-span-1",
+    },
     {
       name: "ci",
       label: "Cédula de Identidad",
@@ -91,14 +135,7 @@ export default function ExamenesPage() {
     },
     {
       name: "full_name",
-      label: "Nombre",
-      type: "text",
-      required: true,
-      className: "col-span-1",
-    },
-    {
-      name: "last_name",
-      label: "Apellido",
+      label: "Nombres y Apellidos",
       type: "text",
       required: true,
       className: "col-span-1",
@@ -110,6 +147,192 @@ export default function ExamenesPage() {
       required: true,
       className: "col-span-1",
     },
+      {
+      name: "sex",
+      label: "Sexo *",
+      type: "select",
+      options: [
+        { value: "Masculino", label: "Masculino" },
+        { value: "Femenino", label: "Femenino" },
+      ],
+      className: "col-span-1",
+    },
+    {
+      name: "city",
+      label: "Ciudad",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "state",
+      label: "Estado",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "administrative_location",
+      label: "Ubicación administrativa",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "phone_number",
+      label: "Teléfono",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "is_censused",
+      label: "Censado",
+      type: "checkbox",
+      required: false,
+      helperText: false,
+      className: "col-span-1",
+    },
+    {
+      name: "last_charge",
+      label: "Último Cargó",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "type_pension",
+      label: "Tipo de Pensión",
+      type: "select",
+      options: [
+        { value: "Jubilacion", label: "Jubilación" },
+        { value: "Incapacidad", label: "Incapacidad" },
+        { value: "Sobrevivencia", label: "Sobrevivencia" },
+      ],
+      className: "col-span-1",
+    },
+    {
+      name: "type_pay_sheet_id",
+      label: "Tipo de Cuenta",
+      type: "select",
+      options: [
+        { value: "1", label: "Cuenta 1" },
+        { value: "2", label: "Cuenta 2" },
+        { value: "3", label: "Cuenta 3" },
+      ],
+      className: "col-span-1",
+    },
+    {
+      name: "civil_status",
+      label: "Estado Civil",
+      type: "select",
+      options: [
+        { value: "S", label: "Soltero" },
+        { value: "C", label: "Casado" },
+        { value: "V", label: "Viudo" },
+      ],
+      className: "col-span-1",
+    },
+    {
+      name: "minor_child_nro",
+      label: "Nro. de Hijos Menores",
+      type: "number",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "disabled_child_nro",
+      label: "Nro. de Hijos Discapacitados",
+      type: "number",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "receive_pension_from_another_organization_status",
+      label: "Recibe Pensión de Otra Organización",
+      type: "checkbox",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "another_organization_name",
+      label: "Nombre de la Otra Organización",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "has_authorizations",
+      label: "Tiene Autorizaciones",
+      type: "checkbox",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "fullname_causative",
+      label: "Nombre Completo del Causante",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "age_causative",
+      label: "Edad del Causante",
+      type: "number",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "parent_causative",
+      label: "Parentesco con el Causante",
+      type: "select",
+      options: [
+        { value: "Padre", label: "Padre" },
+        { value: "Madre", label: "Madre" },
+        { value: "Conyuge", label: "Cónyuge" },
+        { value: "Concubino", label: "Concubino" },
+      ],
+      className: "col-span-1",
+    },
+    {
+      name: "sex_causative",
+      label: "Sexo del Causante",
+      type: "select",
+      options: [
+        { value: "M", label: "Masculino" },
+        { value: "F", label: "Femenino" },
+      ],
+      className: "col-span-1",
+    },
+    {
+      name: "ci_causative",
+      label: "Cédula de Identidad del Causante",
+      type: "text",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "decease_date",
+      label: "Fecha de Fallecimiento",
+      type: "date",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "suspend_payment_status",
+      label: "Suspender Pago",
+      type: "checkbox",
+      required: false,
+      className: "col-span-1",
+    },
+    {
+      name: "last_payment",
+      label: "Último Pago",
+      type: "date",
+      required: false,
+      className: "col-span-1",
+    },
+
     {
       name: "email",
       label: "Correo Electrónico",
@@ -125,16 +348,7 @@ export default function ExamenesPage() {
       required: false,
       className: "col-span-1",
     },
-    {
-      name: "sex",
-      label: "Sexo *",
-      type: "select",
-      options: [
-        { value: "Masculino", label: "Masculino" },
-        { value: "Femenino", label: "Femenino" },
-      ],
-      className: "col-span-1",
-    },
+  
     {
       name: "origin_id",
       label: "Procedencia *",
@@ -191,7 +405,6 @@ export default function ExamenesPage() {
       // Execute both requests in parallel
       const [internalResponse, externalResponse] = await Promise.all([
         internalRequest,
-     
       ]);
 
       // Handle success
@@ -278,7 +491,7 @@ export default function ExamenesPage() {
         enableColumnFilter: true,
         enableSorting: true,
       },
-     
+
       //   {
       //     accessorKey: "email",
       //     header: "Correo Electrónico",
@@ -294,22 +507,21 @@ export default function ExamenesPage() {
         header: "Ubicación",
         size: 100,
       },
-  
-  
+
       {
         accessorKey: "created_at",
         header: "Fecha",
         size: 155,
         filterFn: "equals",
-  
+
         enableColumnFilter: true,
         enableSorting: true,
         Cell: ({ cell }) => {
           const dateString = cell.getValue();
-  
+
           // Safety check in case the value is null or undefined
           if (!dateString) return "N/A";
-  
+
           return new Date(dateString).toLocaleString(navigator.language, {
             dateStyle: "medium",
             timeStyle: "short",
@@ -361,7 +573,7 @@ export default function ExamenesPage() {
         enableSorting: false,
       },
     ],
-    []
+    [],
   );
 
   const handleMessage = async () => {
@@ -434,8 +646,6 @@ export default function ExamenesPage() {
   const [globalFilter, setGlobalFilter] = useState("");
   // Move useMemo outside the map - process all test sections at once
 
-
-
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -449,7 +659,7 @@ export default function ExamenesPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {})
+          }, {}),
         ),
       });
       setData(res.data.exams);
@@ -462,7 +672,6 @@ export default function ExamenesPage() {
 
   const fetchInitialData = useCallback(async () => {
     try {
-
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -483,7 +692,7 @@ export default function ExamenesPage() {
         localStorage.setItem("formData", JSON.stringify(data));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -500,7 +709,7 @@ export default function ExamenesPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    []
+    [],
   );
 
   const handleTestInputChange = useCallback((examination_type_id, event) => {
@@ -536,14 +745,14 @@ export default function ExamenesPage() {
             ? parseFloat(value)
             : parseFloat(
                 updatedTests[examination_type_id].testValues?.tp_paciente
-                  ?.value || 0
+                  ?.value || 0,
               );
         const controlTp =
           name === "tp_control"
             ? parseFloat(value)
             : parseFloat(
                 updatedTests[examination_type_id].testValues?.tp_control
-                  ?.value || 0
+                  ?.value || 0,
               );
         if (tpPaciente && controlTp && controlTp !== 0) {
           const razon = (tpPaciente / controlTp).toFixed(2);
@@ -561,14 +770,14 @@ export default function ExamenesPage() {
             ? parseFloat(value)
             : parseFloat(
                 updatedTests[examination_type_id].testValues?.tpt_paciente
-                  ?.value || 0
+                  ?.value || 0,
               );
         const controlTpt =
           name === "tpt_control"
             ? parseFloat(value)
             : parseFloat(
                 updatedTests[examination_type_id].testValues?.tpt_control
-                  ?.value || 0
+                  ?.value || 0,
               );
 
         if (tptPaciente && controlTpt) {
@@ -653,7 +862,7 @@ export default function ExamenesPage() {
 
       // Check if all exam types are validated
       const all_validated = Object.values(newTests).every(
-        (test) => test.validated === true
+        (test) => test.validated === true,
       );
       setIsFormInitialized(true); // ← Activar guardado automático
 
@@ -700,12 +909,10 @@ export default function ExamenesPage() {
 
   return (
     <>
-      <title>Exámenes Médicos - LabFalcón</title>
+      <title>Nómina - LabFalcón</title>
       <div style={{ height: 580, width: "100%" }}>
         <div className="md:flex justify-between items-center mb-4">
-          <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
-            Exámenes médicos
-          </h1>
+          <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">Nómina</h1>
           <div className="flex gap-3">
             {isThereLocalStorageFormData && (
               <button
@@ -714,7 +921,7 @@ export default function ExamenesPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString"))
+                    JSON.parse(localStorage.getItem("submitString")),
                   );
                   setIsModalOpen(true);
                 }}
@@ -736,7 +943,7 @@ export default function ExamenesPage() {
                 }
               }}
             >
-              Registrar exámen
+              Registrar Trabajador
             </FuturisticButton>
           </div>
         </div>
@@ -746,41 +953,16 @@ export default function ExamenesPage() {
             setIsModalOpen(false);
             // Opcional: también limpiar localStorage aquí si quieres
           }}
-          title="Registrar exámen"
+          title="Registrar Trabajador"
           size="xl"
         >
           <form
-            className={`md:grid grid-cols-2 space-y-5 md:space-y-0 gap-7 w-full relative`}
+            className={` space-y-5 md:space-y-0 gap-7 w-full relative`}
             onSubmit={onSubmit}
           >
             <div className="space-y-3 z-10 md:sticky top-0 h-max">
-              <h2 className="text-xl font-bold mb-2">
-                Información del Paciente
-              </h2>
+              <h2 className="text-xl font-bold mb-2">Datos personales</h2>
               <div className="grid grid-cols-2 gap-4">
-                {formData?.patient?.ci.length >= 6 && (
-                  <div className="w-full col-span-2 h-6 overflow-hidden text-center">
-                    {prosecingSearchPatient ? (
-                      <Icon
-                        icon="eos-icons:three-dots-loading"
-                        className="text-3xl inline-block mx-auto"
-                      />
-                    ) : formData?.patient.patient_id !== null ? (
-                      <span className="flex items-center gap-2 text-center mx-auto justify-center">
-                        <Icon
-                          icon="iconoir:settings-profiles"
-                          className="text-2xl text-color3"
-                        />
-                        <small>Paciente Registrado con historia</small>
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2 text-center mx-auto justify-center">
-                        <Icon icon="clarity:new-line" className="text-3xl" />
-                        <small>Nuevo paciente sin historia</small>
-                      </span>
-                    )}
-                  </div>
-                )}
                 {patientFormFields.map((field) => {
                   if (field.name === "ci") {
                     return (
@@ -812,171 +994,7 @@ export default function ExamenesPage() {
                 })}
               </div>
             </div>
-            <div className="space-y-3 z-10 ">
-              <h2 className="text-xl font-bold">Resultados del Exámen</h2>
 
-              {Object.entries(formData.tests || {}).length === 0 ? (
-                <p>Seleccione al menos un tipo de exámen</p>
-              ) : (
-                <>
-                  {processedTestSections.map(({ key, orderedTests }) => (
-                    <div
-                      key={key}
-                      className="bg-color4 p-3 rounded-xl shadow-md mb-1 bg-opacity-5"
-                    >
-                      <div className="flex justify-between items-center ">
-                        <h3 className="text-lg font-bold text-color1 items-center mb-4 flex gap-2">
-                          <Icon
-                            icon={iconos_examenes[key].icon}
-                            className="text-2xl"
-                            color={iconos_examenes[key].color}
-                          />
-                          {formData.tests[key]?.testTypeName}
-                        </h3>
-                        <button
-                          type="button"
-                          className="text-gray-400 hover:text-gray-500 focus:outline-none"
-                          aria-label="Close"
-                          onClick={() => {
-                            setFormData((prev) => {
-                              const { [key]: value, ...rest } = prev.tests;
-                              return {
-                                ...prev,
-                                tests: rest,
-                              };
-                            });
-                          }}
-                        >
-                          <span className="sr-only">Close</span>
-                          <svg
-                            className="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-
-                      <MemoizedTestField
-                        field={{
-                          name: "method",
-                          label: "Método",
-                          type: "list",
-                        }}
-                        id={`method-${key}`}
-                        value={formData.tests[key]?.method}
-                        onChange={() => handleMethodChange(key, event)}
-                        testKey={"method"}
-                        fieldName={"method"}
-                      />
-
-                      <div className="flex flex-col mb-4 md:grid mt-3.5 md:grid-cols-2 gap-4 ">
-                        {orderedTests.map((obj, i) => (
-                          <React.Fragment key={obj.name + "_" + key + "_" + i}>
-                            {i === 0 && key == 7 && (
-                              <div className="flex justify-between items-center col-span-2">
-                                <h3 className="text-md font-bold text-gray-600 ml-2">
-                                  Examen Físico
-                                </h3>
-                              </div>
-                            )}
-                            {i === 5 && key == 7 && (
-                              <div className="flex justify-between items-center mt-4 col-span-2">
-                                <h3 className="text-md font-bold text-gray-600 ml-2">
-                                  Examen químico
-                                </h3>
-                              </div>
-                            )}
-                            {i === 13 && key == 7 && (
-                              <div className="flex justify-between items-center mt-4 col-span-2">
-                                <h3 className="text-md font-bold text-gray-600 ml-2">
-                                  Examen microscópico
-                                </h3>
-                              </div>
-                            )}
-                            <MemoizedTestField
-                              field={obj}
-                              value={obj.value}
-                              onChange={handleTestInputChange}
-                              testKey={key}
-                              fieldName={obj.name}
-                              id={`test-${key}-${obj.name}`}
-                            />
-                          </React.Fragment>
-                        ))}
-                      </div>
-
-                      {key == 5 && (
-                        <h3 className="text-md font-bold text-gray-600 ml-2 mb-2.5">
-                          Examen Microscópico
-                        </h3>
-                      )}
-                      <div className="mb-2 col-span-2">
-                        <MemoizedTestField
-                          field={{
-                            name: "observation",
-                            label: "Observación",
-                          }}
-                          value={formData.tests[key]?.observation}
-                          onChange={() => handleObservationChange(key, event)}
-                          testKey={"observation"}
-                          fieldName={"observation"}
-                          multiline={true}
-                        />
-                      </div>
-                      <div className="cursor-pointer   ml-auto col-span-2 flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          name={`validated-${key}`}
-                          readOnly={user?.allow_validate_exam === false}
-                          onChange={(e) => {
-                            if (user?.allow_validate_exam === false) return;
-                            handleValidatedChange(key, e);
-                          }}
-                          className="invisible"
-                          // onChange={(e) => handleValidatedChange(key, e)}
-                          checked={formData.tests[key]?.validated || false}
-                          id={`validated-${key}`}
-                        />
-
-                        <label
-                          className="cursor-pointer ml-auto hover:bg-green-100 rounded-xl p-2"
-                          htmlFor={`validated-${key}`}
-                        >
-                          {formData.tests[key]?.validated ? (
-                            <span className="flex gap-2 items-center">
-                              <small className="text-gray-400">Validado</small>
-                              <Icon
-                                className="text-color2 w-9 h-9 "
-                                icon="bitcoin-icons:verify-filled"
-                              />
-                            </span>
-                          ) : (
-                            <span className="flex gap-2 items-center">
-                              <small className="text-gray-400">
-                                No Validado
-                              </small>
-                              <Icon
-                                icon="octicon:unverifed-24"
-                                className="text-gray-600 w-6 h-6"
-                              />
-                            </span>
-                          )}
-                        </label>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-           
-            </div>
             <div className="col-span-2">
               <div className="flex justify-end space-x-4 pt-4">
                 <button
@@ -1084,7 +1102,9 @@ export default function ExamenesPage() {
                       ></Icon>
                     )}
                     <span className="text-sm">
-                      {loadingMessage ? "Enviando..." : "Enviar por correo"}{" "}
+                      {loadingMessage
+                        ? "Enviando..."
+                        : "Enviar por correo"}{" "}
                     </span>
                   </button>
 
@@ -1172,7 +1192,3 @@ export default function ExamenesPage() {
     </>
   );
 }
-
-
-
-
