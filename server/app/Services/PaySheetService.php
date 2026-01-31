@@ -3,10 +3,16 @@
 namespace App\Services;
 
 use Exception;
+use Carbon\Carbon;
+use App\Models\Census;
+use App\Models\Activity;
 use App\Models\PaySheet;
+use App\Enums\ActivityEnum;
 use App\Models\TypePaySheet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -53,10 +59,98 @@ class PaySheetService
         return $query->paginate($perPage);
     }
 
-
-    public function store(Request $request)
+    public function store($data, $photo)
     {
-        // Validar que se subió un archivo
+        $photoPath = null;
+        if ($photo) {
+            $photoPath = $this->storePhoto($photo, $data['ci'] ?? 'unknown');
+        }
+
+        $paySheetData = array_merge($data, [
+            'photo' => $photoPath,
+        ]);
+
+        $paySheet = PaySheet::create($paySheetData);
+
+        $userID =  Auth::id();
+
+
+        Activity::create([
+            'user_id' => $userID,
+            'id_affected' => $paySheet->id,
+            'activity' => ActivityEnum::PAYSHEET_CREATED,
+        ]);
+
+        $paySheet->load('typePaySheet', 'administrativeLocation');
+
+        Census::create([
+            'pay_sheets_id' => $paySheet->id,
+            'status' => true,
+            'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
+        ]);
+
+        return $paySheet;
+    }
+
+    public function update($data, $photo, $paySheet)
+    {
+        $photoPath = $paySheet->photo;
+
+        if ($photo) {
+            if ($photoPath) {
+                $this->deletePhoto($photoPath);
+            }
+
+            $photoPath = $this->storePhoto($photo, $data['ci'] ?? $paySheet->ci);
+        }
+
+        $paySheetData = array_merge($data, [
+            'photo' => $photoPath,
+        ]);
+
+        $paySheet->update($paySheetData);
+
+        $userID = Auth::id();
+
+        Activity::create([
+            'user_id' => $userID,
+            'id_affected' => $paySheet->id,
+            'activity' => ActivityEnum::PAYSHEET_UPDATED,
+        ]);
+
+        $paySheet->load('typePaySheet', 'administrativeLocation');
+
+        return $paySheet;
+    }
+
+    public function destroy($paySheet)
+    {
+        Census::where('pay_sheets_id', $paySheet->id)->delete();
+        $paySheet->delete();
+
+        return 0;
+    }
+
+    private function storePhoto($photo, string $ci): string
+    {
+        $extension = $photo->getClientOriginalExtension();
+        $fileName = 'photo_' . $ci . '_' . time() . '.' . $extension;
+
+        return $photo->storeAs('photos/pay_sheets', $fileName, 'public');
+    }
+
+    private function deletePhoto($photoPath)
+    {
+        if (Storage::disk('public')->exists($photoPath)) {
+            Storage::disk('public')->delete($photoPath);
+            return true;
+        }
+        return false;
+    }
+
+
+    public function storeSheet(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'file' => 'required|file|mimes:xlsx,xls,csv'
         ]);
@@ -65,7 +159,6 @@ class PaySheetService
             throw new ValidationException($validator);
         }
 
-        // Leer el archivo Excel
         $file = $request->file('file');
         $data = Excel::toArray([], $file);
 
@@ -73,7 +166,6 @@ class PaySheetService
             throw new Exception('El archivo está vacío');
         }
 
-        // Eliminar la primera fila (encabezados)
         $rows = array_slice($data[0], 1);
 
         $inserted = 0;
@@ -81,12 +173,10 @@ class PaySheetService
 
         foreach ($rows as $index => $row) {
             try {
-                // Validar que la fila tenga datos
                 if (empty($row[0]) && empty($row[1])) {
                     continue; // Saltar filas vacías
                 }
 
-                // Mapear las columnas según el formato del Excel
                 $cedula = $row[0] ?? '';
                 $nombreCompleto = $row[1] ?? '';
                 $fechaNacimiento = $row[2] ?? '';
@@ -94,13 +184,11 @@ class PaySheetService
                 $tipoPersonal = $row[4] ?? '';
                 $codigo = $row[5] ?? '';
 
-                // Validar datos requeridos
                 if (empty($cedula) || empty($nombreCompleto)) {
                     $errors[] = "Fila " . ($index + 2) . ": Cédula y Nombre son requeridos";
                     continue;
                 }
 
-                // Buscar o crear el TypePaySheet basado en código o nombre
                 if (!empty($codigo)) {
                     $typePaySheet = TypePaySheet::firstOrCreate(
                         ['code' => $codigo],
@@ -112,7 +200,6 @@ class PaySheetService
                     );
                 }
 
-                // Crear o actualizar el registro en pay_sheets
                 PaySheet::updateOrCreate(
                     [
                         'ci' => $cedula,

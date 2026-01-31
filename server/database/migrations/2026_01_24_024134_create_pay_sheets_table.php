@@ -21,8 +21,9 @@ return new class extends Migration
             $table->string('sex')->nullable()->default('Sin asignar');
             $table->string('city')->nullable()->default('Sin asignar');
             $table->string('state')->default('Falcon');
-            $table->foreignId('administrative_location')->nullable();
+            $table->foreignId('administrative_location_id')->nullable();
             $table->string('phone_number')->nullable();
+            $table->string('photo')->nullable();
             //Pension Data
             $table->enum('type_pension', ['Jubilacion', 'Incapacidad', 'Sobrevivencia']);
             $table->foreignId('type_pay_sheet_id');
@@ -33,7 +34,8 @@ return new class extends Migration
             $table->boolean('receive_pension_from_another_organization_status')->default(false);
             $table->string('another_organization_name')->nullable();
             $table->boolean('has_authorizations')->default(false);
-            // Pension Survived
+            // Pension Survivor
+            $table->boolean('pension_survivor_status')->default(false);
             $table->string('fullname_causative')->nullable();
             $table->integer('age_causative')->nullable();
             $table->enum('parent_causative', ['Padre', 'Madre', 'Conyuge', 'Concubino'])->nullable();
@@ -42,7 +44,7 @@ return new class extends Migration
             $table->date('decease_date')->nullable();
             $table->boolean('suspend_payment_status')->default(false);
             $table->date('last_payment')->nullable();
-            $table->$table->timestamps();
+            $table->timestamps();
         });
     }
 

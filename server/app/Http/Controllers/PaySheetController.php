@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePaySheetRequest;
+use App\Http\Requests\UpdatePaySheetRequest;
 use Exception;
 use App\Models\PaySheet;
 use Illuminate\Http\Request;
@@ -34,12 +36,54 @@ class PaySheetController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePaySheetRequest $request)
     {
         try {
             DB::beginTransaction();
 
-            $result = $this->paySheetService->store($request);
+            $validatedData = $request->validated();
+
+            $photo = $request->hasFile('photo') ? $request->file('photo') : null;
+
+            $register = $this->paySheetService->store($validatedData, $photo);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Registro insertado exitosamente',
+                'register' => $register
+            ]);
+        } catch (ValidationException $e) {
+            Log::error('Error al importar nómina: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al crear registro :' . $e->getMessage()
+            ], 500);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al crear registro: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al crear registro'
+            ], 500);
+        }
+    }
+
+    public function storeSheet(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $result = $this->paySheetService->storeSheet($request);
 
             DB::commit();
 
@@ -82,28 +126,41 @@ class PaySheetController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(PaySheet $paySheet)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(PaySheet $paySheet)
+    public function update(UpdatePaySheetRequest $request, PaySheet $paySheet)
     {
-        //
-    }
+        try {
+            DB::beginTransaction();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, PaySheet $paySheet)
-    {
-        //
+            $validatedData = $request->validated();
+            $photo = $request->hasFile('photo') ? $request->file('photo') : null;
+
+            $register = $this->paySheetService->update($validatedData, $photo, $paySheet);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Registro actualizado exitosamente',
+                'register' => $register
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error de validación: ' . $e->getMessage()
+            ], 422);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al actualizar registro: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al actualizar registro'
+            ], 500);
+        }
     }
 
     /**
@@ -111,6 +168,30 @@ class PaySheetController extends Controller
      */
     public function destroy(PaySheet $paySheet)
     {
-        //
+        try {
+
+            DB::beginTransaction();
+
+            $this->paySheetService->destroy($paySheet);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Registro eliminado exitosamente',
+            ]);
+        } catch (Exception $e) {
+
+            DB::rollBack();
+
+            Log::error('Error al eliminar el registro', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al eliminar el registro '
+            ]);
+        }
     }
 }

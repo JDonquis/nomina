@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('censuses', function (Blueprint $table) {
+        Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pay_sheets_id');
-            $table->foreignId('user_id');
-            $table->boolean('status')->default(false);
-            $table->timestamp('expiration_date');
             $table->timestamps();
         });
     }
@@ -26,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('censuses');
+        Schema::dropIfExists('activities');
     }
 };
