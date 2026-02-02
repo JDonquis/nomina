@@ -7,7 +7,6 @@ import FuturisticButton from "./FuturisticButton";
 import firmaDigital from "../assets/firmaDigital.png";
 import QRCode from "react-qr-code";
 import cintillo from "../assets/cintillo.jpeg";
-import { examResultsAPI } from "../services/api";
 
 const PrintableContent = forwardRef((props, ref) => {
   if (!("patient" in props.data)) {
