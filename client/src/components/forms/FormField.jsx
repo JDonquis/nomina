@@ -31,7 +31,7 @@
   }) {
     if (type === "checkbox") {
       return (
-        <div className={`flex items-start gap-3 ${className}`}>
+        <div className={`flex items-center gap-3 ${className}`}>
           <Checkbox
             name={name}
             checked={value || false}
@@ -45,7 +45,7 @@
             <label className="text-sm font-medium text-gray-700 ">
               {label || name}
             </label>
-            {helperText && !error && (
+            {helperText && !error && helperText !== false && helperText !== "" && (
               <FormHelperText className="mt-0 text-xs text-gray-500">
                 {helperText}
               </FormHelperText>

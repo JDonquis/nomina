@@ -11,13 +11,13 @@ import cintilloCorto from "../assets/cintilloCorto.png";
 
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
-    let ciInput = document.querySelector("#ci");
-    ciInput?.focus();
+    let emailInput = document.querySelector("#email");
+    emailInput?.focus();
   }, 300);
 });
 
 export default function LoginPage() {
-  const [ci, setci] = useState("");
+  const [email, setemail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false); // Add state for showPassword
   const [loading, setLoading] = useState(false);
@@ -35,12 +35,12 @@ export default function LoginPage() {
 
   const handleForgotPsw = async (e) => {
     setLoadingReset(true)
-    if (!ci) {
+    if (!email) {
       showError("Por favor ingrese su correo electrónico");
       return;
     }
     try {
-      await authAPI.forgotPassword(ci);
+      await authAPI.forgotPassword(email);
       showSuccess("Se ha enviado un enlace para restablecer la contraseña");
     } catch (err) {
       showError(err.message);
@@ -55,11 +55,13 @@ export default function LoginPage() {
 
     try {
       // Use the authAPI.login method instead of fetch
-      const data = await authAPI.login({ ci, password });
+      const data = await authAPI.login({ email, password });
 
       // Login successful
-      login(data, data.token);
-      navigate("/dashboard");
+      if (data) {
+        login(data, data.token);
+        navigate("/dashboard");
+      }
     } catch (err) {
       showError(err.message);
       console.log(err);
@@ -82,14 +84,13 @@ export default function LoginPage() {
 
   return (
     <>
-      <title>Iniciar Sesión - Nómina</title>
+      <title>Iniemailar Sesión - Nómina</title>
       <div className="min-h-screen overflow-hidden relative  bg-gray-600 bg-cover bg-center">
         <img
           src={doctor}
           alt="lab"
           className="absolute  left-0 w-full h-full object-cover "
         />
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-color1 to-transparent opacity-10"></div>
         <div
           className=" absolute w-[300px] md:min-w-[400px] md:w-[450px] pb-3 top-24 z-50 md:top-12 lg:top-24 px-5 pt-4 md:pt-10 sm:pt-20 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-20 text-color1 md:p-16 rounded-3xl overflow-hidden"
           style={{
@@ -114,14 +115,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="fadeInUp ">
             <div className="mb-4 mt-4 md:mt-10 ">
-              <label className="block  text-sm  mb-1" htmlFor="ci">
-                C.I
+              <label className="block  text-sm  mb-1" htmlFor="email">
+                Email
               </label>
               <input
-                id="ci"
-                type="number"
-                value={ci}
-                onChange={(e) => setci(e.target.value)}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setemail(e.target.value)}
                 className="w-full  text-gray-800 px-2 py-2 text-sm sm:px-3 sm:py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -171,7 +172,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mb-4 md:mb-0 bg-color1 text-color4 font-bold py-2 px-4 rounded  hover:bg-color1 hover:text-color3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full mb-4 md:mb-0 bg-color1 text-color4 font-bold py-2 px-4 rounded  hover:bg-color1 hover:text-color3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opaemailty-50"
             >
               {loading ? "Ingresando..." : "INGRESAR"}
             </button>
@@ -197,10 +198,10 @@ export default function LoginPage() {
           reservados.
         </p>
         <a
-          href="https://www.linkedin.com/in/juan-francisco-villasmil-tovar-50a3a1161/"
+          href="https://www.linkedin.com/in/juan-franemailsco-villasmil-tovar-50a3a1161/"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:opacity-100 text-xs opacity-65 cursor-pointer"
+          className="underline hover:opaemailty-100 text-xs opaemailty-65 cursor-pointer"
         >
           Desarrollado por Juan Villasmil y Juan Donquis
         </a>

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_URL } from "../config/env.js";
 
-const API_BASE_URL = `${API_URL}/api/`;
+const API_BASE_URL = `${API_URL}/`;
 
 // Create an Axios instance with default config
 const api = axios.create({
@@ -72,46 +72,22 @@ export const authAPI = {
 
 // Users API endpoints
 export const usersAPI = {
-  getProfile: () => api.get("/users/profile"),
-  updateProfile: (userData) => api.put("/users/profile", userData),
-  getAllUsers: () => api.get("/users"),
-  createUser: (userData) => api.post("/users", userData),
-  updateUser: (id, userData) => api.put(`/users/${id}`, userData),
-  deleteUser: (id) => api.delete(`/users/${id}`),
+  getProfile: () => api.get("/admin/users/profile"),
+  updateProfile: (userData) => api.put("/admin/users/profile", userData),
+  getAllUsers: (params) => api.get("/admin/users", {params}),
+  createUser: (userData) => api.post("/admin/users", userData),
+  updateUser: (id, userData) => api.put(`/admin/users/${id}`, userData),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };
 
-export const examinationTypesAPI = {
-  getExaminationTypes: () => api.get("/examination-types"),
-};
+export const payrollAPI = {
+  getWorkers: (params) => api.get("/admin/pay-sheets", {params}),
+  createWorker: (workerData) => api.post("/admin/pay-sheets", workerData),
+  updateWorker: (id, workerData) =>
+    api.put(`/admin/pay-sheets/${id}`, workerData),
+  deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
+}
 
-export const originsAPI = {
-  getOrigins: () => api.get("/origins"),
-};
-
-export const examsAPI = {
-  createExam: (examData) => api.post("/exams", examData),
-  getExams: (params) => api.get("/exams", { params }),
-  getExamById: (id) => api.get(`/exams/${id}`),
-  updateExam: (id, examData) => api.put(`/exams/${id}`, examData),
-  deleteExam: (id) => api.delete(`/exams/${id}`),
-  validateExam: (id) => api.put("/exams/validate-exam", { id }),
-  getChartData: (period, params) => {
-    return api.get(`/exams/chart-data/${period}`, { params });
-  },
-};
-
-// Public API for exam results (no authentication required)
-export const examResultsAPI = {
-  getByToken: (token) => axios.get(`${API_BASE_URL}/results/${token}`),
-  downloadPDF: (token) =>
-    axios.get(`${API_BASE_URL}/results/${token}/pdf`, {
-      responseType: "blob",
-    }),
-  generateToken: (data) => api.post("/exams/generate-results-token", data),
-  sendExamResults: (data) => api.post("/exams/send-results", data),
-  updateMessageStatus: (id, status) =>
-    api.put(`/exams/update-message-status/${id}`, { status }),
-};
 
 // Export the api instance for direct use if needed
 export default api;
