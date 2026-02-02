@@ -131,6 +131,8 @@ class PaySheetService
         return 0;
     }
 
+
+
     private function storePhoto($photo, string $ci): string
     {
         $extension = $photo->getClientOriginalExtension();

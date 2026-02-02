@@ -14,4 +14,6 @@ enum ActivityEnum: string
     case USER_LOGOUT = 'USER_LOGOUT';
     case USER_CREATED = 'USER_CREATED';
     case USER_UPDATED = 'USER_UPDATED';
+    case REPOSITORY_EXPORT = 'Repositorio exportado';
+    case REPOSITORY_IMPORT = 'Repositorio importado';
 }
