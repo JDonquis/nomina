@@ -37,7 +37,8 @@ class UserController extends Controller
 
         try {
 
-            $newUser = $this->userService->store($request->validated);
+
+            $newUser = $this->userService->store($request->validated());
 
             return response()->json([
                 'message' => 'OK',
@@ -49,7 +50,8 @@ class UserController extends Controller
                 'Error al crear usuario',
                 [
                     'data' => $request->validated,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine()
                 ]
             );
 
@@ -73,7 +75,7 @@ class UserController extends Controller
 
         try {
 
-            $updatedUser = $this->userService->update($request->validated, $user);
+            $updatedUser = $this->userService->update($request->validated(), $user);
 
             return response()->json([
                 'message' => 'Usuario actualizado exitosamente',
@@ -84,7 +86,7 @@ class UserController extends Controller
             Log::error(
                 'Error al actualizar usuario',
                 [
-                    'data' => $request->validated,
+                    'data' => $request->validated(),
                     'error' => $e->getMessage()
                 ]
             );

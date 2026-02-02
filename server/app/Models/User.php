@@ -23,6 +23,7 @@ class User extends Authenticatable
         'is_admin',
         'email',
         'password',
+        'email_verified_status'
     ];
 
     /**
@@ -43,7 +44,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'email_verified_at' => 'boolean',
             'password' => 'hashed',
         ];
     }

@@ -34,7 +34,7 @@ class UserService
 
     public function store($data)
     {
-        $data['password'] = Hash::make($data['ci']);
+        $data['password'] = Hash::make($data['email']);
 
         $user = User::create($data);
 
@@ -54,9 +54,9 @@ class UserService
             unset($data['password']);
         }
 
-        unset($validatedData['password_confirmation']);
+        unset($data['password_confirmation']);
 
-        $user->update($validatedData);
+        $user->update($data);
 
         return $user;
     }

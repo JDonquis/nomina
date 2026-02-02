@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('charge');
             $table->string('email')->unique();
             $table->boolean('is_admin')->default(false);
-            $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('email_verified_status')->default(false);
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
