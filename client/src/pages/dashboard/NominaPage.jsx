@@ -14,10 +14,18 @@ import FormField from "../../components/forms/FormField";
 import { CircularProgress } from "@mui/material";
 import { useFeedback } from "../../context/FeedbackContext";
 import { MaterialReactTable } from "material-react-table";
-
+import planilla from "../../components/planilla";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+
+const cities = [
+  { value: "Coro", label: "Coro" },
+  { value: "Punto Fijo", label: "Punto Fijo" },
+  { value: "Tucacas", label: "Tucacas" },
+  { value: "Dabajuro", label: "Dabajuro" },
+  { value: "La Sierra", label: "La Sierra" },
+];
 
 const iconos_examenes = {
   1: { icon: "mdi:blood-bag", color: "#C62828" },
@@ -39,7 +47,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey],
+      [onChange, testKey]
     );
 
     return (
@@ -62,7 +70,7 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  },
+  }
 );
 
 export default function ExamenesPage() {
@@ -83,39 +91,48 @@ export default function ExamenesPage() {
   {
     /* 
     
-    $table->id();
-            $table->enum('nac', ['V', 'E']);
-            $table->string('ci');
-            $table->string('full_name');
-            $table->string('date_birth')->nullable();
-            $table->string('sex')->nullable()->default('Sin asignar');
-            $table->string('city')->nullable()->default('Sin asignar');
-            $table->string('state')->default('Falcon');
-            $table->foreignId('administrative_location')->nullable();
-            $table->string('phone_number')->nullable();
-            //Pension Data
-            $table->enum('type_pension', ['Jubilacion', 'Incapacidad', 'Sobrevivencia']);
-            $table->foreignId('type_pay_sheet_id');
-            $table->string('last_charge')->nullable();
-            $table->enum('civil_status', ['S', 'C', 'V']);
-            $table->integer('minor_child_nro')->default(0);
-            $table->integer('disabled_child_nro')->default(0);
-            $table->boolean('receive_pension_from_another_organization_status')->default(false);
-            $table->string('another_organization_name')->nullable();
-            $table->boolean('has_authorizations')->default(false);
-            // Pension Survived
-            $table->string('fullname_causative')->nullable();
-            $table->integer('age_causative')->nullable();
-            $table->enum('parent_causative', ['Padre', 'Madre', 'Conyuge', 'Concubino'])->nullable();
-            $table->enum('sex_causative', ['M', 'F']);
-            $table->string('ci_causative')->nullable();
-            $table->date('decease_date')->nullable();
-            $table->boolean('suspend_payment_status')->default(false);
-            $table->date('last_payment')->nullable();
-            $table->$table->timestamps();
+    // Datos personales
+    "nac": "V",
+    "ci": "12345678",
+    "full_name": "María Elena Rodríguez Pérez",
+    "date_birth": "1975-05-15",
+    "sex": "F",
+    "city": "Caracas",
+    "state": "Distrito Capital",
+    "administrative_location_id": 1,
+    "phone_number": "+584141234567",
+    
+    // Datos de pensión
+    "type_pension": "Jubilacion",
+    "type_pay_sheet_id": 1,
+    "last_charge": "Jefe de Departamento",
+    "civil_status": "C",
+    "minor_child_nro": 2,
+    "disabled_child_nro": 0,
+    "receive_pension_from_another_organization_status": false,
+    "another_organization_name": null,
+    "has_authorizations": true,
+    
+    // Pensión sobrevivencia (condicional - en este caso false)
+    "pension_survivor_status": false,
+    "fullname_causative": null,
+    "age_causative": null,
+    "parent_causative": null,
+    "sex_causative": null,
+    "ci_causative": null,
+    "decease_date": null,
+    "suspend_payment_status": false,
+    "last_payment": null
     */
   }
   const patientFormFields = useMemo(() => [
+    {
+      name: "photo",
+      label: "Foto",
+      type: "file",
+      required: false,
+      className: "col-span-1",
+    },
     {
       name: "nac",
       label: "Nacionalidad",
@@ -147,20 +164,29 @@ export default function ExamenesPage() {
       required: true,
       className: "col-span-1",
     },
-      {
+
+    {
       name: "sex",
       label: "Sexo *",
       type: "select",
       options: [
-        { value: "Masculino", label: "Masculino" },
-        { value: "Femenino", label: "Femenino" },
+        { value: "M", label: "Masculino" },
+        { value: "F", label: "Femenino" },
       ],
+      className: "col-span-1",
+    },
+    {
+      name: "administrative_location",
+      label: "Ubicación administrativa",
+      type: "text",
+      required: false,
       className: "col-span-1",
     },
     {
       name: "city",
       label: "Ciudad",
-      type: "text",
+      type: "select",
+      options: cities,
       required: false,
       className: "col-span-1",
     },
@@ -172,34 +198,13 @@ export default function ExamenesPage() {
       className: "col-span-1",
     },
     {
-      name: "administrative_location",
-      label: "Ubicación administrativa",
-      type: "text",
-      required: false,
-      className: "col-span-1",
-    },
-    {
       name: "phone_number",
       label: "Teléfono",
       type: "text",
       required: false,
       className: "col-span-1",
     },
-    {
-      name: "is_censused",
-      label: "Censado",
-      type: "checkbox",
-      required: false,
-      helperText: false,
-      className: "col-span-1",
-    },
-    {
-      name: "last_charge",
-      label: "Último Cargó",
-      type: "text",
-      required: false,
-      className: "col-span-1",
-    },
+    // Datos de la pénsion:
     {
       name: "type_pension",
       label: "Tipo de Pensión",
@@ -209,7 +214,6 @@ export default function ExamenesPage() {
         { value: "Incapacidad", label: "Incapacidad" },
         { value: "Sobrevivencia", label: "Sobrevivencia" },
       ],
-      className: "col-span-1",
     },
     {
       name: "type_pay_sheet_id",
@@ -220,6 +224,13 @@ export default function ExamenesPage() {
         { value: "2", label: "Cuenta 2" },
         { value: "3", label: "Cuenta 3" },
       ],
+      className: "col-span-1",
+    },
+    {
+      name: "last_charge",
+      label: "Último Cargó",
+      type: "text",
+      required: false,
       className: "col-span-1",
     },
     {
@@ -264,6 +275,15 @@ export default function ExamenesPage() {
     {
       name: "has_authorizations",
       label: "Tiene Autorizaciones",
+      type: "checkbox",
+      required: false,
+      className: "col-span-1",
+    },
+
+    // Pensión sobrevivencia
+    {
+      name: "pension_survivor_status",
+      label: "Pensión Sobrevivencia",
       type: "checkbox",
       required: false,
       className: "col-span-1",
@@ -332,49 +352,42 @@ export default function ExamenesPage() {
       required: false,
       className: "col-span-1",
     },
-
-    {
-      name: "email",
-      label: "Correo Electrónico",
-      type: "email",
-      required: false,
-      className: "col-span-1",
-    },
-
-    {
-      name: "address",
-      label: "Dirección",
-      type: "text",
-      required: false,
-      className: "col-span-1",
-    },
-  
-    {
-      name: "origin_id",
-      label: "Procedencia *",
-      type: "select",
-      options: origins?.map((origin) => ({
-        value: origin.id,
-        label: origin.name,
-      })),
-      className: "col-span-2",
-    },
   ]);
 
   const defaultFormData = {
-    patient: {
-      ci: "",
-      first_name: "",
-      last_name: "",
-      date_birth: "",
-      email: "",
-      phone_number: "",
-      address: "",
-      sex: "",
-      patient_id: null,
-    },
-    all_validated: false,
-    tests: {},
+    // Datos personales
+    photo: "",
+    nac: "V",
+    ci: "12345678",
+    full_name: "María Elena Rodríguez Pérez",
+    date_birth: "",
+    sex: "F",
+    city: "Coro",
+    state: "Falcón",
+    administrative_location_id: 1,
+    phone_number: "",
+
+    // Datos de pensión
+    type_pension: "Jubilacion",
+    type_pay_sheet_id: 1,
+    last_charge: "",
+    civil_status: "C",
+    minor_child_nro: 2,
+    disabled_child_nro: 0,
+    receive_pension_from_another_organization_status: false,
+    another_organization_name: null,
+    has_authorizations: true,
+
+    // Pensión sobrevivencia (condicional - en este caso false)
+    pension_survivor_status: false,
+    fullname_causative: null,
+    age_causative: null,
+    parent_causative: null,
+    sex_causative: null,
+    ci_causative: null,
+    decease_date: null,
+    suspend_payment_status: false,
+    last_payment: null,
   };
 
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
@@ -386,26 +399,31 @@ export default function ExamenesPage() {
     setLoading(true);
 
     try {
+      // Crear FormData para enviar archivos
+      const submitData = new FormData();
+
+      // Agregar todos los campos del formulario
+      Object.keys(formData).forEach((key) => {
+        const value = formData[key];
+
+        if (value instanceof File) {
+          // Archivos se agregan directamente
+          submitData.append(key, value);
+        } else if (Array.isArray(value) && value.length > 0) {
+          // Arrays de objetos se envían como JSON string
+          submitData.append(key, JSON.stringify(value));
+        } else if (typeof value === "object" && value !== null) {
+          // Objetos individuales también se envían como JSON string
+          submitData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined && value !== "") {
+          submitData.append(key, value);
+        }
+      });
       // Prepare both requestsF
       const internalRequest =
         submitString === "Actualizar"
           ? payrollAPI.updateWorker(formData.id, formData)
           : payrollAPI.createWorker(formData);
-
-      const externalRequest =
-        formData.patient.patient_id === null
-          ? externalApi.post("/patients", {
-              // Map your formData to the external API's expected format
-              id: formData.patient.patient_id,
-              ...formData.patient,
-              name: formData.patient.first_name,
-            })
-          : Promise.resolve({ success: true, skipped: true });
-
-      // Execute both requests in parallel
-      const [internalResponse, externalResponse] = await Promise.all([
-        internalRequest,
-      ]);
 
       // Handle success
       if (submitString === "Actualizar") {
@@ -573,50 +591,8 @@ export default function ExamenesPage() {
         enableSorting: false,
       },
     ],
-    [],
+    []
   );
-
-  const handleMessage = async () => {
-    if (messageData?.patient?.email.length < 5) {
-      showError("El paciente no tiene correo electrónico");
-      return;
-    }
-    setLoadingMessage(true);
-    try {
-      await examResultsAPI.sendExamResults(messageData);
-      showSuccess("Mensaje enviado con éxito");
-      setIsMessageModalOpen(false);
-      setMessageData(null);
-      fetchData();
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "An error occurred";
-      showError(errorMessage);
-    }
-    setLoadingMessage(false);
-  };
-  const handleWhatsAppMessageSent = async () => {
-    try {
-      await examResultsAPI.updateMessageStatus(messageData.id, "ENVIADO");
-      setIsMessageSentModalOpen(false);
-      setMessageData(null);
-      fetchData();
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "An error occurred";
-      showError(errorMessage);
-    }
-  };
-
-  const generateResultsToken = async (analysisId) => {
-    try {
-      const response = await examResultsAPI.generateToken({ analysisId });
-      return response.data.token;
-    } catch (error) {
-      console.error("Error generating token:", error);
-      return null;
-    }
-  };
 
   const handleDelete = async (id) => {
     try {
@@ -659,10 +635,10 @@ export default function ExamenesPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {}),
+          }, {})
         ),
       });
-      setData(res.data.exams);
+      setData(res.data.data);
       setRowCount(res.data.totalCount);
     } catch (e) {
       console.error("Failed to fetch data", e);
@@ -692,7 +668,7 @@ export default function ExamenesPage() {
         localStorage.setItem("formData", JSON.stringify(data));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    [],
+    []
   );
 
   useEffect(() => {
@@ -709,203 +685,28 @@ export default function ExamenesPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    [],
+    []
   );
 
-  const handleTestInputChange = useCallback((examination_type_id, event) => {
-    const { name, value } = event.target;
-
-    // Use immediate update for better UX, but debounce heavy operations
-    setFormData((prev) => {
-      // Early return if value hasn't changed
-      if (
-        prev.tests?.[examination_type_id]?.testValues?.[name]?.value === value
-      ) {
-        return prev;
-      }
-
-      const updatedTests = {
-        ...prev.tests,
-        [examination_type_id]: {
-          ...prev.tests[examination_type_id],
-          testValues: {
-            ...prev.tests[examination_type_id].testValues,
-            [name]: {
-              ...prev.tests[examination_type_id].testValues[name],
-              value,
-            },
-          },
-        },
-      };
-
-      // Auto-calculate razon when tp_paciente or control_tp changes
-      if (name === "tp_paciente" || name === "tp_control") {
-        const tpPaciente =
-          name === "tp_paciente"
-            ? parseFloat(value)
-            : parseFloat(
-                updatedTests[examination_type_id].testValues?.tp_paciente
-                  ?.value || 0,
-              );
-        const controlTp =
-          name === "tp_control"
-            ? parseFloat(value)
-            : parseFloat(
-                updatedTests[examination_type_id].testValues?.tp_control
-                  ?.value || 0,
-              );
-        if (tpPaciente && controlTp && controlTp !== 0) {
-          const razon = (tpPaciente / controlTp).toFixed(2);
-          updatedTests[examination_type_id].testValues.razon = {
-            ...updatedTests[examination_type_id].testValues.razon,
-            value: razon,
-          };
-        }
-      }
-
-      // Auto-calculate diferencia when tpt_paciente or control_tpt changes
-      if (name === "tpt_paciente" || name === "tpt_control") {
-        const tptPaciente =
-          name === "tpt_paciente"
-            ? parseFloat(value)
-            : parseFloat(
-                updatedTests[examination_type_id].testValues?.tpt_paciente
-                  ?.value || 0,
-              );
-        const controlTpt =
-          name === "tpt_control"
-            ? parseFloat(value)
-            : parseFloat(
-                updatedTests[examination_type_id].testValues?.tpt_control
-                  ?.value || 0,
-              );
-
-        if (tptPaciente && controlTpt) {
-          const diferencia = (tptPaciente - controlTpt).toFixed(2);
-          updatedTests[examination_type_id].testValues.diferencia = {
-            ...updatedTests[examination_type_id].testValues.diferencia,
-            value: diferencia,
-          };
-        }
-      }
-
-      return {
-        ...prev,
-        tests: updatedTests,
-      };
-    });
-
-    setIsFormInitialized(true); // ← Activar guardado automático
-  }, []);
-
-  const handleMethodChange = useCallback((examination_type_id, event) => {
-    const { name, value } = event.target;
-
-    setFormData((prev) => {
-      return {
-        ...prev,
-        tests: {
-          ...prev.tests,
-          [examination_type_id]: {
-            ...prev.tests[examination_type_id],
-            method: value,
-          },
-        },
-      };
-    });
-
-    setIsFormInitialized(true); // ← Activar guardado automático
-  }, []);
-
-  const handleObservationChange = useCallback((examination_type_id, event) => {
-    const { name, value } = event.target;
-
-    setFormData((prev) => {
-      return {
-        ...prev,
-        tests: {
-          ...prev.tests,
-          [examination_type_id]: {
-            ...prev.tests[examination_type_id],
-            observation: value,
-          },
-        },
-      };
-    });
-
-    setIsFormInitialized(true); // ← Activar guardado automático
-  }, []);
-
-  const handlePatientInputChange = useCallback((e) => {
+  const handleChangeValue = useCallback((e) => {
     const { name, value } = e.target;
+    // if input is type checked
+    if (e.target.type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+
+        [name]: e.target.checked,
+      }));
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
-      patient: {
-        ...prev.patient,
-        [name]: value,
-      },
+
+      [name]: value,
     }));
 
     setIsFormInitialized(true); // ← Activar guardado automático
   }, []);
-
-  const handleValidatedChange = useCallback((examTypeId, e) => {
-    const checked = e.target.checked;
-    setFormData((prev) => {
-      const newTests = {
-        ...prev.tests,
-        [examTypeId]: {
-          ...prev.tests[examTypeId],
-          validated: checked,
-        },
-      };
-
-      // Check if all exam types are validated
-      const all_validated = Object.values(newTests).every(
-        (test) => test.validated === true,
-      );
-      setIsFormInitialized(true); // ← Activar guardado automático
-
-      return {
-        ...prev,
-        tests: newTests,
-        all_validated: all_validated,
-      };
-    });
-  }, []);
-
-  const [prosecingSearchPatient, setProsecingSearchPatient] = useState(false);
-  const searchPatient = debounce(async (ci) => {
-    setProsecingSearchPatient(true); // Cambiar a verdadero antes de la búsqueda
-
-    try {
-      const res = await externalApi.get(`/patients?ci=${ci}`);
-      if (res.data.data.data.length === 0) {
-        setFormData((prev) => ({
-          ...prev,
-          patient: {
-            ...prev.patient,
-            patient_id: null,
-          },
-        }));
-        return;
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          patient: {
-            ...prev.patient,
-            first_name: res.data.data.data[0]?.name,
-            ...res.data.data.data[0],
-            patient_id: res.data.data.data[0]?.id,
-          },
-        }));
-      }
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setProsecingSearchPatient(false); // Cambiar a falso después de la búsqueda
-    }
-  }, 280);
 
   return (
     <>
@@ -921,7 +722,7 @@ export default function ExamenesPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString")),
+                    JSON.parse(localStorage.getItem("submitString"))
                   );
                   setIsModalOpen(true);
                 }}
@@ -957,38 +758,93 @@ export default function ExamenesPage() {
           size="xl"
         >
           <form
-            className={` space-y-5 md:space-y-0 gap-7 w-full relative`}
+            className={`px-4 space-y-5 md:space-y-0 gap-7 w-full relative`}
             onSubmit={onSubmit}
           >
-            <div className="space-y-3 z-10 md:sticky top-0 h-max">
-              <h2 className="text-xl font-bold mb-2">Datos personales</h2>
+            <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
+              <h2 className="text-xl font-bold mb-2 col-span-2  ">
+                Datos personales
+              </h2>
+
               <div className="grid grid-cols-2 gap-4">
                 {patientFormFields.map((field) => {
-                  if (field.name === "ci") {
+                  if (field.name == "photo") {
                     return (
-                      <div key={field.name}>
-                        <FormField
-                          {...field}
-                          value={formData.patient?.[field.name]}
-                          onInput={(e) => {
-                            formData.patient.patient_id = null;
-                            handlePatientInputChange(e);
-                            if (e.target.value.length >= 6) {
-                              setProsecingSearchPatient(true);
-                              searchPatient(e.target.value);
-                            }
-                          }}
+                      <div className="mb-5 col-span-2 flex justify-center  pb-4 mx-auto">
+                        <label
+                          htmlFor="photo"
+                          className="mx-auto text-gray-600 text-sm"
+                        >
+                          <div className="bg-gray-200 mt-1 rounded-md w-36 h-44 flex items-center justify-center cursor-pointer hover:bg-gray-400 duration-150">
+                            {formData.photo ? null : (
+                              <Icon
+                                icon="tabler:photo-up"
+                                className="w-20 h-20 text-gray-300"
+                              />
+                            )}
+                            {formData.photo ? (
+                              <img
+                                src={URL.createObjectURL(formData.photo)}
+                                alt="preview"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : null}
+                          </div>
+                        </label>
+                        <input
+                          type="file"
+                          name="photo"
+                          id="photo"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              photo: e.target.files[0],
+                            })
+                          }
                         />
                       </div>
                     );
                   } else {
+                    
                     return (
-                      <FormField
-                        key={field.name}
-                        {...field}
-                        value={formData.patient?.[field.name]}
-                        onChange={handlePatientInputChange}
-                      />
+                      <>
+                        {field.name == "type_pension" && (
+                          <div className="col-span-2 flex items-center">
+                            <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
+                              Datos de la pensión
+                            </h2>
+                            <hr className="w-full h-0.5 flex-auto bg-gray-300" />
+                          </div>
+                        )}
+  
+                        {field.name == "pension_survivor_status" ? (
+                          <>
+                            <div className="col-span-2 flex items-center">
+                              <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
+                                Pensión sobrevivencia
+                              </h2>
+                              <hr className="w-full h-0.5 flex-auto bg-gray-300" />
+                            </div>
+                            <div className="col-span-2">
+                              <FormField
+                                key={field.name}
+                                {...field}
+                                value={formData[field.name]}
+                                onChange={handleChangeValue}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <FormField
+                            key={field.name}
+                            {...field}
+                            value={formData[field.name]}
+                            onChange={handleChangeValue}
+                          />
+                        )}
+                      </>
                     );
                   }
                 })}
@@ -1002,7 +858,7 @@ export default function ExamenesPage() {
                   variant="contained"
                   disabled={loading}
                   startIcon={loading ? <CircularProgress size={20} /> : null}
-                  className={`px-16 py-3 rounded-md font-semibold ${
+                  className={`px-16 py-3 rounded-md font-semibold hover:bg-color3 ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   } ${
                     submitString == "Actualizar"
@@ -1102,9 +958,7 @@ export default function ExamenesPage() {
                       ></Icon>
                     )}
                     <span className="text-sm">
-                      {loadingMessage
-                        ? "Enviando..."
-                        : "Enviar por correo"}{" "}
+                      {loadingMessage ? "Enviando..." : "Enviar por correo"}{" "}
                     </span>
                   </button>
 
@@ -1153,7 +1007,7 @@ export default function ExamenesPage() {
                 </p>
               )}
 
-              <PrintPage
+              <planilla
                 data={messageData}
                 examinationTypes={examinationTypes}
                 token={resultsToken}

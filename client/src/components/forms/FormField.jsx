@@ -27,12 +27,16 @@
     className = "",
     unit,
     multiline = false,
+    options, // Extract options to prevent passing to TextField
+    labels, // Extract labels to prevent passing to TextField
     ...props
   }) {
     if (type === "checkbox") {
+      const checkboxId = `checkbox-${name}`;
       return (
         <div className={`flex items-center gap-3 ${className}`}>
           <Checkbox
+            id={checkboxId}
             name={name}
             checked={value || false}
             onChange={onChange}
@@ -42,7 +46,7 @@
             {...props}
           />
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 ">
+            <label htmlFor={checkboxId} className="text-sm font-medium text-gray-700 cursor-pointer">
               {label || name}
             </label>
             {helperText && !error && helperText !== false && helperText !== "" && (
@@ -72,7 +76,7 @@
               {...props}
 
             >
-              {props.options.map((option) => (
+              {options?.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label || option.value}
                 </MenuItem>
@@ -124,7 +128,7 @@
 
         {type === "list" && (
           <datalist id={name}>
-            {props.labels?.map((label) => (
+            {labels?.map((label) => (
               <option key={label} value={label} />
             ))}
           </datalist>

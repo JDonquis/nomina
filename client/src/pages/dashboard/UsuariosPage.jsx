@@ -118,9 +118,10 @@ export default function UsuariosPage() {
     },
 
     {
-      accessorKey: "status",
+      accessorKey: "email_verified_status",
       header: "Estado",
       size: 180,
+      Cell: ({ cell }) => cell.getValue() ? <Icon className="text-color2" icon="iconamoon:check-fill" width={20} height={20} /> :  <Icon className="text-red-300" icon="line-md:close" width={18} height={17} />,
     },
     {
       header: "Acciones",
