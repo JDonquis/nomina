@@ -25,7 +25,7 @@ class StorePaySheetRequest extends FormRequest
         return [
             // Personal Data
             'nac' => ['required', Rule::in(['V', 'E'])],
-            'ci' => 'required|string|max:20',
+            'ci' => 'required|string|max:20|unique:pay_sheets,ci',
             'full_name' => 'required|string|max:255',
             'date_birth' => 'nullable|date',
             'sex' => 'nullable|string|in:M,F,Sin asignar',

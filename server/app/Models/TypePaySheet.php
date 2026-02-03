@@ -9,5 +9,6 @@ class TypePaySheet extends Model
     protected $fillable = [
         'name',
         'code',
+        'type_personal'
     ];
 }

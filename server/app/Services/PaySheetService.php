@@ -87,6 +87,7 @@ class PaySheetService
             'pay_sheets_id' => $paySheet->id,
             'status' => true,
             'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
+            'user_id' => Auth::id()
         ]);
 
         return $paySheet;

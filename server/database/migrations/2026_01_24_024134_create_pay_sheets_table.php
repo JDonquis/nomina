@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('fullname_causative')->nullable();
             $table->integer('age_causative')->nullable();
             $table->enum('parent_causative', ['Padre', 'Madre', 'Conyuge', 'Concubino'])->nullable();
-            $table->enum('sex_causative', ['M', 'F']);
+            $table->enum('sex_causative', ['M', 'F'])->nullable();
             $table->string('ci_causative')->nullable();
             $table->date('decease_date')->nullable();
             $table->boolean('suspend_payment_status')->default(false);
