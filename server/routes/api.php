@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CensusController;
 use App\Http\Controllers\PaySheetController;
 use App\Http\Controllers\RepositoryController;
+use App\Http\Controllers\TypePaySheetController;
 use App\Http\Controllers\AdministrativeLocationController;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
@@ -15,7 +16,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Route::post('refresh_token', [LoginController::class, 'refreshToken'])->name('refresh_token');
 
     Route::get('administrative-locations', [AdministrativeLocationController::class, 'index']);
-    
+    Route::get('type-pay-sheets', [TypePaySheetController::class, 'index']);
+
     Route::resource('users', UserController::class)->except(['edit', 'create']);
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
