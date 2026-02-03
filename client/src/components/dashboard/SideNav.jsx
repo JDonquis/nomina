@@ -26,6 +26,12 @@ const links = [
     href: "/dashboard/usuarios",
     icon: "solar:user-linear",
   },
+  {
+    permission: true,
+    name: "Censados",
+    href: "/dashboard/censados",
+    icon: "ep:checked",
+  },
 ];
 
 export default function SideNav(props) {
@@ -36,6 +42,8 @@ export default function SideNav(props) {
       logout();
     } catch (error) {
       console.error("Failed to logout", error);
+      logout();
+
     }
   }
 
@@ -54,14 +62,14 @@ export default function SideNav(props) {
         className={`duration-150 hidden  mb-4 font-exo2 md:flex h-20 items-end justify-end rounded-md bg-white bg-opacity-5   md:h-28 ${props.isSidebarOpen ? 'p-4' : 'p-1'}`}
         href="/"
       >
-        <div className="w-32 relative duration-150 text-white md:w-40 flex flex-row justify-between items-end">
+        <div className="w-32 font-exo2 relative duration-150 text-white md:w-40 flex flex-row justify-between items-end">
           <img
             src={secretariaLogo}
             className={`${props.isSidebarOpen ? 'w-12 h-12' : 'w-10 h-8'} logo w-12 duration-150 `}
             alt="logo del sistema"
           />
           
-            <p className={ props.isSidebarOpen ? "block duration-300  absolute -bottom-1 right-3 font-semibold self-end opacity-100" : "opacity-0 absolute"}>
+            <p className={ props.isSidebarOpen ? "block duration-300  absolute -bottom-1 right-3 font-semibold self-end opacity-100 font-exo2" : "opacity-0 absolute font-exo2"}>
               Nómina
             </p>
         </div>
@@ -75,10 +83,10 @@ export default function SideNav(props) {
                 end
                 key={eachLink.href}
                 className={({ isActive }) =>
-                  `flex h-[48px] hover:text-color3 grow items-center relative justify-between gap-2  text-sm font-medium hover:bg-sky-100 md:flex-none md:justify-between pl-2 ${
+                  `flex h-[48px] duration-150 hover:text-color3 grow items-center relative justify-between gap-2  text-sm font-medium hover:bg-sky-100 md:flex-none md:justify-between pl-2 ${
                     isActive
                       ? "bg-gray-50 activeLink text-color1 rounded-2xl md:rounded-none  md:rounded-l-2xl"
-                      : "text-gray-50"
+                      : "text-gray-50 hover:bg-white/10 hover:text-color4 rounded-full"
                   }`
                 }
               >

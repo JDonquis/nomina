@@ -65,7 +65,8 @@ export const authAPI = {
     api.get(`/admin/verify-invitation?token=${token}`),
   activateAccount: (token, password) =>
     api.post("/admin/activate-account", { token, password }),
-  verifyResetToken: (token) => api.get(`/admin/verify-reset-token?token=${token}`),
+  verifyResetToken: (token) =>
+    api.get(`/admin/verify-reset-token?token=${token}`),
   resetPassword: (token, password) =>
     api.post("/admin/reset-password", { token, password }),
 };
@@ -74,28 +75,37 @@ export const authAPI = {
 export const usersAPI = {
   getProfile: () => api.get("/admin/users/profile"),
   updateProfile: (userData) => api.put("/admin/users/profile", userData),
-  getAllUsers: (params) => api.get("/admin/users", {params}),
+  getAllUsers: (params) => api.get("/admin/users", { params }),
   createUser: (userData) => api.post("/admin/users", userData),
   updateUser: (id, userData) => api.put(`/admin/users/${id}`, userData),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };
 
 export const payrollAPI = {
-  getWorkers: (params) => api.get("/admin/pay-sheets", {params}),
-  createWorker: (workerData) => api.post("/admin/pay-sheets", workerData,  {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }),
+  getWorkers: (params) => api.get("/admin/pay-sheets", { params }),
+  createWorker: (workerData) =>
+    api.post("/admin/pay-sheets", workerData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
   updateWorker: (id, workerData) =>
     api.put(`/admin/pay-sheets/${id}`, workerData),
   deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
-}
+};
 
 export const asicAPI = {
   getASIC: () => api.get("/admin/administrative-locations"),
+};
+
+export const censusAPI = {
+  getCensus: (params) => api.get("/admin/censuses", { params }),
+  createCensus: (censusData) => api.post("/admin/censuses", censusData),
+  deleteCensus: (id) => api.delete(`/admin/censuses/${id}`),
 }
 
-
+export const typePaySheetsAPI = {
+  getPaySheets: () => api.get("/admin/type-pay-sheets"),
+}
 // Export the api instance for direct use if needed
 export default api;

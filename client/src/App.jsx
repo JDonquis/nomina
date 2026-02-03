@@ -9,7 +9,9 @@ import { lazy, Suspense } from 'react';
 
 // Lazy load heavy components
 const HomePage = lazy(() => import(/* webpackChunkName: "home" */ './pages/dashboard/HomePage'));
+
 const NominaPage = lazy(() => import(/* webpackChunkName: "examenes" */ './pages/dashboard/NominaPage'));
+const CensadoPage = lazy(() => import(/* webpackChunkName: "censado" */ './pages/dashboard/CensadoPage'));
 import UsuariosPage from './pages/dashboard/UsuariosPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 
@@ -46,6 +48,13 @@ function App() {
               <Route path="nomina" element={
                   <Suspense fallback={<PageLoader />}>
                     <NominaPage />
+                  </Suspense>
+                } 
+                />
+
+                <Route path="censados" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <CensadoPage />
                   </Suspense>
                 } 
                 />
