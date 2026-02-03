@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { payrollAPI } from "../../services/api";
+import { payrollAPI, asicAPI } from "../../services/api";
 import externalApi from "../../services/saludfalcon.api";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
@@ -84,10 +84,31 @@ export default function ExamenesPage() {
   const [origins, setOrigins] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState(false);
   const [printButtonId, setPrintButtonId] = useState(null);
+  const [administrativeLocations, setAdministrativeLocations] = useState([]);
   const { user } = useAuth();
+  
 
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const administrative_locations = await asicAPI.getASIC()
+      // Transform API response to match select component format { value, label }
+      const formattedLocations = administrative_locations.map(location => ({
+        value: location.id,
+        label: location.name
+      }));
+      setAdministrativeLocations(formattedLocations)
+    } catch (e) {
+      console.error("Failed to fetch data", e);
+    }
+  }, []);
   // Form configuration for ReusableForm
 
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+
+  console.log(administrativeLocations)
   {
     /* 
     
@@ -178,8 +199,9 @@ export default function ExamenesPage() {
     {
       name: "administrative_location",
       label: "Ubicación administrativa",
-      type: "text",
+      type: "select",
       required: false,
+      options: administrativeLocations,
       className: "col-span-1",
     },
     {
@@ -422,9 +444,10 @@ export default function ExamenesPage() {
       // Prepare both requestsF
       const internalRequest =
         submitString === "Actualizar"
-          ? payrollAPI.updateWorker(formData.id, formData)
-          : payrollAPI.createWorker(formData);
+          ? payrollAPI.updateWorker(formData.id, submitData)
+          : payrollAPI.createWorker(submitData);
 
+      await internalRequest;
       // Handle success
       if (submitString === "Actualizar") {
         setSubmitString("Registrar");
@@ -646,16 +669,11 @@ export default function ExamenesPage() {
     setIsLoading(false);
   }, [pagination, sorting, columnFilters, globalFilter]);
 
-  const fetchInitialData = useCallback(async () => {
-    try {
-    } catch (e) {
-      console.error("Failed to fetch data", e);
-    }
-  }, []);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
+
+
+
+
 
   useEffect(() => {
     fetchData();

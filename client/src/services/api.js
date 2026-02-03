@@ -82,10 +82,18 @@ export const usersAPI = {
 
 export const payrollAPI = {
   getWorkers: (params) => api.get("/admin/pay-sheets", {params}),
-  createWorker: (workerData) => api.post("/admin/pay-sheets", workerData),
+  createWorker: (workerData) => api.post("/admin/pay-sheets", workerData,  {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }),
   updateWorker: (id, workerData) =>
     api.put(`/admin/pay-sheets/${id}`, workerData),
   deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
+}
+
+export const asicAPI = {
+  getASIC: () => api.get("/admin/administrative-locations"),
 }
 
 
