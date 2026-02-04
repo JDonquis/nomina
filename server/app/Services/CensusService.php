@@ -34,6 +34,11 @@ class CensusService
             });
         }
 
+        // Filtro por user
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
+        }
+
         // Filtro por sexo
         if (!empty($filters['sex'])) {
             $query->whereHas('paySheet', function ($q) use ($filters) {
