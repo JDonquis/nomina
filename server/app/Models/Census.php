@@ -28,10 +28,6 @@ class Census extends Model
         return $this->hasOneThrough(
             TypePaySheet::class,
             PaySheet::class,
-            'id', // Foreign key on PaySheet table
-            'id', // Foreign key on TypePaySheet table
-            'pay_sheets_id', // Local key on Census table
-            'type_pay_sheet_id' // Local key on PaySheet table
         );
     }
 }

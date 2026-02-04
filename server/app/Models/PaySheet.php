@@ -50,12 +50,12 @@ class PaySheet extends Model
 
     public function censuses()
     {
-        return $this->hasMany(Census::class, 'pay_sheets_id');
+        return $this->hasMany(Census::class, 'pay_sheet_id');
     }
 
     public function latestCensus()
     {
-        return $this->hasOne(Census::class, 'pay_sheets_id')
+        return $this->hasOne(Census::class, 'pay_sheet_id')
             ->latestOfMany();
     }
 }

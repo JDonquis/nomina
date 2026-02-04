@@ -21,7 +21,7 @@ class PaySheetService
 
     public function get($params = [])
     {
-        $query = PaySheet::query()->with('typePaySheet', 'latestCensus.user ');
+        $query = PaySheet::query()->with('typePaySheet', 'latestCensus.user');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
