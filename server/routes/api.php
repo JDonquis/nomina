@@ -14,15 +14,20 @@ Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Route::post('refresh_token', [LoginController::class, 'refreshToken'])->name('refresh_token');
+    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('administrative-locations', [AdministrativeLocationController::class, 'index']);
     Route::get('type-pay-sheets', [TypePaySheetController::class, 'index']);
 
+
     Route::resource('users', UserController::class)->except(['edit', 'create']);
 
-    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
     Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
+
+    // Census
+    Route::post('censuses/get', [CensusController::class, 'index']);
     Route::post('censuses', [CensusController::class, 'store']);
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
 

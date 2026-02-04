@@ -18,6 +18,16 @@ class CensusController extends Controller
         $this->censusService = new CensusService;
     }
 
+    public function index(Request $request)
+    {
+        $censuses = $this->censusService->get($request->all());
+
+        return response()->json([
+            'message' => 'OK',
+            'censuses' => $censuses
+        ]);
+    }
+
     public function store(StoreCensusRequest $request)
     {
         try {

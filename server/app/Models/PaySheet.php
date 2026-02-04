@@ -47,4 +47,15 @@ class PaySheet extends Model
     {
         return $this->belongsTo(AdministrativeLocation::class);
     }
+
+    public function censuses()
+    {
+        return $this->hasMany(Census::class, 'pay_sheets_id');
+    }
+
+    public function latestCensus()
+    {
+        return $this->hasOne(Census::class, 'pay_sheets_id')
+            ->latestOfMany();
+    }
 }
