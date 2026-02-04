@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('censuses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pay_sheets_id');
+            $table->foreignId('pay_sheet_id');
             $table->foreignId('user_id');
             $table->boolean('status')->default(false);
             $table->timestamp('expiration_date');

@@ -21,7 +21,7 @@ class PaySheetService
 
     public function get($params = [])
     {
-        $query = PaySheet::query()->with('typePaySheet', 'latestCensus.user');
+        $query = PaySheet::query()->with('typePaySheet', 'latestCensus.user ');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
@@ -84,7 +84,7 @@ class PaySheetService
         $paySheet->load('typePaySheet', 'administrativeLocation');
 
         Census::create([
-            'pay_sheets_id' => $paySheet->id,
+            'pay_sheet_id' => $paySheet->id,
             'status' => true,
             'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
             'user_id' => Auth::id()
