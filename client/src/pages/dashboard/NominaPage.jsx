@@ -5,7 +5,11 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { payrollAPI, asicAPI } from "../../services/api";
+
+
+import { API_URL } from "../../config/env.js";
+
+import { payrollAPI, asicAPI, censusAPI } from "../../services/api";
 import externalApi from "../../services/saludfalcon.api";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
@@ -85,6 +89,7 @@ export default function ExamenesPage() {
   const [loadingMessage, setLoadingMessage] = useState(false);
   const [printButtonId, setPrintButtonId] = useState(null);
   const [administrativeLocations, setAdministrativeLocations] = useState([]);
+  const [typePaySheets, setTypePaySheets] = useState([]);
   const { user } = useAuth();
   
 
@@ -97,6 +102,13 @@ export default function ExamenesPage() {
         label: location.name
       }));
       setAdministrativeLocations(formattedLocations)
+
+      const type_pay_sheets = await typePaySheets.getPaySheets()
+      const formattedTypePaySheets = type_pay_sheets.map(type_pay_sheet => ({
+        value: type_pay_sheet.id,
+        label: type_pay_sheet.name
+      }));
+      setTypePaySheets(formattedTypePaySheets)
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -241,11 +253,7 @@ export default function ExamenesPage() {
       name: "type_pay_sheet_id",
       label: "Tipo de Cuenta",
       type: "select",
-      options: [
-        { value: "1", label: "Cuenta 1" },
-        { value: "2", label: "Cuenta 2" },
-        { value: "3", label: "Cuenta 3" },
-      ],
+      options: typePaySheets,
       className: "col-span-1",
     },
     {
@@ -509,7 +517,7 @@ export default function ExamenesPage() {
         ),
       },
       {
-        accessorKey: "fullname",
+        accessorKey: "full_name",
         header: "Nombre completo",
         size: 110,
         filterFn: "includesString",
@@ -573,46 +581,7 @@ export default function ExamenesPage() {
           sx: { whiteSpace: "nowrap" },
         },
       },
-      {
-        accessorKey: "skills",
-        header: "Habilidades",
-        size: 100,
-        Cell: ({ cell }) => {
-          const value = cell.getValue();
-          return value.map((skill, i) => {
-            return (
-              <span
-                title={`${
-                  skill?.id == null ? "Crear nueva habilidad" : skill.name
-                }`}
-                className={`${
-                  skill.id == null ? "bg-red-200 hover:bg-red-300" : ""
-                } inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2`}
-                key={skill.id + i + skill.name}
-                onClick={(e) => {
-                  if (skill.id == null) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Handle creation of new skill
-                    setSelectedWorkerForNewSkill({
-                      index: i,
-                      skillName: skill.name,
-                      worker: cell.row.original,
-                    });
-                    setOpenModalSkill(true);
-                  }
-                }}
-              >
-                {skill.id == null ? (
-                  <Icon icon="mdi:plus" className="inline mr-1" />
-                ) : null}
-                {skill.name}
-              </span>
-            );
-          });
-        },
-        enableSorting: false,
-      },
+ 
     ],
     []
   );
@@ -661,7 +630,7 @@ export default function ExamenesPage() {
           }, {})
         ),
       });
-      setData(res.data.data);
+      setData(res.paySheets.data);
       setRowCount(res.data.totalCount);
     } catch (e) {
       console.error("Failed to fetch data", e);
@@ -788,7 +757,7 @@ export default function ExamenesPage() {
                 {patientFormFields.map((field) => {
                   if (field.name == "photo") {
                     return (
-                      <div className="mb-5 col-span-2 flex justify-center  pb-4 mx-auto">
+                      <div key={field.name + field.label} className="mb-5 col-span-2 flex justify-center  pb-4 mx-auto">
                         <label
                           htmlFor="photo"
                           className="mx-auto text-gray-600 text-sm"
