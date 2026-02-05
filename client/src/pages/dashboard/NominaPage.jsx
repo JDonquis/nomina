@@ -6,10 +6,14 @@ import React, {
   useRef,
 } from "react";
 
-
 import { API_URL } from "../../config/env.js";
 
-import { payrollAPI, asicAPI, censusAPI } from "../../services/api";
+import {
+  payrollAPI,
+  asicAPI,
+  censusAPI,
+  typePaySheetsAPI,
+} from "../../services/api";
 import externalApi from "../../services/saludfalcon.api";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
@@ -18,7 +22,7 @@ import FormField from "../../components/forms/FormField";
 import { CircularProgress } from "@mui/material";
 import { useFeedback } from "../../context/FeedbackContext";
 import { MaterialReactTable } from "material-react-table";
-import planilla from "../../components/planilla";
+import Planilla from "../../components/planilla";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -51,7 +55,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey]
+      [onChange, testKey],
     );
 
     return (
@@ -74,16 +78,16 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  }
+  },
 );
 
-export default function ExamenesPage() {
+export default function nominaPage() {
   const [loading, setLoading] = useState(false);
   const { showError, showSuccess, showInfo } = useFeedback();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
-  const [isMessageSentModalOpen, setIsMessageSentModalOpen] = useState(false);
-  const [messageData, setMessageData] = useState({});
+  const [PDFmodal, setPDFmodal] = useState(false);
+  const [isCensusModalOpen, setIsCensusModalOpen] = useState(false);
+  const [PDFdata, setPDFdata] = useState({});
   const [resultsToken, setResultsToken] = useState(null);
   const [origins, setOrigins] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState(false);
@@ -91,24 +95,23 @@ export default function ExamenesPage() {
   const [administrativeLocations, setAdministrativeLocations] = useState([]);
   const [typePaySheets, setTypePaySheets] = useState([]);
   const { user } = useAuth();
-  
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const administrative_locations = await asicAPI.getASIC()
+      const administrative_locations = await asicAPI.getASIC();
       // Transform API response to match select component format { value, label }
-      const formattedLocations = administrative_locations.map(location => ({
+      const formattedLocations = administrative_locations.map((location) => ({
         value: location.id,
-        label: location.name
+        label: location.name,
       }));
-      setAdministrativeLocations(formattedLocations)
+      setAdministrativeLocations(formattedLocations);
 
-      const type_pay_sheets = await typePaySheets.getPaySheets()
-      const formattedTypePaySheets = type_pay_sheets.map(type_pay_sheet => ({
+      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
         value: type_pay_sheet.id,
-        label: type_pay_sheet.name
+        label: type_pay_sheet.name,
       }));
-      setTypePaySheets(formattedTypePaySheets)
+      setTypePaySheets(formattedTypePaySheets);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -119,8 +122,6 @@ export default function ExamenesPage() {
     fetchInitialData();
   }, [fetchInitialData]);
 
-
-  console.log(administrativeLocations)
   {
     /* 
     
@@ -164,7 +165,7 @@ export default function ExamenesPage() {
       label: "Foto",
       type: "file",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "nac",
@@ -174,28 +175,28 @@ export default function ExamenesPage() {
         { value: "V", label: "V" },
         { value: "E", label: "E" },
       ],
-      className: "col-span-1",
+      className: "col-span-2",
     },
     {
       name: "ci",
       label: "Cédula de Identidad",
-      type: "text",
+      type: "number",
       required: true,
-      className: "col-span-1",
+      className: "col-span-4",
     },
     {
       name: "full_name",
       label: "Nombres y Apellidos",
       type: "text",
       required: true,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "date_birth",
       label: "Fecha de Nacimiento",
       type: "date",
       required: true,
-      className: "col-span-1",
+      className: "col-span-6",
     },
 
     {
@@ -206,15 +207,15 @@ export default function ExamenesPage() {
         { value: "M", label: "Masculino" },
         { value: "F", label: "Femenino" },
       ],
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
-      name: "administrative_location",
+      name: "administrative_location_id",
       label: "Ubicación administrativa",
       type: "select",
       required: false,
       options: administrativeLocations,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "city",
@@ -222,21 +223,21 @@ export default function ExamenesPage() {
       type: "select",
       options: cities,
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "state",
       label: "Estado",
       type: "text",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "phone_number",
       label: "Teléfono",
       type: "text",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     // Datos de la pénsion:
     {
@@ -248,20 +249,21 @@ export default function ExamenesPage() {
         { value: "Incapacidad", label: "Incapacidad" },
         { value: "Sobrevivencia", label: "Sobrevivencia" },
       ],
+      className: "col-span-6",
     },
     {
       name: "type_pay_sheet_id",
-      label: "Tipo de Cuenta",
+      label: "Nombre de nómina",
       type: "select",
       options: typePaySheets,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "last_charge",
       label: "Último Cargó",
       type: "text",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "civil_status",
@@ -272,42 +274,42 @@ export default function ExamenesPage() {
         { value: "C", label: "Casado" },
         { value: "V", label: "Viudo" },
       ],
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "minor_child_nro",
       label: "Nro. de Hijos Menores",
       type: "number",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "disabled_child_nro",
       label: "Nro. de Hijos Discapacitados",
       type: "number",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "receive_pension_from_another_organization_status",
       label: "Recibe Pensión de Otra Organización",
       type: "checkbox",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "another_organization_name",
       label: "Nombre de la Otra Organización",
       type: "text",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "has_authorizations",
       label: "Tiene Autorizaciones",
       type: "checkbox",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
 
     // Pensión sobrevivencia
@@ -316,21 +318,21 @@ export default function ExamenesPage() {
       label: "Pensión Sobrevivencia",
       type: "checkbox",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "fullname_causative",
       label: "Nombre Completo del Causante",
       type: "text",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "age_causative",
       label: "Edad del Causante",
       type: "number",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "parent_causative",
@@ -342,7 +344,7 @@ export default function ExamenesPage() {
         { value: "Conyuge", label: "Cónyuge" },
         { value: "Concubino", label: "Concubino" },
       ],
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "sex_causative",
@@ -352,35 +354,35 @@ export default function ExamenesPage() {
         { value: "M", label: "Masculino" },
         { value: "F", label: "Femenino" },
       ],
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "ci_causative",
       label: "Cédula de Identidad del Causante",
       type: "text",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "decease_date",
       label: "Fecha de Fallecimiento",
       type: "date",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "suspend_payment_status",
       label: "Suspender Pago",
       type: "checkbox",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
     {
       name: "last_payment",
       label: "Último Pago",
       type: "date",
       required: false,
-      className: "col-span-1",
+      className: "col-span-6",
     },
   ]);
 
@@ -418,6 +420,7 @@ export default function ExamenesPage() {
     decease_date: null,
     suspend_payment_status: false,
     last_payment: null,
+    fotoChanged: false,
   };
 
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
@@ -435,6 +438,15 @@ export default function ExamenesPage() {
       // Agregar todos los campos del formulario
       Object.keys(formData).forEach((key) => {
         const value = formData[key];
+
+        // ⭐ NUEVA LÓGICA: No enviar photo si no cambió
+        if (
+          key === "photo" &&
+          submitString === "Actualizar" &&
+          !formData.fotoChanged
+        ) {
+          return; // Skip this field
+        }
 
         if (value instanceof File) {
           // Archivos se agregan directamente
@@ -482,6 +494,56 @@ export default function ExamenesPage() {
       showError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      if (!window.confirm("¿Está seguro de eliminar este examen?")) {
+        return;
+      }
+      await payrollAPI.deleteExam(id);
+      showSuccess("Examen eliminado con éxito");
+      fetchData();
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+
+    // Call your delete API or show a confirmation dialog
+  };
+
+  const handleCensus = async (id) => {
+    if (!window.confirm(`¿Está seguro de Censar a ${PDFdata.full_name} ahora?`)) {
+      return;
+    }
+
+    try {
+      await censusAPI.createCensus({ pay_sheet_id: id });
+      showSuccess("Censo realizado con éxito");
+      fetchData();
+      setIsCensusModalOpen(false);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+  };
+
+  const handleUncensus = async (id) => {
+    if (!window.confirm(`¿Está seguro de anular el censo de ${PDFdata.full_name}?`)) {
+      return;
+    }
+    try {
+      await censusAPI.deleteCensus(id);
+      showSuccess("Censo anulado con éxito");
+      fetchData();
+      setIsCensusModalOpen(false);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
     }
   };
 
@@ -534,11 +596,18 @@ export default function ExamenesPage() {
       },
       {
         header: "Censado",
-        accessorKey: "is_censused",
+        accessorKey: "latest_census.status",
         size: 100,
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
+        Cell: ({ cell }) => {
+          return cell.getValue() ? (
+            <p className="text-color2 text-xs font-semibold">CENSADO</p>
+          ) : (
+            <p className="text-dark/75 text-xs ">NO CENSADO</p>
+          );
+        },
       },
 
       //   {
@@ -552,8 +621,8 @@ export default function ExamenesPage() {
         size: 100,
       },
       {
-        accessorKey: "localization",
-        header: "Ubicación",
+        accessorKey: "city",
+        header: "Ciudad",
         size: 100,
       },
 
@@ -581,27 +650,65 @@ export default function ExamenesPage() {
           sx: { whiteSpace: "nowrap" },
         },
       },
- 
+      {
+        header: "Acciones",
+        accessorKey: "actions",
+        enableColumnFilter: false,
+        enableSorting: false,
+        Cell: ({ cell }) => {
+          return (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setFormData({ ...cell.row.original });
+                  setSubmitString("Actualizar");
+                }}
+                className="text-blue-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                title="Editar"
+              >
+                <Icon icon="material-symbols:edit" width={20} height={20} />
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsCensusModalOpen(true);
+                  setPDFdata(cell.row.original);
+                }}
+                className="text-color2 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                title="Censar"
+              >
+                <Icon icon="ci:wavy-check" width={20} height={20} />
+              </button>
+
+              <button
+                onClick={() => {
+                  setPDFmodal(true);
+                  setPDFdata(cell.row.original);
+                }}
+                className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                title="Descargar"
+              >
+                <Icon icon="proicons:pdf-2" width={20} height={20} />
+              </button>
+              <button
+                onClick={() => handleDelete(cell.row.original.id)}
+                className="text-red-500 p-1 rounded-full hover:bg-gray-300 hover:underline ml-2"
+                title="Eliminar"
+              >
+                <Icon
+                  icon="material-symbols:delete-outline"
+                  width={20}
+                  height={20}
+                />
+              </button>
+            </div>
+          );
+        },
+      },
     ],
-    []
+    [],
   );
-
-  const handleDelete = async (id) => {
-    try {
-      if (!window.confirm("¿Está seguro de eliminar este examen?")) {
-        return;
-      }
-      await payrollAPI.deleteExam(id);
-      showSuccess("Examen eliminado con éxito");
-      fetchData();
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "An error occurred";
-      showError(errorMessage);
-    }
-
-    // Call your delete API or show a confirmation dialog
-  };
 
   const [data, setData] = useState([]);
   const [rowCount, setRowCount] = useState(0);
@@ -627,22 +734,16 @@ export default function ExamenesPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {})
+          }, {}),
         ),
       });
       setData(res.paySheets.data);
-      setRowCount(res.data.totalCount);
+      setRowCount(res.paySheets.total);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
     setIsLoading(false);
   }, [pagination, sorting, columnFilters, globalFilter]);
-
-
-
-
-
-
 
   useEffect(() => {
     fetchData();
@@ -655,7 +756,7 @@ export default function ExamenesPage() {
         localStorage.setItem("formData", JSON.stringify(data));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -672,7 +773,7 @@ export default function ExamenesPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    []
+    [],
   );
 
   const handleChangeValue = useCallback((e) => {
@@ -695,6 +796,7 @@ export default function ExamenesPage() {
     setIsFormInitialized(true); // ← Activar guardado automático
   }, []);
 
+  console.log({ formData });
   return (
     <>
       <title>Nómina - LabFalcón</title>
@@ -709,7 +811,7 @@ export default function ExamenesPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString"))
+                    JSON.parse(localStorage.getItem("submitString")),
                   );
                   setIsModalOpen(true);
                 }}
@@ -745,7 +847,7 @@ export default function ExamenesPage() {
           size="xl"
         >
           <form
-            className={`px-4 space-y-5 md:space-y-0 gap-7 w-full relative`}
+            className={`px-12 space-y-5 md:space-y-0 gap-7 w-full relative`}
             onSubmit={onSubmit}
           >
             <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
@@ -753,11 +855,14 @@ export default function ExamenesPage() {
                 Datos personales
               </h2>
 
-              <div className="grid grid-cols-2 gap-4">
-                {patientFormFields.map((field) => {
+              <div className="grid grid-cols-12 gap-4">
+                {patientFormFields.map((field, index) => {
                   if (field.name == "photo") {
                     return (
-                      <div key={field.name + field.label} className="mb-5 col-span-2 flex justify-center  pb-4 mx-auto">
+                      <div
+                        key={field.name + "_" + field.label + index}
+                        className="mb-5 col-span-12 flex justify-center  pb-4 mx-auto"
+                      >
                         <label
                           htmlFor="photo"
                           className="mx-auto text-gray-600 text-sm"
@@ -769,9 +874,19 @@ export default function ExamenesPage() {
                                 className="w-20 h-20 text-gray-300"
                               />
                             )}
-                            {formData.photo ? (
+                            {(formData.photo && submitString === "Registrar") ||
+                            formData.fotoChanged ? (
                               <img
                                 src={URL.createObjectURL(formData.photo)}
+                                alt="preview"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : null}
+                            {formData.photo &&
+                            submitString === "Actualizar" &&
+                            !formData.fotoChanged ? (
+                              <img
+                                src={API_URL + "/storage/" + formData.photo}
                                 alt="preview"
                                 className="w-full h-full object-cover"
                               />
@@ -788,33 +903,34 @@ export default function ExamenesPage() {
                             setFormData({
                               ...formData,
                               photo: e.target.files[0],
+                              fotoChanged:
+                                submitString === "Actualizar" ? true : false,
                             })
                           }
                         />
                       </div>
                     );
                   } else {
-                    
                     return (
                       <>
                         {field.name == "type_pension" && (
-                          <div className="col-span-2 flex items-center">
+                          <div className="col-span-12 flex items-center">
                             <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
                               Datos de la pensión
                             </h2>
                             <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                           </div>
                         )}
-  
+
                         {field.name == "pension_survivor_status" ? (
                           <>
-                            <div className="col-span-2 flex items-center">
+                            <div className="col-span-12 flex items-center">
                               <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
                                 Pensión sobrevivencia
                               </h2>
                               <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                             </div>
-                            <div className="col-span-2">
+                            <div className="col-span-12">
                               <FormField
                                 key={field.name}
                                 {...field}
@@ -838,7 +954,7 @@ export default function ExamenesPage() {
               </div>
             </div>
 
-            <div className="col-span-2">
+            <div className="col-span-12">
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="submit"
@@ -875,6 +991,9 @@ export default function ExamenesPage() {
                 manualGlobalFilter
                 initialState={{
                   density: "compact",
+                  columnVisibility: {
+                    created_at: false,
+                  },
                 }}
                 state={{
                   pagination,
@@ -907,125 +1026,43 @@ export default function ExamenesPage() {
         )}
 
         <Modal
-          title="Documento de resultados"
-          isOpen={isMessageModalOpen}
+          title="Planilla"
+          isOpen={PDFmodal}
           size="xl"
           onClose={() => {
             setResultsToken(null);
-            setIsMessageModalOpen(false);
-            setMessageData(false);
+            setPDFmodal(false);
+            setPDFdata(false);
           }}
         >
-          {messageData?.all_validated && resultsToken == null && (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            </div>
-          )}
-          {((messageData?.all_validated && resultsToken != null) ||
-            (messageData?.hasOwnProperty("all_validated") &&
-              messageData?.all_validated == false)) && (
-            <div className="flex flex-col justify-center">
-              {messageData?.all_validated ? (
-                <div className="flex gap-4 w-full justify-center mb-6">
-                  <button
-                    title="Enviar por correo"
-                    onClick={() => loadingMessage || handleMessage()}
-                    className={`${
-                      messageData?.patient?.email.length > 9
-                        ? ""
-                        : "opacity-40 cursor-not-allowed"
-                    } hover:bg-color1 w-60 hover:text-white duration-100 bg-gray-200 rounded-xl  p-3 px-4  flex items-center gap-2`}
-                  >
-                    {loadingMessage ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Icon
-                        icon="line-md:email-twotone"
-                        className="w-10 h-10"
-                      ></Icon>
-                    )}
-                    <span className="text-sm">
-                      {loadingMessage ? "Enviando..." : "Enviar por correo"}{" "}
-                    </span>
-                  </button>
+          <div className="flex flex-col justify-center">
+            
 
-                  <a
-                    title="Enviar por WhatsApp"
-                    onClick={() => {
-                      setIsMessageModalOpen(false);
-                      setIsMessageSentModalOpen(true);
-                    }}
-                    href={`https://wa.me/${(() => {
-                      let phoneNumber =
-                        messageData?.patient?.phone_number.replace(/[ -]/g, "");
-                      if (!phoneNumber || phoneNumber.length < 9) return "";
-                      // If number doesn't start with country code, add Venezuelan code
-                      if (
-                        !phoneNumber.startsWith("+") &&
-                        !phoneNumber.startsWith("58")
-                      ) {
-                        phoneNumber = "58" + phoneNumber;
-                      }
-                      // Remove + if present since WhatsApp API doesn't need it
-                      return phoneNumber.replace("+", "") || "";
-                    })()}?text=Hola ${
-                      messageData?.patient?.first_name
-                    }, le escribimos desde el laboratorio de Secretaria de Salud Falcón, para informarle que sus resultados están listos y puede acceder a ellos en el siguiente enlace:%0A${
-                      window.location.origin
-                    }/results/${resultsToken || "cargando..."}`}
-                    target="_blank"
-                    className={`${
-                      messageData?.patient?.phone_number.length > 9
-                        ? ""
-                        : "opacity-40 cursor-not-allowed"
-                    } hover:bg-color1 w-60  hover:text-white duration-100 bg-gray-200 rounded-xl p-3 px-5  flex items-center gap-2`}
-                  >
-                    <Icon
-                      icon="logos:whatsapp-icon"
-                      className="w-10 h-10"
-                    ></Icon>
-                    <span className="text-sm">Enviar por WhatsApp</span>
-                  </a>
-                </div>
-              ) : (
-                <p className=" text-center mb-4">
-                  El examen no está validado, no se puede enviar ni descargar el
-                  documento
-                </p>
-              )}
-
-              <planilla
-                data={messageData}
-                examinationTypes={examinationTypes}
-                token={resultsToken}
-                isHidden={false}
-              />
-            </div>
-          )}
+            <Planilla data={PDFdata} isHidden={false} />
+          </div>
         </Modal>
 
         <Modal
-          title="¿El mensaje de WhatsApp fue enviado?"
-          isOpen={isMessageSentModalOpen}
-          onClose={() => setIsMessageSentModalOpen(false)}
+          title="Censar"
+          isOpen={isCensusModalOpen}
+          onClose={() => setIsCensusModalOpen(false)}
         >
-          <p>
-            A diferencia de enviar el mensaje por correo, con WhatsApp no
-            sabemos si fue enviado o no, por lo tanto, necesitamos su
-            confirmación.
-          </p>
+          <p></p>
           <div className="flex gap-4 justify-between mt-4">
+            {PDFdata.latest_census?.status && (
             <button
-              onClick={() => setIsMessageSentModalOpen(false)}
+              onClick={() => handleUncensus(PDFdata.latest_census.id)}
               className="bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl p-3 px-5"
             >
-              No
+              Anular el censo
             </button>
+            )} 
+            <div></div>
             <button
-              onClick={() => handleWhatsAppMessageSent()}
+              onClick={() => handleCensus(PDFdata.id)}
               className="bg-color2 hover:shadow-xl hover:brightness-110 text-white rounded-xl p-3 px-5"
             >
-              Sí, se envió
+              Censar al usuario
             </button>
           </div>
         </Modal>

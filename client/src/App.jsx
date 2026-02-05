@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { FeedbackProvider } from './context/FeedbackContext';
@@ -6,6 +7,8 @@ import PermissionGate from './components/auth/PermissionGate';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import LoginPage from './pages/LoginPage';
 import { lazy, Suspense } from 'react';
+import { setLogoutCallback } from './services/api';
+import { useAuth } from './context/AuthContext';
 
 // Lazy load heavy components
 const HomePage = lazy(() => import(/* webpackChunkName: "home" */ './pages/dashboard/HomePage'));
@@ -21,12 +24,15 @@ const PageLoader = () => (
   </div>
 );
 
-function App() {
-  // Get user from localStorage (instead of useAuth)
+function AppContent() {
+   const { logout } = useAuth();
+  
+  useEffect(() => {
+    setLogoutCallback(logout);
+  }, [logout]);
 
   return (
-    <AuthProvider>
-      <FeedbackProvider>
+     <FeedbackProvider>
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
@@ -73,6 +79,14 @@ function App() {
           </Routes>
         </BrowserRouter>
       </FeedbackProvider>
+  );
+}
+function App() {
+ 
+  
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }

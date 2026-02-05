@@ -30,7 +30,7 @@ const links = [
     permission: true,
     name: "Censados",
     href: "/dashboard/censados",
-    icon: "ep:checked",
+    icon: "ci:wavy-check",
   },
 ];
 

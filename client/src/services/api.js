@@ -1,7 +1,16 @@
+
 import axios from "axios";
 import { API_URL } from "../config/env.js";
 
-const API_BASE_URL = `${API_URL}/`;
+// Create a variable to hold the logout function
+let logoutCallback = null;
+
+// Export a function to set the logout callback
+export const setLogoutCallback = (callback) => {
+  logoutCallback = callback;
+};
+
+const API_BASE_URL = `${API_URL}/api`;
 
 // Create an Axios instance with default config
 const api = axios.create({
@@ -41,6 +50,13 @@ api.interceptors.response.use(
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       const message = error.response.data.message || "An error occurred";
+      if (message == "Unauthenticated.") {
+        // Call the logout callback if it exists
+        if (logoutCallback) {
+          logoutCallback();
+        }
+        return Promise.reject("Unauthenticated");
+      }
       return Promise.reject(new Error(message));
     } else if (error.request) {
       // The request was made but no response was received
