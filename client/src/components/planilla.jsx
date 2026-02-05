@@ -2,6 +2,8 @@ import React, { forwardRef, useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Icon } from "@iconify/react";
 import SecretrariaLogo from "../assets/secretaria_logo.png";
+import withoutPhoto from "../assets/withoutPhoto.png";
+
 import Latidos from "../assets/latidos.png";
 import FuturisticButton from "./FuturisticButton";
 import firmaDigital from "../assets/firmaDigital.png";
@@ -67,7 +69,7 @@ const PrintableContent = forwardRef((props, ref) => {
             )}
           </div>
           <img
-            src={API_URL + "/storage/" + props.data.photo}
+            src={ props.data.photo ? API_URL + "/storage/" + props.data.photo : withoutPhoto}
             alt="Profile"
             style={{
               width: "124px",

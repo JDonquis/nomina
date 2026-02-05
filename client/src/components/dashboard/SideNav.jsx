@@ -8,12 +8,7 @@ import { NavLink, Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
 
 const links = [
-  {
-    permission: true,
-    name: "Inicio",
-    href: "/dashboard",
-    icon: "hugeicons:home-09",
-  },
+
   {
     permission: true,
     name: "Nómina",
@@ -21,17 +16,18 @@ const links = [
     icon: "mdi:worker",
   },
   {
-    permission: "admin",
-    name: "Usuarios",
-    href: "/dashboard/usuarios",
-    icon: "solar:user-linear",
-  },
-  {
     permission: true,
     name: "Censados",
     href: "/dashboard/censados",
     icon: "ci:wavy-check",
   },
+  {
+    permission: "admin",
+    name: "Usuarios",
+    href: "/dashboard/usuarios",
+    icon: "solar:user-linear",
+  },
+ 
 ];
 
 export default function SideNav(props) {
@@ -49,7 +45,6 @@ export default function SideNav(props) {
 
   const { user } = useAuth();
 
-  console.log(user)
 
   return (
     <nav

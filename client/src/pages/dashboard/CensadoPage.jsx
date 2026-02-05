@@ -1,34 +1,292 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { censusAPI } from "../../services/api";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import {
+  censusAPI,
+  asicAPI,
+  typePaySheetsAPI,
+  usersAPI,
+} from "../../services/api";
 import { MaterialReactTable } from "material-react-table";
+import { API_URL } from "../../config/env.js";
+import withoutPhoto from "../../assets/withoutPhoto.png";
+import { Icon } from "@iconify/react";
+import { cities } from "../../constants/cities";
 
-const columns = [
-    
-]
-
-
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { es } from 'date-fns/locale'; // Para español
 
 export default function CensadoPage() {
-    const fetchCensusData =  useCallback(async () => {
-      try {
-        const res = await censusAPI.getCensus();
-        return res.data;
-      } catch (error) {
-        console.error("Error fetching census data: ", error);
-        return [];
-      }
-    });
-    
-    useEffect(() => {
-      fetchCensusData();
-    }, [fetchCensusData]);
-    
+  const [administrativeLocations, setAdministrativeLocations] = useState([]);
+  const [typePaySheets, setTypePaySheets] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const administrative_locations = await asicAPI.getASIC();
+      // Transform API response to match select component format { value, label }
+      const formattedLocations = administrative_locations.map((location) => ({
+        value: location.id,
+        label: location.name,
+      }));
+      setAdministrativeLocations(formattedLocations);
+
+      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
+        value: type_pay_sheet.id,
+        label: type_pay_sheet.name,
+      }));
+      setTypePaySheets(formattedTypePaySheets);
+
+      const usersRes = await usersAPI.getAllUsers();
+      console.log(usersRes.users);
+      setUsers(usersRes.users);
+    } catch (e) {
+      console.error("Failed to fetch data", e);
+    }
+  }, []);
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  console.log(users);
+
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "id",
+        header: "Cód",
+        size: 60,
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+      {
+        accessorKey: "pay_sheet.photo",
+        header: "Foto",
+        size: 110,
+        filterFn: "includesString",
+        enableColumnFilter: true,
+        enableSorting: true,
+        Cell: ({ cell }) =>
+          cell.getValue() ? (
+            <img
+              src={API_URL + "/storage/" + cell.getValue()}
+              alt="Profile"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "4px",
+                objectFit: "cover",
+              }}
+              // This ensures the image is loaded before the print dialog opens
+              loading="lazy"
+            />
+          ) : (
+            <img
+              src={withoutPhoto}
+              alt="Profile"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "4px",
+                objectFit: "cover",
+              }}
+              // This ensures the image is loaded before the print dialog opens
+              loading="lazy"
+            />
+          ),
+      },
+      {
+        accessorKey: "pay_sheet.full_name",
+        header: "Nombre completo",
+        size: 110,
+        filterFn: "includesString",
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+      {
+        accessorKey: "pay_sheet.ci",
+        header: "CI",
+        size: 100,
+        filterFn: "includesString",
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+
+      //   {
+      //     accessorKey: "pay_sheet.email",
+      //     header: "Correo Electrónico",
+      //     size: 200,
+      //   },
+      {
+        accessorKey: "pay_sheet.phone_number",
+        header: "Teléfono",
+        size: 100,
+      },
+      {
+        accessorKey: "pay_sheet.city",
+        header: "Ciudad",
+        size: 100,
+        filterVariant: "select",
+        filterSelectOptions: cities.map((city) => city.label),
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+
+      {
+        accessorKey: "pay_sheet.created_at",
+        header: "Fecha",
+        size: 155,
+        enableColumnFilter: true,
+        filterVariant: "date-range",
+        enableSorting: true,
+        Cell: ({ cell }) => {
+          const dateString = cell.getValue();
+
+          // Safety check in case the value is null or undefined
+          if (!dateString) return "N/A";
+
+          return new Date(dateString).toLocaleString(navigator.language, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          });
+        },
+        // Optional: make the column look nicer
+        muiTableBodyCellProps: {
+          sx: { whiteSpace: "nowrap" },
+        },
+      },
+      {
+        header: "Censado por",
+        accessorKey: "user.full_name",
+        size: 100,
+        enableColumnFilter: true,
+        filterVariant: "select",
+        filterSelectOptions: users.map((user) => user.full_name),
+        enableSorting: true,
+      },
+      {
+        header: "Cargo del Censador",
+        accessorKey: "user.charge",
+        size: 100,
+        filterFn: "includesString",
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+      {
+        header: "Ubicación administrativa",
+        accessorKey: "pay_sheet.administrative_location.name",
+        size: 100,
+        filterVariant: "select",
+        filterSelectOptions: administrativeLocations.map(
+          (location) => location.label
+        ),
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+      {
+        header: "Tipo de Pensión",
+        accessorKey: "pay_sheet.type_pension",
+        size: 100,
+        filterVariant: "select",
+        filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
+        enableColumnFilter: true,
+        enableSorting: true,
+      },
+    ],
+    [users, administrativeLocations]
+  );
+
+  const [data, setData] = useState([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Server-side state
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 25 });
+  const [sorting, setSorting] = useState([{ id: "id", desc: true }]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  // Move useMemo outside the map - process all test sections at once
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    console.log({ columnFilters });
+
+    try {
+      const res = await censusAPI.getCensus({
+        page: pagination.pageIndex + 1,
+        limit: pagination.pageSize,
+        sortField: sorting[0]?.id || "id",
+        sortOrder: sorting[0]?.desc ? "desc" : "asc",
+        search: globalFilter, // Global search
+        filters: JSON.stringify(
+          columnFilters.reduce((acc, curr) => {
+            acc[curr.id] = curr.value;
+            return acc;
+          }, {})
+        ),
+      });
+      setData(res.censuses.data);
+      setRowCount(res.censuses.total);
+    } catch (e) {
+      console.error("Failed to fetch data", e);
+    }
+    setIsLoading(false);
+  }, [pagination, sorting, columnFilters, globalFilter]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return (
-    <>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
       <title>Censado - Nómina</title>
       <div>
-        <h1 className="text-lg md:text-2xl font-bold mb-4 ">Censado</h1>
+        <h1 className="text-lg md:text-2xl font-bold mb-4 ">
+          Historial de censados
+        </h1>
+
+        <MaterialReactTable
+          columns={columns}
+          data={data}
+          rowCount={rowCount}
+          manualPagination
+          manualSorting
+          manualFiltering
+          manualGlobalFilter
+          initialState={{
+            density: "compact",
+            columnVisibility: {
+              "pay_sheet.phone_number": false,
+              "user.charge": false,
+            },
+          }}
+          state={{
+            pagination,
+            sorting,
+            columnFilters,
+            globalFilter,
+            isLoading,
+          }}
+          onPaginationChange={setPagination}
+          onSortingChange={setSorting}
+          onColumnFiltersChange={setColumnFilters}
+          onGlobalFilterChange={(value) => debouncedGlobalFilter(value)}
+          enableGlobalFilter={true}
+          enableColumnFilters={true}
+          enableSorting={true}
+          enableFilters={true}
+          muiTablePaginationProps={{
+            rowsPerPageOptions: [25, 50, 100],
+            showFirstButton: true,
+            showLastButton: true,
+          }}
+          muiSearchTextFieldProps={{
+            placeholder: "Buscar",
+            sx: { minWidth: "300px" },
+            variant: "outlined",
+          }}
+        />
       </div>
-    </>
+    </LocalizationProvider>
   );
 }

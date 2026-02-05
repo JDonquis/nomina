@@ -26,24 +26,9 @@ import Planilla from "../../components/planilla";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import withoutPhoto from "../../assets/withoutPhoto.png";
+import { cities } from "../../constants/cities";
 
-const cities = [
-  { value: "Coro", label: "Coro" },
-  { value: "Punto Fijo", label: "Punto Fijo" },
-  { value: "Tucacas", label: "Tucacas" },
-  { value: "Dabajuro", label: "Dabajuro" },
-  { value: "La Sierra", label: "La Sierra" },
-];
-
-const iconos_examenes = {
-  1: { icon: "mdi:blood-bag", color: "#C62828" },
-  2: { icon: "mdi:test-tube", color: "#1565C0" },
-  3: { icon: "mdi:water", color: "#6A1B9A" },
-  4: { icon: "mdi:virus", color: "#EF6C00" },
-  5: { icon: "mdi:emoticon-poop", color: "#6D4C41" },
-  6: { icon: "game-icons:liver", color: "#00897B" },
-  7: { icon: "mdi:beaker", color: "#FBC02D" },
-};
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -55,7 +40,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey],
+      [onChange, testKey]
     );
 
     return (
@@ -78,7 +63,7 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  },
+  }
 );
 
 export default function nominaPage() {
@@ -159,6 +144,46 @@ export default function nominaPage() {
     "last_payment": null
     */
   }
+
+  const defaultFormData = {
+    // Datos personales
+    photo: "",
+    nac: "V",
+    ci: "",
+    full_name: "",
+    date_birth: "",
+    sex: "F",
+    city: "Coro",
+    state: "Falcón",
+    administrative_location_id: 1,
+    phone_number: "",
+
+    // Datos de pensión
+    type_pension: "Jubilacion",
+    type_pay_sheet_id: 1,
+    last_charge: "",
+    civil_status: "C",
+    minor_child_nro: 0,
+    disabled_child_nro: 0,
+    receive_pension_from_another_organization_status: false,
+    another_organization_name: null,
+    has_authorizations: true,
+
+    // Pensión sobrevivencia (condicional - en este caso false)
+    pension_survivor_status: false,
+    fullname_causative: null,
+    age_causative: null,
+    parent_causative: null,
+    sex_causative: null,
+    ci_causative: null,
+    decease_date: null,
+    suspend_payment_status: false,
+    last_payment: null,
+    fotoChanged: false,
+  };
+
+  const [formData, setFormData] = useState(structuredClone(defaultFormData));
+
   const patientFormFields = useMemo(() => [
     {
       name: "photo",
@@ -325,14 +350,18 @@ export default function nominaPage() {
       label: "Nombre Completo del Causante",
       type: "text",
       required: false,
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "age_causative",
       label: "Edad del Causante",
       type: "number",
       required: false,
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "parent_causative",
@@ -344,7 +373,9 @@ export default function nominaPage() {
         { value: "Conyuge", label: "Cónyuge" },
         { value: "Concubino", label: "Concubino" },
       ],
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "sex_causative",
@@ -354,76 +385,48 @@ export default function nominaPage() {
         { value: "M", label: "Masculino" },
         { value: "F", label: "Femenino" },
       ],
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "ci_causative",
       label: "Cédula de Identidad del Causante",
       type: "text",
       required: false,
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "decease_date",
       label: "Fecha de Fallecimiento",
       type: "date",
       required: false,
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "suspend_payment_status",
       label: "Suspender Pago",
       type: "checkbox",
       required: false,
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "last_payment",
       label: "Último Pago",
       type: "date",
       required: false,
-      className: "col-span-6",
+      className: `${
+        formData.pension_survivor_status ? "col-span-6" : "hidden"
+      }`,
     },
   ]);
 
-  const defaultFormData = {
-    // Datos personales
-    photo: "",
-    nac: "V",
-    ci: "12345678",
-    full_name: "María Elena Rodríguez Pérez",
-    date_birth: "",
-    sex: "F",
-    city: "Coro",
-    state: "Falcón",
-    administrative_location_id: 1,
-    phone_number: "",
-
-    // Datos de pensión
-    type_pension: "Jubilacion",
-    type_pay_sheet_id: 1,
-    last_charge: "",
-    civil_status: "C",
-    minor_child_nro: 2,
-    disabled_child_nro: 0,
-    receive_pension_from_another_organization_status: false,
-    another_organization_name: null,
-    has_authorizations: true,
-
-    // Pensión sobrevivencia (condicional - en este caso false)
-    pension_survivor_status: false,
-    fullname_causative: null,
-    age_causative: null,
-    parent_causative: null,
-    sex_causative: null,
-    ci_causative: null,
-    decease_date: null,
-    suspend_payment_status: false,
-    last_payment: null,
-    fotoChanged: false,
-  };
-
-  const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Registrar");
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
@@ -480,11 +483,6 @@ export default function nominaPage() {
       fetchData();
       localStorage.removeItem("formData"); // ← Limpiar
       localStorage.removeItem("submitString");
-      // Optional: Log external API result
-      if (!externalResponse.success) {
-        console.warn("External system update failed (non-critical)");
-        // You could show a non-blocking warning here if needed
-      }
     } catch (error) {
       // This will only catch errors from the internal API
       const errorMessage =
@@ -499,11 +497,14 @@ export default function nominaPage() {
 
   const handleDelete = async (id) => {
     try {
-      if (!window.confirm("¿Está seguro de eliminar este examen?")) {
+      if (!window.confirm("¿Está seguro de eliminar esta nómina?")) {
         return;
       }
-      await payrollAPI.deleteExam(id);
-      showSuccess("Examen eliminado con éxito");
+      const res = await payrollAPI.deleteWorker(id);
+      if (res.status) {
+        showSuccess("Trabajador eliminado con éxito");
+      }
+      console.log(res.status)
       fetchData();
     } catch (error) {
       const errorMessage =
@@ -515,7 +516,9 @@ export default function nominaPage() {
   };
 
   const handleCensus = async (id) => {
-    if (!window.confirm(`¿Está seguro de Censar a ${PDFdata.full_name} ahora?`)) {
+    if (
+      !window.confirm(`¿Está seguro de Censar a ${PDFdata.full_name} ahora?`)
+    ) {
       return;
     }
 
@@ -532,7 +535,11 @@ export default function nominaPage() {
   };
 
   const handleUncensus = async (id) => {
-    if (!window.confirm(`¿Está seguro de anular el censo de ${PDFdata.full_name}?`)) {
+    if (
+      !window.confirm(
+        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`
+      )
+    ) {
       return;
     }
     try {
@@ -564,8 +571,22 @@ export default function nominaPage() {
         enableColumnFilter: true,
         enableSorting: true,
         Cell: ({ cell }) => (
+          cell.getValue() ? (
+
           <img
             src={API_URL + "/storage/" + cell.getValue()}
+            alt="Profile"
+            style={{
+              width: "50px",
+              height: "50px",
+              borderRadius: "4px",
+              objectFit: "cover",
+            }}
+            // This ensures the image is loaded before the print dialog opens
+            loading="lazy"
+          />) :
+          <img
+            src={withoutPhoto}
             alt="Profile"
             style={{
               width: "50px",
@@ -707,7 +728,7 @@ export default function nominaPage() {
         },
       },
     ],
-    [],
+    []
   );
 
   const [data, setData] = useState([]);
@@ -734,7 +755,7 @@ export default function nominaPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {}),
+          }, {})
         ),
       });
       setData(res.paySheets.data);
@@ -756,7 +777,7 @@ export default function nominaPage() {
         localStorage.setItem("formData", JSON.stringify(data));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    [],
+    []
   );
 
   useEffect(() => {
@@ -773,7 +794,7 @@ export default function nominaPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    [],
+    []
   );
 
   const handleChangeValue = useCallback((e) => {
@@ -811,7 +832,7 @@ export default function nominaPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString")),
+                    JSON.parse(localStorage.getItem("submitString"))
                   );
                   setIsModalOpen(true);
                 }}
@@ -1036,8 +1057,6 @@ export default function nominaPage() {
           }}
         >
           <div className="flex flex-col justify-center">
-            
-
             <Planilla data={PDFdata} isHidden={false} />
           </div>
         </Modal>
@@ -1047,16 +1066,37 @@ export default function nominaPage() {
           isOpen={isCensusModalOpen}
           onClose={() => setIsCensusModalOpen(false)}
         >
-          <p></p>
+          <div>
+            {PDFdata.latest_census?.status && (
+              <div>
+                <h5 className="font-bold">ÚLTIMO CENSO</h5>
+                <p >
+                  <b>Realizado el  </b>
+                  {new Date(PDFdata.latest_census?.created_at).toLocaleString(
+                    navigator.language,
+                    {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }
+                  )}
+                </p>
+                <p >
+                  <b>Registrado por </b>
+                  {PDFdata.latest_census?.user?.full_name},
+                  {PDFdata.latest_census?.user?.charge}
+                </p>
+              </div>
+            )}
+          </div>
           <div className="flex gap-4 justify-between mt-4">
             {PDFdata.latest_census?.status && (
-            <button
-              onClick={() => handleUncensus(PDFdata.latest_census.id)}
-              className="bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl p-3 px-5"
-            >
-              Anular el censo
-            </button>
-            )} 
+              <button
+                onClick={() => handleUncensus(PDFdata.latest_census.id)}
+                className="bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl p-3 px-5"
+              >
+                Anular el censo
+              </button>
+            )}
             <div></div>
             <button
               onClick={() => handleCensus(PDFdata.id)}
