@@ -22,7 +22,7 @@ class StoreCensusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pay_sheets_id' => ['required', 'exists:pay_sheets']
+            'pay_sheet_id' => ['required', 'exists:pay_sheets']
         ];
     }
 }
