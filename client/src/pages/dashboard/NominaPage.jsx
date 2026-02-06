@@ -29,7 +29,6 @@ import { useAuth } from "../../context/AuthContext";
 import withoutPhoto from "../../assets/withoutPhoto.png";
 import { cities } from "../../constants/cities";
 
-
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
   : false;
@@ -40,7 +39,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey]
+      [onChange, testKey],
     );
 
     return (
@@ -63,15 +62,16 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  }
+  },
 );
 
-export default function nominaPage() {
+export default function NominaPage() {
   const [loading, setLoading] = useState(false);
   const { showError, showSuccess, showInfo } = useFeedback();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [PDFmodal, setPDFmodal] = useState(false);
   const [isCensusModalOpen, setIsCensusModalOpen] = useState(false);
+  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
   const [resultsToken, setResultsToken] = useState(null);
   const [origins, setOrigins] = useState([]);
@@ -438,11 +438,27 @@ export default function nominaPage() {
       // Crear FormData para enviar archivos
       const submitData = new FormData();
 
+      // Lista de campos que NO deben enviarse (son relaciones o campos internos)
+      const fieldsToSkip = [
+        "type_pay_sheet", // Relación, ya tienes type_pay_sheet_id
+        "administrative_location", // Relación, ya tienes administrative_location_id
+        "latest_census", // Relación
+        "latestCensus", // Relación
+        "created_at", // Timestamp automático
+        "updated_at", // Timestamp automático
+        "fotoChanged", // Campo interno de React
+      ];
+
       // Agregar todos los campos del formulario
       Object.keys(formData).forEach((key) => {
         const value = formData[key];
 
-        // ⭐ NUEVA LÓGICA: No enviar photo si no cambió
+        // Skip campos innecesarios
+        if (fieldsToSkip.includes(key)) {
+          return;
+        }
+
+        // No enviar photo si no cambió
         if (
           key === "photo" &&
           submitString === "Actualizar" &&
@@ -451,19 +467,36 @@ export default function nominaPage() {
           return; // Skip this field
         }
 
+        // Solo agregar archivos
         if (value instanceof File) {
-          // Archivos se agregan directamente
-          submitData.append(key, value);
-        } else if (Array.isArray(value) && value.length > 0) {
-          // Arrays de objetos se envían como JSON string
-          submitData.append(key, JSON.stringify(value));
-        } else if (typeof value === "object" && value !== null) {
-          // Objetos individuales también se envían como JSON string
-          submitData.append(key, JSON.stringify(value));
-        } else if (value !== null && value !== undefined && value !== "") {
+          console.log("✅ Agregando File:", key, value);
           submitData.append(key, value);
         }
+        // Para booleanos, convertir a 0 o 1
+        else if (typeof value === "boolean") {
+          submitData.append(key, value ? "1" : "0");
+        }
+        // NO enviar objetos ni arrays (solo valores primitivos)
+        else if (
+          value !== null &&
+          value !== undefined &&
+          value !== "" &&
+          typeof value !== "object" // Esto excluye objetos y arrays
+        ) {
+          submitData.append(key, value);
+        }
+        // DEBUG: Ver qué se está saltando
+        else if (key === "photo") {
+          console.log("⚠️ Photo se saltó porque:", {
+            isNull: value === null,
+            isUndefined: value === undefined,
+            isEmpty: value === "",
+            isObject: typeof value === "object",
+            value,
+          });
+        }
       });
+
       // Prepare both requestsF
       const internalRequest =
         submitString === "Actualizar"
@@ -504,7 +537,7 @@ export default function nominaPage() {
       if (res.status) {
         showSuccess("Trabajador eliminado con éxito");
       }
-      console.log(res.status)
+      console.log(res.status);
       fetchData();
     } catch (error) {
       const errorMessage =
@@ -537,7 +570,7 @@ export default function nominaPage() {
   const handleUncensus = async (id) => {
     if (
       !window.confirm(
-        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`
+        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`,
       )
     ) {
       return;
@@ -570,34 +603,34 @@ export default function nominaPage() {
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
-        Cell: ({ cell }) => (
+        Cell: ({ cell }) =>
           cell.getValue() ? (
-
-          <img
-            src={API_URL + "/storage/" + cell.getValue()}
-            alt="Profile"
-            style={{
-              width: "50px",
-              height: "50px",
-              borderRadius: "4px",
-              objectFit: "cover",
-            }}
-            // This ensures the image is loaded before the print dialog opens
-            loading="lazy"
-          />) :
-          <img
-            src={withoutPhoto}
-            alt="Profile"
-            style={{
-              width: "50px",
-              height: "50px",
-              borderRadius: "4px",
-              objectFit: "cover",
-            }}
-            // This ensures the image is loaded before the print dialog opens
-            loading="lazy"
-          />
-        ),
+            <img
+              src={API_URL + "/storage/" + cell.getValue()}
+              alt="Profile"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "4px",
+                objectFit: "cover",
+              }}
+              // This ensures the image is loaded before the print dialog opens
+              loading="lazy"
+            />
+          ) : (
+            <img
+              src={withoutPhoto}
+              alt="Profile"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "4px",
+                objectFit: "cover",
+              }}
+              // This ensures the image is loaded before the print dialog opens
+              loading="lazy"
+            />
+          ),
       },
       {
         accessorKey: "full_name",
@@ -728,7 +761,7 @@ export default function nominaPage() {
         },
       },
     ],
-    []
+    [],
   );
 
   const [data, setData] = useState([]);
@@ -755,7 +788,7 @@ export default function nominaPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {})
+          }, {}),
         ),
       });
       setData(res.paySheets.data);
@@ -774,10 +807,12 @@ export default function nominaPage() {
   const debouncedSaveFormData = useMemo(
     () =>
       debounce((data, submitStr) => {
-        localStorage.setItem("formData", JSON.stringify(data));
+        // Excluir el campo photo porque File no se puede serializar a JSON
+        const { photo, ...dataWithoutPhoto } = data;
+        localStorage.setItem("formData", JSON.stringify(dataWithoutPhoto));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -794,7 +829,7 @@ export default function nominaPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    []
+    [],
   );
 
   const handleChangeValue = useCallback((e) => {
@@ -823,8 +858,12 @@ export default function nominaPage() {
       <title>Nómina - LabFalcón</title>
       <div style={{ height: 580, width: "100%" }}>
         <div className="md:flex justify-between items-center mb-4">
-          <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">Nómina</h1>
-          <div className="flex gap-3">
+          <div>
+            <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
+              Nómina
+            </h1>
+          </div>
+          <div className="flex gap-3 relative">
             {isThereLocalStorageFormData && (
               <button
                 title="Restaurar formulario sin guardar"
@@ -832,7 +871,7 @@ export default function nominaPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString"))
+                    JSON.parse(localStorage.getItem("submitString")),
                   );
                   setIsModalOpen(true);
                 }}
@@ -856,6 +895,46 @@ export default function nominaPage() {
             >
               Registrar Trabajador
             </FuturisticButton>
+
+            <button
+              title="más opciones"
+              className={`flex  items-center ${isOptionsModalOpen ? "bg-gray-200 text-gray-700 shadow-xl" : "bg-gray-100 text-gray-600 "} pl-2 rounded-md`}
+              onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
+            >
+              <Icon icon="tdesign:data-filled" width={24} height={24} />
+              <Icon icon="material-symbols:more-vert" width={24} height={24} />
+            </button>
+
+            <div className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${isOptionsModalOpen ? "block" : "hidden"}`}>
+              <p className="p-2 text-sm text-gray-500">Opciones</p>
+              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
+                <Icon icon="material-symbols:download" width={24} height={24} />
+                <span>Exportar Datos</span>
+                <Icon icon="tabler:json" width={24} height={24} />
+              </button>
+              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
+                <Icon
+                  icon="streamline-ultimate:common-file-text-add-bold"
+                  width={24}
+                  height={24}
+                />
+                <span>Importar Datos</span>
+                <Icon icon="tabler:json" width={24} height={24} />
+              </button>
+              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
+                <Icon
+                  icon="streamline-ultimate:common-file-text-add-bold"
+                  width={24}
+                  height={24}
+                />
+                <span>Importar Datos desde Excel</span>
+                <Icon
+                  icon="vscode-icons:file-type-excel"
+                  width={24}
+                  height={24}
+                />
+              </button>
+            </div>
           </div>
         </div>
         <Modal
@@ -1070,17 +1149,17 @@ export default function nominaPage() {
             {PDFdata.latest_census?.status && (
               <div>
                 <h5 className="font-bold">ÚLTIMO CENSO</h5>
-                <p >
-                  <b>Realizado el  </b>
+                <p>
+                  <b>Realizado el </b>
                   {new Date(PDFdata.latest_census?.created_at).toLocaleString(
                     navigator.language,
                     {
                       dateStyle: "medium",
                       timeStyle: "short",
-                    }
+                    },
                   )}
                 </p>
-                <p >
+                <p>
                   <b>Registrado por </b>
                   {PDFdata.latest_census?.user?.full_name},
                   {PDFdata.latest_census?.user?.charge}
