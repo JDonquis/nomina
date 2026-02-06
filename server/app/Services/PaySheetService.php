@@ -126,7 +126,7 @@ class PaySheetService
 
     public function destroy($paySheet)
     {
-        Census::where('pay_sheets_id', $paySheet->id)->delete();
+        Census::where('pay_sheet_id', $paySheet->id)->delete();
         $paySheet->delete();
 
         return 0;

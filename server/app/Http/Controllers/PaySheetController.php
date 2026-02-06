@@ -191,7 +191,7 @@ class PaySheetController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Ha ocurrido un error al eliminar el registro '
-            ]);
+            ], 500);
         }
     }
 }
