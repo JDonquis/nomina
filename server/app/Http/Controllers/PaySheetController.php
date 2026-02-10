@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaySheetRequest;
 use App\Http\Requests\UpdatePaySheetRequest;
+use App\Http\Requests\UpdatePhotoPaySheetRequest;
 use Exception;
 use App\Models\PaySheet;
 use Illuminate\Http\Request;
@@ -133,9 +134,8 @@ class PaySheetController extends Controller
             DB::beginTransaction();
 
             $validatedData = $request->validated();
-            $photo = $request->hasFile('photo') ? $request->file('photo') : null;
 
-            $register = $this->paySheetService->update($validatedData, $photo, $paySheet);
+            $register = $this->paySheetService->update($validatedData, $paySheet);
 
             DB::commit();
 
@@ -191,6 +191,31 @@ class PaySheetController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Ha ocurrido un error al eliminar el registro '
+            ], 500);
+        }
+    }
+
+    public function updatePhoto(UpdatePhotoPaySheetRequest $request, PaySheet $paySheet)
+    {
+
+        try {
+            $photo = $request->file('photo');
+
+            $this->paySheetService->updatePhoto($photo, $paySheet);
+
+            return response()->json([
+                'message' => 'Foto actualizada exitosamente',
+            ]);
+        } catch (Exception $e) {
+
+            Log::error('Error al actualizar foto del registro: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al actualizar la foto'
             ], 500);
         }
     }

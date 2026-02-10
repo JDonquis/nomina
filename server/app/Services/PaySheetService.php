@@ -93,23 +93,10 @@ class PaySheetService
         return $paySheet;
     }
 
-    public function update($data, $photo, $paySheet)
+    public function update($data, $paySheet)
     {
-        $photoPath = $paySheet->photo;
 
-        if ($photo) {
-            if ($photoPath) {
-                $this->deletePhoto($photoPath);
-            }
-
-            $photoPath = $this->storePhoto($photo, $data['ci'] ?? $paySheet->ci);
-        }
-
-        $paySheetData = array_merge($data, [
-            'photo' => $photoPath,
-        ]);
-
-        $paySheet->update($paySheetData);
+        $paySheet->update($data);
 
         $userID = Auth::id();
 
@@ -122,6 +109,31 @@ class PaySheetService
         $paySheet->load('typePaySheet', 'administrativeLocation');
 
         return $paySheet;
+    }
+
+    public function updatePhoto($photo, $paySheet)
+    {
+        $photoPath = $paySheet->photo;
+
+        if ($photo) {
+            if ($photoPath) {
+                $this->deletePhoto($photoPath);
+            }
+
+            $photoPath = $this->storePhoto($photo, $data['ci'] ?? $paySheet->ci);
+        }
+
+        $paySheet->update(['photo' => $photoPath]);
+
+        $userID = Auth::id();
+
+        Activity::create([
+            'user_id' => $userID,
+            'id_affected' => $paySheet->id,
+            'activity' => ActivityEnum::PAYSHEET_UPDATED,
+        ]);
+
+        return 0;
     }
 
     public function destroy($paySheet)
