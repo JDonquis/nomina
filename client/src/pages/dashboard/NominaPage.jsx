@@ -587,6 +587,20 @@ export default function NominaPage() {
     }
   };
 
+  const importExcel = async (e) => {
+    try {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await payrollAPI.importExcel(formData);
+      showSuccess(res.message);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -652,7 +666,8 @@ export default function NominaPage() {
         header: "Censado",
         accessorKey: "latest_census.status",
         size: 100,
-        filterFn: "includesString",
+        filterVariant: "select",
+        filterSelectOptions: ["CENSADO", "NO CENSADO"],
         enableColumnFilter: true,
         enableSorting: true,
         Cell: ({ cell }) => {
@@ -678,6 +693,10 @@ export default function NominaPage() {
         accessorKey: "city",
         header: "Ciudad",
         size: 100,
+        filterVariant: "select",
+        filterSelectOptions: cities.map((city) => city.label),
+        enableColumnFilter: true,
+        enableSorting: true,
       },
 
       {
@@ -703,6 +722,15 @@ export default function NominaPage() {
         muiTableBodyCellProps: {
           sx: { whiteSpace: "nowrap" },
         },
+      },
+      {
+        header: "Tipo de Pensión",
+        accessorKey: "pay_sheet.type_pension",
+        size: 100,
+        filterVariant: "select",
+        filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
+        enableColumnFilter: true,
+        enableSorting: true,
       },
       {
         header: "Acciones",
@@ -905,7 +933,9 @@ export default function NominaPage() {
               <Icon icon="material-symbols:more-vert" width={24} height={24} />
             </button>
 
-            <div className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${isOptionsModalOpen ? "block" : "hidden"}`}>
+            <div
+              className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${isOptionsModalOpen ? "block" : "hidden"}`}
+            >
               <p className="p-2 text-sm text-gray-500">Opciones</p>
               <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
                 <Icon icon="material-symbols:download" width={24} height={24} />
@@ -921,19 +951,39 @@ export default function NominaPage() {
                 <span>Importar Datos</span>
                 <Icon icon="tabler:json" width={24} height={24} />
               </button>
-              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
+              <label
+                htmlFor="importExcel"
+                className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md"
+              >
                 <Icon
                   icon="streamline-ultimate:common-file-text-add-bold"
                   width={24}
                   height={24}
                 />
-                <span>Importar Datos desde Excel</span>
+                <span>Importar Nómina desde Excel</span>
                 <Icon
                   icon="vscode-icons:file-type-excel"
                   width={24}
                   height={24}
                 />
-              </button>
+                <input
+                  type="file"
+                  name="importExcel"
+                  id="importExcel"
+                  className="hidden"
+                  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                  onChange={(e) => {
+                    if (
+                      window.confirm(
+                        e.target.files[0].name +
+                          "   ¿Desea añadir los datos de este excel a la nómina?",
+                      )
+                    ) {
+                      importExcel();
+                    }
+                  }}
+                />
+              </label>
             </div>
           </div>
         </div>

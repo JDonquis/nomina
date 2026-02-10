@@ -4,10 +4,7 @@ import { Icon } from "@iconify/react";
 import SecretrariaLogo from "../assets/secretaria_logo.png";
 import withoutPhoto from "../assets/withoutPhoto.png";
 
-import Latidos from "../assets/latidos.png";
 import FuturisticButton from "./FuturisticButton";
-import firmaDigital from "../assets/firmaDigital.png";
-import QRCode from "react-qr-code";
 import cintillo from "../assets/cintillo.jpeg";
 import { API_URL } from "../config/env.js";
 

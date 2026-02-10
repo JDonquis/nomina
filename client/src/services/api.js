@@ -103,6 +103,7 @@ export const payrollAPI = {
   updateWorker: (id, workerData) =>
     api.put(`/admin/pay-sheets/${id}`, workerData, { headers: { "Content-Type": "multipart/form-data" } }),
   deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
+  importExcel: (file) => api.post("/admin/pay-sheets/sheet", file, { headers: { "Content-Type": "multipart/form-data" } }),
 };
 
 export const asicAPI = {
