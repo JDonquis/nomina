@@ -486,17 +486,16 @@ export default function NominaPage() {
           submitData.append(key, value);
         }
         // DEBUG: Ver qué se está saltando
-        else if (key === "photo") {
-          console.log("⚠️ Photo se saltó porque:", {
-            isNull: value === null,
-            isUndefined: value === undefined,
-            isEmpty: value === "",
-            isObject: typeof value === "object",
-            value,
-          });
-        }
+        
+        
       });
 
+      if (formData.photo && submitString === "Actualizar" && formData.fotoChanged) {
+        await payrollAPI.updatePhoto(formData.id, submitData);
+
+        // Eliminar el campo photo para evitar confusión en la siguiente petición
+        submitData.delete("photo");
+      }
       // Prepare both requestsF
       const internalRequest =
         submitString === "Actualizar"
@@ -763,19 +762,24 @@ export default function NominaPage() {
                 <Icon icon="ci:wavy-check" width={20} height={20} />
               </button>
 
-              <button
-                onClick={() => {
-                  setPDFmodal(true);
-                  setPDFdata(cell.row.original);
-                }}
-                className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
-                title="Descargar"
-              >
-                <Icon icon="proicons:pdf-2" width={20} height={20} />
-              </button>
+                {
+                  cell.row.original.latest_census?.status && (
+
+                  <button
+                    onClick={() => {
+                      setPDFmodal(true);
+                      setPDFdata(cell.row.original);
+                    }}
+                    className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                    title="Descargar"
+                  >
+                    <Icon icon="proicons:pdf-2" width={20} height={20} />
+                  </button>
+                  )
+                }
               <button
                 onClick={() => handleDelete(cell.row.original.id)}
-                className="text-red-500 p-1 rounded-full hover:bg-gray-300 hover:underline ml-2"
+                className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
                 title="Eliminar"
               >
                 <Icon

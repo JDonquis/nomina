@@ -101,7 +101,8 @@ export const payrollAPI = {
   getWorkers: (params) => api.get("/admin/pay-sheets", { params }),
   createWorker: (workerData) => api.post("/admin/pay-sheets", workerData, { headers: { "Content-Type": "multipart/form-data" } }),
   updateWorker: (id, workerData) =>
-    api.put(`/admin/pay-sheets/${id}`, workerData, { headers: { "Content-Type": "multipart/form-data" } }),
+    api.put(`/admin/pay-sheets/${id}`, workerData),
+  updatePhoto: (id, photo) => api.post(`/admin/pay-sheets/photo/${id}`, photo, { headers: { "Content-Type": "multipart/form-data" } }),
   deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
   importExcel: (file) => api.post("/admin/pay-sheets/sheet", file, { headers: { "Content-Type": "multipart/form-data" } }),
 };
