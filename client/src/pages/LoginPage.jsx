@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useFeedback } from "../context/FeedbackContext";
 import { authAPI } from "../services/api";
 import labFalconLogo from "../assets/logoBlue.webp";
-import doctor from "../assets/doctor.jpg";
+import doctor from "../assets/doctor.webp";
 import secretariaLogo from "../assets/secretaria_logo.png";
 import { Icon } from "@iconify/react";
 import cintilloCorto from "../assets/cintilloCorto.png";
