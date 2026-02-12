@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pay_sheet_id');
             $table->foreignId('user_id');
+            $table->foreignId('administrative_location_id')->nullable();
             $table->boolean('status')->default(false);
             $table->timestamp('expiration_date');
             $table->timestamps();

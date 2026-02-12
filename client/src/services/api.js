@@ -112,7 +112,7 @@ export const asicAPI = {
 };
 
 export const censusAPI = {
-  getCensus: (params) => api.post("/admin/censuses/get", { params }),
+  getCensus: (params) => api.get("/admin/censuses", { params }),
   createCensus: (censusData) => api.post("/admin/censuses", censusData),
   deleteCensus: (id) => api.delete(`/admin/censuses/${id}`),
 }

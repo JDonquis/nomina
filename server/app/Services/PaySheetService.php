@@ -10,6 +10,7 @@ use App\Models\PaySheet;
 use App\Enums\ActivityEnum;
 use App\Models\TypePaySheet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
@@ -35,18 +36,62 @@ class PaySheetService
             });
         }
 
-        if (!empty($params['type_pay_sheet_id'])) {
-            $query->where('type_pay_sheet_id', $params['type_pay_sheet_id']);
+        if (!empty($params['filters'])) {
+            $filters = json_decode($params['filters'], true);
+
+            if (isset($filters['latest_census.status'])) {
+                $filter = $filters['latest_census.status'];
+
+                if ($filter == 'CENSADO') {
+                    $query->whereHas('latestCensus', fn($q) => $q->where('status', true));
+                } else {
+                    $query->whereDoesntHave('latestCensus')
+                        ->orWhereHas('latestCensus', fn($q) => $q->where('status', false));
+                }
+            }
+
+            if (isset($filters['ci'])) {
+                $filter = $filters['ci'];
+                $query->where('ci', 'LIKE', "%{$filter}%");
+            }
+
+            if (isset($filters['full_name'])) {
+                $filter = $filters['full_name'];
+                $query->where('full_name', 'LIKE', "%{$filter}%");
+            }
+
+            if (isset($filters['id'])) {
+                $filter = $filters['id'];
+                $query->where('id', 'LIKE', "%{$filter}%");
+            }
+
+            if (isset($filters['phone_number'])) {
+                $filter = $filters['phone_number'];
+                $query->where('phone_number', 'LIKE', "%{$filter}%");
+            }
+
+            if (isset($filters['city'])) {
+                $filter = $filters['city'];
+                $query->where('city', $filter);
+            }
+
+            if (isset($filters['sex'])) {
+                $filter = $filters['sex'];
+                $query->where('sex', $filter);
+            }
+
+            if (isset($filters['pay_sheet.type_pension'])) {
+                $filter = $filters['pay_sheet.type_pension'];
+                $query->whereHas('typePaySheet', function ($subQuery) use ($filter) {
+                    $subQuery->where('id', $filter);
+                });
+            }
         }
 
-        if (!empty($params['sex'])) {
-            $query->where('sex', $params['sex']);
-        }
+        $sortField = $params['sortField'] ?? 'created_at';
+        $sortDirection = $params['sortOrder'] ?? 'desc';
 
-        $sortField = $params['sort_by'] ?? 'created_at';
-        $sortDirection = $params['sort_direction'] ?? 'desc';
-
-        $allowedSortFields = ['ci', 'full_name', 'date_birth', 'sex', 'created_at'];
+        $allowedSortFields = ['ci', 'full_name', 'date_birth', 'sex', 'created_at', 'id'];
         if (!in_array($sortField, $allowedSortFields)) {
             $sortField = 'created_at';
         }

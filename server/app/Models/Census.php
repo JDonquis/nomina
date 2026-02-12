@@ -11,6 +11,7 @@ class Census extends Model
         'status',
         'expiration_date',
         'user_id',
+        'administrative_location_id',
     ];
 
     public function paySheet()
@@ -29,5 +30,10 @@ class Census extends Model
             TypePaySheet::class,
             PaySheet::class,
         );
+    }
+
+    public function administrativeLocation()
+    {
+        return $this->belongsTo(AdministrativeLocation::class);
     }
 }

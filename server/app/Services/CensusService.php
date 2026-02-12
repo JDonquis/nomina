@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 class CensusService
 {
-    public function get($data)
+    public function get($params = [])
     {
-        $filters = $data['filter'] ?? [];
+
         $query = Census::query()->with(['paySheet.typePaySheet', 'user']);
 
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
+        if (!empty($params['search'])) {
+            $search = $params['search'];
             $query->where(function ($q) use ($search) {
                 $q->whereHas('paySheet', function ($paySheetQuery) use ($search) {
                     $paySheetQuery->where('ci', 'LIKE', "%{$search}%")
@@ -25,6 +25,58 @@ class CensusService
                         });
                 });
             });
+        }
+
+        if (!empty($params['filters'])) {
+            $filters = json_decode($params['filters'], true);
+
+
+            if (isset($filters['pay_sheet.ci'])) {
+                $filter = $filters['pay_sheet.ci'];
+                $query->whereHas('paySheet', function ($subQuery) use ($filter) {
+                    $subQuery->where('ci', 'LIKE', "%{$filter}%");
+                });
+            }
+
+            if (isset($filters['pay_sheet.full_name'])) {
+                $filter = $filters['pay_sheet.full_name'];
+                $query->whereHas('paySheet', function ($subQuery) use ($filter) {
+                    $subQuery->where('full_name', 'LIKE', "%{$filter}%");
+                });
+            }
+
+            if (isset($filters['id'])) {
+                $filter = $filters['id'];
+                $query->where('id', 'LIKE', "%{$filter}%");
+            }
+
+
+            if (isset($filters['pay_sheet.city'])) {
+                $filter = $filters['pay_sheet.city'];
+                $query->whereHas('paySheet', function ($subQuery) use ($filter) {
+                    $subQuery->where('city', $filter);
+                });
+            }
+
+
+            if (isset($filters['pay_sheet.type_pension'])) {
+                $filter = $filters['pay_sheet.type_pension'];
+                $query->whereHas('typePaySheet', function ($subQuery) use ($filter) {
+                    $subQuery->where('id', $filter);
+                });
+            }
+
+            if (isset($filters['administrative_location.id'])) {
+                $filter = $filters['administrative_location.id'];
+                $query->where('administrative_location_id', $filter);
+            }
+
+            if (isset($filters['user.id'])) {
+                $filter = $filters['user.id'];
+                $query->whereHas('user', function ($subQuery) use ($filter) {
+                    $subQuery->where('id', $filter);
+                });
+            }
         }
 
         // Filtro por tipo de pay_sheet

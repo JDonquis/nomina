@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('pay-sheets/photo/{paySheet}', [PaySheetController::class, 'updatePhoto']);
 
     // Census
-    Route::post('censuses/get', [CensusController::class, 'index']);
+    Route::get('censuses', [CensusController::class, 'index']);
     Route::post('censuses', [CensusController::class, 'store']);
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
 

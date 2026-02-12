@@ -131,7 +131,7 @@ const PrintableContent = forwardRef((props, ref) => {
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
                 <p className="font-semibold">
-                  {props.data.administrative_location.name}
+                  {props.data.administrative_location?.name}
                 </p>
               </div>
             </div>
