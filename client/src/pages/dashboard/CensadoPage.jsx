@@ -14,11 +14,15 @@ import { cities } from "../../constants/cities";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { es } from 'date-fns/locale'; // Para español
+import PrintPage from "../../components/planilla";
+import Modal from "../../components/Modal";
 
 export default function CensadoPage() {
   const [administrativeLocations, setAdministrativeLocations] = useState([]);
   const [typePaySheets, setTypePaySheets] = useState([]);
   const [users, setUsers] = useState([]);
+  const [PDFmodal, setPDFmodal] = useState(false);
+  const [PDFdata, setPDFdata] = useState({});
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -192,8 +196,29 @@ export default function CensadoPage() {
         enableColumnFilter: true,
         enableSorting: true,
       },
+      {
+        header: "Acciones",
+        accessorKey: "actions",
+        enableColumnFilter: false,
+        enableSorting: false,
+        Cell: ({ cell }) => {
+          return (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setPDFmodal(true);
+                  setPDFdata(cell.row.original);
+                }}
+                className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                title="Descargar"
+              > <Icon icon="proicons:pdf-2" width={20} height={20} />
+              </button>
+            </div>
+          );
+        },
+      },
     ],
-    [users, administrativeLocations]
+    [users, administrativeLocations, PDFdata]
   );
 
   const [data, setData] = useState([]);
@@ -287,6 +312,9 @@ export default function CensadoPage() {
           }}
         />
       </div>
+      <Modal isOpen={PDFmodal} onClose={() => setPDFmodal(false)} title="Planilla de Censado">
+        <PrintPage data={PDFdata} />
+      </Modal>
     </LocalizationProvider>
   );
 }

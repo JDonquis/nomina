@@ -724,7 +724,7 @@ export default function NominaPage() {
       },
       {
         header: "Tipo de Pensión",
-        accessorKey: "pay_sheet.type_pension",
+        accessorKey: "type_pension",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
@@ -983,7 +983,7 @@ export default function NominaPage() {
                           "   ¿Desea añadir los datos de este excel a la nómina?",
                       )
                     ) {
-                      importExcel();
+                      importExcel(e);
                     }
                   }}
                 />

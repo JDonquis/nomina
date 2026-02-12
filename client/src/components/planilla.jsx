@@ -424,6 +424,7 @@ const PrintPage = (props) => {
       }
     `,
   });
+  console.log(props.data)
 
   return (
     <div>
@@ -449,8 +450,7 @@ const PrintPage = (props) => {
           </FuturisticButton>
         </div>
       )}
-
-      {props.data && (
+      {props.data  && (
         <PrintableContent
           data={props.data}
           ref={componentRef}
