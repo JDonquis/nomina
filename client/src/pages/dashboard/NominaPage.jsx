@@ -684,12 +684,12 @@ export default function NominaPage() {
       //     size: 200,
       //   },
       {
-        accessorKey: "phone_number",
+        accessorKey: "latest_census.phone_number",
         header: "Teléfono",
         size: 100,
       },
       {
-        accessorKey: "city",
+        accessorKey: "latest_census.city",
         header: "Ciudad",
         size: 100,
         filterVariant: "select",
@@ -724,7 +724,7 @@ export default function NominaPage() {
       },
       {
         header: "Tipo de Pensión",
-        accessorKey: "type_pension",
+        accessorKey: "latest_census.type_pension",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
@@ -742,7 +742,7 @@ export default function NominaPage() {
               <button
                 onClick={() => {
                   setIsModalOpen(true);
-                  setFormData({ ...cell.row.original });
+                  setFormData({ ...cell.row.original, ...cell.row.original.latest_census });
                   setSubmitString("Actualizar");
                 }}
                 className="text-blue-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
@@ -751,16 +751,7 @@ export default function NominaPage() {
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
 
-              <button
-                onClick={() => {
-                  setIsCensusModalOpen(true);
-                  setPDFdata(cell.row.original);
-                }}
-                className="text-color2 p-1 rounded-full hover:bg-gray-300 hover:underline"
-                title="Censar"
-              >
-                <Icon icon="ci:wavy-check" width={20} height={20} />
-              </button>
+            
 
                 {
                   cell.row.original.latest_census?.status && (
@@ -768,7 +759,7 @@ export default function NominaPage() {
                   <button
                     onClick={() => {
                       setPDFmodal(true);
-                      setPDFdata(cell.row.original);
+                      setPDFdata({ ...cell.row.original, ...cell.row.original.latest_census });
                     }}
                     className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
                     title="Descargar"
@@ -997,7 +988,7 @@ export default function NominaPage() {
             setIsModalOpen(false);
             // Opcional: también limpiar localStorage aquí si quieres
           }}
-          title="Registrar Trabajador"
+          title={submitString === "Actualizar" ? "Actualizar Trabajador" : "Registrar Trabajador"}
           size="xl"
         >
           <form
@@ -1005,6 +996,28 @@ export default function NominaPage() {
             onSubmit={onSubmit}
           >
             <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
+
+              {submitString === "Actualizar" && formData.latest_census?.status && (
+              <div className="bg-gray-200 p-3 rounded-xl text-center">
+                <h5 className="font-bold">ÚLTIMO CENSO</h5>
+                <p>
+                  <b>Realizado el </b>
+                  {new Date(formData.latest_census?.created_at).toLocaleString(
+                    navigator.language,
+                    {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    },
+                  )}
+                </p>
+                <p>
+                  <b>Registrado por </b>
+                  {formData.latest_census?.user?.full_name}, 
+                  <span> </span>
+                  {formData.latest_census?.user?.charge}
+                </p>
+              </div>
+            )}
               <h2 className="text-xl font-bold mb-2 col-span-2  ">
                 Datos personales
               </h2>
@@ -1194,51 +1207,6 @@ export default function NominaPage() {
           </div>
         </Modal>
 
-        <Modal
-          title="Censar"
-          isOpen={isCensusModalOpen}
-          onClose={() => setIsCensusModalOpen(false)}
-        >
-          <div>
-            {PDFdata.latest_census?.status && (
-              <div>
-                <h5 className="font-bold">ÚLTIMO CENSO</h5>
-                <p>
-                  <b>Realizado el </b>
-                  {new Date(PDFdata.latest_census?.created_at).toLocaleString(
-                    navigator.language,
-                    {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    },
-                  )}
-                </p>
-                <p>
-                  <b>Registrado por </b>
-                  {PDFdata.latest_census?.user?.full_name},
-                  {PDFdata.latest_census?.user?.charge}
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-4 justify-between mt-4">
-            {PDFdata.latest_census?.status && (
-              <button
-                onClick={() => handleUncensus(PDFdata.latest_census.id)}
-                className="bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl p-3 px-5"
-              >
-                Anular el censo
-              </button>
-            )}
-            <div></div>
-            <button
-              onClick={() => handleCensus(PDFdata.id)}
-              className="bg-color2 hover:shadow-xl hover:brightness-110 text-white rounded-xl p-3 px-5"
-            >
-              Censar al usuario
-            </button>
-          </div>
-        </Modal>
       </div>
     </>
   );
