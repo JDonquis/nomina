@@ -11,9 +11,9 @@ import withoutPhoto from "../../assets/withoutPhoto.png";
 import { Icon } from "@iconify/react";
 import { cities } from "../../constants/cities";
 
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { es } from 'date-fns/locale'; // Para español
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { es } from "date-fns/locale"; // Para español
 import PrintPage from "../../components/planilla";
 import Modal from "../../components/Modal";
 
@@ -127,7 +127,7 @@ export default function CensadoPage() {
         size: 100,
       },
       {
-        accessorKey: "pay_sheet.city",
+        accessorKey: "city",
         header: "Ciudad",
         size: 100,
         filterVariant: "select",
@@ -178,18 +178,18 @@ export default function CensadoPage() {
       },
       {
         header: "Ubicación administrativa",
-        accessorKey: "pay_sheet.administrative_location.name",
+        accessorKey: "administrative_location.name",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: administrativeLocations.map(
-          (location) => location.label
+          (location) => location.label,
         ),
         enableColumnFilter: true,
         enableSorting: true,
       },
       {
         header: "Tipo de Pensión",
-        accessorKey: "pay_sheet.type_pension",
+        accessorKey: "type_pension",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
@@ -207,18 +207,24 @@ export default function CensadoPage() {
               <button
                 onClick={() => {
                   setPDFmodal(true);
-                  setPDFdata(cell.row.original);
+                  setPDFdata({
+                    ...cell.row.original,
+                    ...cell.row.original.pay_sheet,
+                  });
+                  console.log(cell.row.original);
                 }}
                 className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
                 title="Descargar"
-              > <Icon icon="proicons:pdf-2" width={20} height={20} />
+              >
+                {" "}
+                <Icon icon="proicons:pdf-2" width={20} height={20} />
               </button>
             </div>
           );
         },
       },
     ],
-    [users, administrativeLocations, PDFdata]
+    [users, administrativeLocations, PDFdata],
   );
 
   const [data, setData] = useState([]);
@@ -247,7 +253,7 @@ export default function CensadoPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {})
+          }, {}),
         ),
       });
       setData(res.censuses.data);
@@ -312,7 +318,12 @@ export default function CensadoPage() {
           }}
         />
       </div>
-      <Modal isOpen={PDFmodal} onClose={() => setPDFmodal(false)} title="Planilla de Censado">
+      <Modal
+        size="xl"
+        isOpen={PDFmodal}
+        onClose={() => setPDFmodal(false)}
+        title="Planilla de Censado"
+      >
         <PrintPage data={PDFdata} />
       </Modal>
     </LocalizationProvider>

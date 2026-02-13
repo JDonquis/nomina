@@ -48,9 +48,9 @@ export default function UsuariosPage() {
  
     {
       name: "is_admin",
-      label: "Puede Gestionar Usuarios",
+      label: "Administrador",
       type: "checkbox",
-      helperText: "Permite crear, editar y eliminar usuarios del sistema",
+      helperText: "Gestiona otros usuarios, además de tener ciertos privilegios en nómina",
     },
   ];
 

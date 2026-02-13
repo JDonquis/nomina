@@ -28,6 +28,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import withoutPhoto from "../../assets/withoutPhoto.png";
 import { cities } from "../../constants/cities";
+import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -157,6 +158,10 @@ export default function NominaPage() {
     state: "Falcón",
     administrative_location_id: 1,
     phone_number: "",
+    email: "",
+    municipality: "",
+    parish: "",
+    address: "",
 
     // Datos de pensión
     type_pension: "Jubilacion",
@@ -260,6 +265,39 @@ export default function NominaPage() {
     {
       name: "phone_number",
       label: "Teléfono",
+      type: "text",
+      required: false,
+      className: "col-span-6",
+    },
+    {
+      name: "email",
+      label: "Correo Electrónico",
+      type: "email",
+      required: false,
+      className: "col-span-6",
+    },
+    {
+      name: "municipality",
+      label: "Municipio",
+      type: "select",
+      required: false,
+      options: Object.keys(municipalitiesWithParishes).map((municipality) => ({
+        value: municipality,
+        label: municipality,
+      })),
+      className: "col-span-6",
+    },
+    {
+      name: "parish",
+      label: "Parroquia",
+      type: "select",
+      options: municipalitiesWithParishes[formData.municipality] || [],
+      required: false,
+      className: "col-span-6",
+    },
+    {
+      name: "address",
+      label: "Dirección",
       type: "text",
       required: false,
       className: "col-span-6",
@@ -409,7 +447,7 @@ export default function NominaPage() {
     },
     {
       name: "suspend_payment_status",
-      label: "Suspender Pago",
+      label: "¿Pago suspendido?",
       type: "checkbox",
       required: false,
       className: `${
@@ -742,6 +780,7 @@ export default function NominaPage() {
               <button
                 onClick={() => {
                   setIsModalOpen(true);
+                  console.log(cell.row.original);
                   setFormData({ ...cell.row.original, ...cell.row.original.latest_census });
                   setSubmitString("Actualizar");
                 }}
