@@ -36,9 +36,9 @@
                             <p style="font-size: 14px; color: #6b7280; margin: 20px 0;">
                                 Si el botón no funciona, copia y pega este enlace en tu navegador:
                                 <br>
-                                <a href="{{ config('app.frontend_url') . '/set-password?token=' . $token . '&email=' . urlencode($user->email) }}"
+                                <a href="{{ config('app.frontend_url') . '/activar-cuenta?token=' . $token . '&email=' . urlencode($user->email) }}"
                                     style="color: #2563eb; text-decoration: underline; word-break: break-all;">
-                                    {{ config('app.frontend_url') . '/set-password?token=' . $token }}
+                                    {{ config('app.frontend_url') . '/activar-cuenta?token=' . $token }}
                                 </a>
                             </p>
                             <p style="font-size: 14px; color: #6b7280; margin: 20px 0;">

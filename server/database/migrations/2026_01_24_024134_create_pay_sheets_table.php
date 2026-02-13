@@ -16,6 +16,145 @@ return new class extends Migration
             $table->id();
             $table->enum('nac', ['V', 'E']);
             $table->string('ci');
+            $table->string('email')->nullable();
+            $table->enum('municipalitiy', [
+                'Acosta',
+                'Bolívar',
+                'Buchivacoa',
+                'Cacique Manaure',
+                'Carirubana',
+                'Colina',
+                'Dabajuro',
+                'Democracia',
+                'Falcón',
+                'Federación',
+                'Jacura',
+                'José Laurencio Silva',
+                'Los Taques',
+                'Mauroa',
+                'Miranda',
+                'Monseñor Iturriza',
+                'Palmasola',
+                'Petit',
+                'Píritu',
+                'San Francisco',
+                'Sucre',
+                'Tocópero',
+                'Unión',
+                'Urumaco',
+                'Zamora'
+            ]);
+            $table->enum('parish', [
+            // Municipio Acosta
+            'Capadare',
+            'La Pastora',
+            'Libertador',
+            'San Juan de los Cayos',
+            // Municipio Bolívar
+            'Aracua',
+            'La Peña',
+            'San Luis',
+            // Municipio Buchivacoa
+            'Bariro',
+            'Borojó',
+            'Capatárida',
+            'Guajiro',
+            'Seque',
+            'Valle de Eroa',
+            'Zazárida',
+            // Municipio Cacique Manaure
+            'Cacique Manaure',
+            // Municipio Carirubana
+            'Norte',
+            'Carirubana',
+            'Santa Ana',
+            'Urbana Punta Cardón',
+            // Municipio Colina
+            'La Vela de Coro',
+            'Acurigua',
+            'Guaibacoa',
+            'Las Calderas',
+            'Mataruca',
+            // Municipio Dabajuro
+            'Dabajuro',
+            // Municipio Democracia
+            'Agua Clara',
+            'Avaria',
+            'Pedregal',
+            'Piedra Grande',
+            'Purureche',
+            // Municipio Falcón
+            'Adaure',
+            'Adícora',
+            'Baraived',
+            'Buena Vista',
+            'Jadacaquiva',
+            'El Vínculo',
+            'El Hato',
+            'Moruy',
+            'Pueblo Nuevo',
+            // Municipio Federación
+            'Agua Larga',
+            'Churuguara',
+            'El Paují',
+            'Independencia',
+            'Mapararí',
+            // Municipio Jacura
+            'Agua Linda',
+            'Araurima',
+            'Jacura',
+            // Municipio José Laurencio Silva
+            'Tucacas',
+            'Boca de Aroa',
+            // Municipio Los Taques
+            'Los Taques',
+            'Judibana',
+            // Municipio Mauroa
+            'Mene de Mauroa',
+            'San Félix',
+            'Casigua',
+            // Municipio Miranda
+            'Guzmán Guillermo',
+            'Mitare',
+            'Río Seco',
+            'Sabaneta',
+            'San Antonio',
+            'San Gabriel',
+            'Santa Ana',
+            // Municipio Monseñor Iturriza
+            'Boca del Tocuyo',
+            'Chichiriviche',
+            'Tocuyo de la Costa',
+            // Municipio Palmasola
+            'Palmasola',
+            // Municipio Petit
+            'Cabure',
+            'Colina',
+            'Curimagua',
+            // Municipio Píritu
+            'San José de la Costa',
+            'Píritu',
+            // Municipio San Francisco
+            'Mirimire',
+            // Municipio Sucre
+            'Sucre',
+            'Pecaya',
+            // Municipio Tocópero
+            'Tocópero',
+            // Municipio Unión
+            'El Charal',
+            'Las Vegas del Tuy',
+            'Santa Cruz de Bucaral',
+            // Municipio Urumaco
+            'Bruzual',
+            'Urumaco',
+            // Municipio Zamora
+            'Puerto Cumarebo',
+            'La Ciénaga',
+            'La Soledad',
+            'Pueblo Cumarebo',
+            'Zazárida'
+        ]);
             $table->string('full_name');
             $table->string('date_birth')->nullable();
             $table->string('sex')->nullable()->default('Sin asignar');
