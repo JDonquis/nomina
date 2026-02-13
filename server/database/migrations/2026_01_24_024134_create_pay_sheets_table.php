@@ -61,7 +61,7 @@ return new class extends Migration
             'Guajiro',
             'Seque',
             'Valle de Eroa',
-            'Zazárida',
+            'Zazárida Buchivacoa',
             // Municipio Cacique Manaure
             'Cacique Manaure',
             // Municipio Carirubana
@@ -153,7 +153,7 @@ return new class extends Migration
             'La Ciénaga',
             'La Soledad',
             'Pueblo Cumarebo',
-            'Zazárida'
+            'Zazárida Buchivacoa Zamora'
         ]);
             $table->string('full_name');
             $table->string('date_birth')->nullable();
