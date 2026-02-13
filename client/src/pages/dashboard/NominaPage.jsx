@@ -1246,6 +1246,51 @@ export default function NominaPage() {
           </div>
         </Modal>
 
+ <Modal
+          title="Censar"
+          isOpen={isCensusModalOpen}
+          onClose={() => setIsCensusModalOpen(false)}
+        >
+          <div>
+            {PDFdata.latest_census?.status && (
+              <div>
+                <h5 className="font-bold">ÚLTIMO CENSO</h5>
+                <p>
+                  <b>Realizado el </b>
+                  {new Date(PDFdata.latest_census?.created_at).toLocaleString(
+                    navigator.language,
+                    {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    },
+                  )}
+                </p>
+                <p>
+                  <b>Registrado por </b>
+                  {PDFdata.latest_census?.user?.full_name},
+                  {PDFdata.latest_census?.user?.charge}
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-4 justify-between mt-4">
+            {PDFdata.latest_census?.status && (
+              <button
+                onClick={() => handleUncensus(PDFdata.latest_census.id)}
+                className="bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl p-3 px-5"
+              >
+                Anular el censo
+              </button>
+            )}
+            <div></div>
+            <button
+              onClick={() => handleCensus(PDFdata.id)}
+              className="bg-color2 hover:shadow-xl hover:brightness-110 text-white rounded-xl p-3 px-5"
+            >
+              Censar al usuario
+            </button>
+          </div>
+        </Modal>
       </div>
     </>
   );

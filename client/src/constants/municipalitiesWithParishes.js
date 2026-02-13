@@ -20,7 +20,7 @@ const municipalitiesWithParishes = {
     { value: "Valle de Eroa", label: "Valle de Eroa" }
   ],
   "Cacique Manaure": [
-    { value: "Cacique Manaure (yaracal)", label: "Cacique Manaure (yaracal)" }
+    { value: "Cacique Manaure", label: "Cacique Manaure" }
   ],
   "Carirubana": [
     { value: "Carirubana", label: "Carirubana" },
