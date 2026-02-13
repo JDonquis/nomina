@@ -34,6 +34,7 @@ class StorePaySheetRequest extends FormRequest
             'administrative_location_id' => 'nullable|integer|exists:administrative_locations,id',
             'phone_number' => 'nullable|string|max:20',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'email' => 'nullable|email',
             'municipality' => ['nullable',Rule::in([
                 'Acosta',
                 'Bolívar',
