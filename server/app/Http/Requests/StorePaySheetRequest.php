@@ -36,10 +36,10 @@ class StorePaySheetRequest extends FormRequest
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             // Pension Data
-            'type_pension' => ['required', Rule::in(['Jubilacion', 'Incapacidad', 'Sobrevivencia'])],
-            'type_pay_sheet_id' => 'required|integer|exists:type_pay_sheets,id',
+            'type_pension' => ['nullable', Rule::in(['Jubilacion', 'Incapacidad', 'Sobrevivencia'])],
+            'type_pay_sheet_id' => 'nullable|integer|exists:type_pay_sheets,id',
             'last_charge' => 'nullable|string|max:255',
-            'civil_status' => ['required', Rule::in(['S', 'C', 'V'])],
+            'civil_status' => ['nullable', Rule::in(['S', 'C', 'V'])],
             'minor_child_nro' => 'integer|min:0',
             'disabled_child_nro' => 'integer|min:0',
             'receive_pension_from_another_organization_status' => 'boolean',

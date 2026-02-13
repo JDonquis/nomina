@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('date_birth')->nullable();
             $table->string('sex')->nullable()->default('Sin asignar');
-            $table->foreignId('type_pay_sheet_id');
+            $table->foreignId('type_pay_sheet_id')->nullable();
             $table->string('photo')->nullable();
             $table->timestamps();
         });

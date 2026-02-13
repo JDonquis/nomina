@@ -84,8 +84,8 @@ class TypePaySheetSeeder extends Seeder
         ]);
 
         TypePaySheet::create([
-            'name' => "PENSIONADOS SOBREVIVIENTES DESCENTRALIZADOS",
-            'code' => 257,
+            'name' => "PENSIONADOS SOBREVIVIENTES NO DESCENTRALIZADOS",
+            'code' => 258,
             'type_personal' => 'SOBREVIVIENTE',
 
         ]);
