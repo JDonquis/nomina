@@ -82,7 +82,7 @@ class UserService
             ->with('user')
             ->first();
 
-        Log::info('Este es el valor del token: ', [$token]);
+
 
         return ['status' => isset($token->id), 'full_name' => $token->user->full_name ?? null];
     }
@@ -95,7 +95,10 @@ class UserService
 
         $user = User::where('id', $token->user_id)->first();
 
-        $user->update(['password' => Hash::make($data['password'])]);
+        $user->update([
+            'password' => Hash::make($data['password']),
+            'email_verified_status' => true
+        ]);
 
         $token->delete();
 
