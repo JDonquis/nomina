@@ -22,7 +22,7 @@ class PaySheetController extends Controller
         $this->paySheetService = new PaySheetService;
     }
 
-    public function index(Request $request)
+        public function index(Request $request)
     {
         $paySheets = $this->paySheetService->get($request->all());
 
@@ -30,6 +30,17 @@ class PaySheetController extends Controller
             'message' => 'OK',
             'paySheets' => $paySheets
         ]);
+    }
+
+    public function show(PaySheet $paySheet){
+
+        $paySheet->load('typePaySheet', 'censuses.user', 'censuses.administrativeLocation');
+
+        return response()->json([
+            'message' => 'OK',
+            'paySheet' => $paySheet
+        ]);
+
     }
 
 

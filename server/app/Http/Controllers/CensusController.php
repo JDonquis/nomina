@@ -28,6 +28,16 @@ class CensusController extends Controller
         ]);
     }
 
+    public function show(Census $census){
+
+        $census->load(['paySheet.typePaySheet', 'user']);
+
+        return response()->json([
+            'message' => 'OK',
+            'census' => $census
+        ]);
+    }
+
     public function store(StoreCensusRequest $request)
     {
         try {
