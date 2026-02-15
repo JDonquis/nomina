@@ -20,7 +20,7 @@ export default function ActivateAccountPage() {
   // Extract token from URL query parameters
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get("token");
-
+  const email = queryParams.get("email");
   const pathname = window.location.pathname; 
 
   console.log(pathname);
@@ -179,7 +179,7 @@ export default function ActivateAccountPage() {
             <p className="text-gray-600 mt-2">
               {pathname === "/activar-cuenta" ? (
                 <span>
-                  !Hola {userData.name}!, establece tu contraseña para activar tu
+                  !Hola {userData.full_name}!, establece tu contraseña para activar tu
                   cuenta.
 
                 </span> ) : (
@@ -202,7 +202,7 @@ export default function ActivateAccountPage() {
                 <input
                   type="email"
                   id="email"
-                  value={userData.email}
+                  value={email}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
                 />
