@@ -524,11 +524,13 @@ export default function NominaPage() {
           submitData.append(key, value);
         }
         // DEBUG: Ver qué se está saltando
-        
-        
       });
 
-      if (formData.photo && submitString === "Actualizar" && formData.fotoChanged) {
+      if (
+        formData.photo &&
+        submitString === "Actualizar" &&
+        formData.fotoChanged
+      ) {
         await payrollAPI.updatePhoto(formData.id, submitData);
 
         // Eliminar el campo photo para evitar confusión en la siguiente petición
@@ -781,7 +783,10 @@ export default function NominaPage() {
                 onClick={() => {
                   setIsModalOpen(true);
                   console.log(cell.row.original);
-                  setFormData({ ...cell.row.original, ...cell.row.original.latest_census });
+                  setFormData({
+                    ...cell.row.original,
+                    ...cell.row.original.latest_census,
+                  });
                   setSubmitString("Actualizar");
                 }}
                 className="text-blue-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
@@ -790,23 +795,21 @@ export default function NominaPage() {
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
 
-            
-
-                {
-                  cell.row.original.latest_census?.status && (
-
-                  <button
-                    onClick={() => {
-                      setPDFmodal(true);
-                      setPDFdata({ ...cell.row.original, ...cell.row.original.latest_census });
-                    }}
-                    className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
-                    title="Descargar"
-                  >
-                    <Icon icon="proicons:pdf-2" width={20} height={20} />
-                  </button>
-                  )
-                }
+              {cell.row.original.latest_census?.status && (
+                <button
+                  onClick={() => {
+                    setPDFmodal(true);
+                    setPDFdata({
+                      ...cell.row.original,
+                      ...cell.row.original.latest_census,
+                    });
+                  }}
+                  className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                  title="Descargar"
+                >
+                  <Icon icon="proicons:pdf-2" width={20} height={20} />
+                </button>
+              )}
               <button
                 onClick={() => handleDelete(cell.row.original.id)}
                 className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
@@ -839,10 +842,11 @@ export default function NominaPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+
     try {
       const res = await payrollAPI.getWorkers({
         page: pagination.pageIndex + 1,
-        limit: pagination.pageSize,
+        per_page: user.is_admin ? pagination.pageSize : 1,
         sortField: sorting[0]?.id || "id",
         sortOrder: sorting[0]?.desc ? "desc" : "asc",
         search: globalFilter, // Global search
@@ -865,6 +869,7 @@ export default function NominaPage() {
     fetchData();
   }, [fetchData]);
 
+  console.log({ user });
   // Create debounced function once
   const debouncedSaveFormData = useMemo(
     () =>
@@ -1027,7 +1032,11 @@ export default function NominaPage() {
             setIsModalOpen(false);
             // Opcional: también limpiar localStorage aquí si quieres
           }}
-          title={submitString === "Actualizar" ? "Actualizar Trabajador" : "Registrar Trabajador"}
+          title={
+            submitString === "Actualizar"
+              ? "Actualizar Trabajador"
+              : "Registrar Trabajador"
+          }
           size="xl"
         >
           <form
@@ -1035,28 +1044,26 @@ export default function NominaPage() {
             onSubmit={onSubmit}
           >
             <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
-
-              {submitString === "Actualizar" && formData.latest_census?.status && (
-              <div className="bg-gray-200 p-3 rounded-xl text-center">
-                <h5 className="font-bold">ÚLTIMO CENSO</h5>
-                <p>
-                  <b>Realizado el </b>
-                  {new Date(formData.latest_census?.created_at).toLocaleString(
-                    navigator.language,
-                    {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    },
-                  )}
-                </p>
-                <p>
-                  <b>Registrado por </b>
-                  {formData.latest_census?.user?.full_name}, 
-                  <span> </span>
-                  {formData.latest_census?.user?.charge}
-                </p>
-              </div>
-            )}
+              {submitString === "Actualizar" &&
+                formData.latest_census?.status && (
+                  <div className="bg-gray-200 p-3 rounded-xl text-center">
+                    <h5 className="font-bold">ÚLTIMO CENSO</h5>
+                    <p>
+                      <b>Realizado el </b>
+                      {new Date(
+                        formData.latest_census?.created_at,
+                      ).toLocaleString(navigator.language, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                    <p>
+                      <b>Registrado por </b>
+                      {formData.latest_census?.user?.full_name},<span> </span>
+                      {formData.latest_census?.user?.charge}
+                    </p>
+                  </div>
+                )}
               <h2 className="text-xl font-bold mb-2 col-span-2  ">
                 Datos personales
               </h2>
@@ -1191,6 +1198,8 @@ export default function NominaPage() {
                 columns={columns}
                 data={data}
                 rowCount={rowCount}
+                //pagination only when is admin
+                // enablePagination={user.is_admin}
                 manualPagination
                 manualSorting
                 manualFiltering
@@ -1216,16 +1225,20 @@ export default function NominaPage() {
                 enableColumnFilters={true}
                 enableSorting={true}
                 enableFilters={true}
+                rowsPerPageOptions={user.is_admin ? [25, 50, 100] : []}
                 muiTablePaginationProps={{
-                  rowsPerPageOptions: [25, 50, 100],
-                  showFirstButton: true,
-                  showLastButton: true,
+                  rowsPerPageOptions: user.is_admin ? [25, 50, 100] : [],
+                  showFirstButton: user.is_admin ? true : false, 
+                  showLastButton: user.is_admin ? true : false, 
+                    className: !user.is_admin ? 'hide-rows-per-page' : '',
+                
                 }}
                 muiSearchTextFieldProps={{
                   placeholder: "Buscar",
                   sx: { minWidth: "300px" },
                   variant: "outlined",
                 }}
+                
               />
             }
           </div>
@@ -1246,7 +1259,7 @@ export default function NominaPage() {
           </div>
         </Modal>
 
- <Modal
+        <Modal
           title="Censar"
           isOpen={isCensusModalOpen}
           onClose={() => setIsCensusModalOpen(false)}

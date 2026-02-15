@@ -43,7 +43,7 @@ export default function ActivateAccountPage() {
           console.log("no se hizo")
           response = await authAPI.verifyResetToken(token);
         } 
-        setUserData(response.data.user);
+        setUserData(response.data.full_name);
         setVerifying(false);
         setLoading(false);
       } catch (error) {
