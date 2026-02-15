@@ -17,7 +17,8 @@ return new class extends Migration
             $table->enum('nac', ['V', 'E']);
             $table->string('ci');
             $table->string('email')->nullable();
-            $table->enum('municipalitiy', [
+            $table->string('address')->nullable();
+            $table->enum('municipality', [
                 'Acosta',
                 'Bolívar',
                 'Buchivacoa',

@@ -16,6 +16,7 @@ class PaySheet extends Model
         'date_birth',
         'sex',
         'municipality',
+        'address',
         'parish',
         'email',
         'type_pay_sheet_id',

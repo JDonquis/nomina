@@ -42,6 +42,7 @@ class UpdatePaySheetRequest extends FormRequest
             'phone_number' => 'nullable|string|max:20',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'email' => 'nullable|email',
+            'address' => 'nullable|string',
             'municipality' => ['nullable',Rule::in([
                 'Acosta',
                 'Bolívar',

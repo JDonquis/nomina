@@ -117,6 +117,10 @@ class PaySheetService
             'full_name',
             'date_birth',
             'sex',
+            'email',
+            'municipality',
+            'parish',
+            'address',
             'type_pay_sheet_id',
         ])->toArray();
 
@@ -126,6 +130,10 @@ class PaySheetService
             'full_name',
             'date_birth',
             'sex',
+            'email',
+            'municipality',
+            'parish',
+            'address',
             'type_pay_sheet_id',
         ])->toArray();
 
@@ -133,17 +141,6 @@ class PaySheetService
         $paySheet = PaySheet::create($paySheetData);
 
         $userID =  Auth::id();
-
-        $censusData = array_merge($data, [
-            'pay_sheet_id' => $paySheet->id,
-            'status' => true,
-            'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
-            'user_id' => $userID
-        ]);
-
-        $census = Census::create($censusData);
-
-        $paySheet->update(['latest_census_id' => $census->id]);
 
         Activity::create([
             'user_id' => $userID,
@@ -167,7 +164,11 @@ class PaySheetService
             'full_name',
             'date_birth',
             'sex',
-            'type_pay_sheet_id'
+            'email',
+            'municipality',
+            'parish',
+            'address',
+            'type_pay_sheet_id',
         ])->toArray();
 
         $data = collect($data)->except([
@@ -176,26 +177,17 @@ class PaySheetService
             'full_name',
             'date_birth',
             'sex',
-            'type_pay_sheet_id'
+            'email',
+            'municipality',
+            'parish',
+            'address',
+            'type_pay_sheet_id',
         ])->toArray();
 
         $paySheet->update($paySheetData);
 
         $userID = Auth::id();
 
-        // Actualizamos el status de los demas censos
-        Census::where('pay_sheet_id', $paySheet->id)->update(['status' => false]);
-
-        $censusData = array_merge($data, [
-            'pay_sheet_id' => $paySheet->id,
-            'status' => true,
-            'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
-            'user_id' => $userID
-        ]);
-
-        $census = Census::create($censusData);
-
-        $paySheet->update(['latest_census_id' => $census->id]);
 
         Activity::create([
             'user_id' => $userID,
