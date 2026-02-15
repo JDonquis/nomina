@@ -10,6 +10,11 @@ use App\Http\Controllers\TypePaySheetController;
 use App\Http\Controllers\AdministrativeLocationController;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
+Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken']);
+Route::post('activate-account', [LoginController::class, 'setPassword']);
+
+
+
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 

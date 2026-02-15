@@ -9,8 +9,6 @@ use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Http\Requests\SetPasswordRequest;
-use App\Http\Requests\CheckSetPasswordTokenRequest;
 
 class UserController extends Controller
 {
@@ -125,23 +123,5 @@ class UserController extends Controller
         }
     }
 
-    public function checkSetPasswordToken(CheckSetPasswordTokenRequest $request)
-    {
 
-        $isValid = $this->userService->checkSetPasswordToken($request->token);
-
-
-        if ($isValid['status'])
-            return response()->json(['message' => 'OK', 'fullname' => $isValid['fullname']]);
-        else
-            return response()->json(['message' => 'Not valid'], 400);
-    }
-
-    public function setPassword(SetPasswordRequest $request)
-    {
-
-        $this->userService->setPassword($request->validated());
-
-        return response()->json(['message' => 'Contraseña actualizada exitosamente']);
-    }
 }

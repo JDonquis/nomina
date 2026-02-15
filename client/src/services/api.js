@@ -78,13 +78,13 @@ export const authAPI = {
 
   // Nuevos métodos para activación de cuenta
   verifyInvitationToken: (token) =>
-    api.get(`/admin/verify-invitation?token=${token}`),
+    api.post(`/verify-invitation`,{token}),
   activateAccount: (token, password) =>
-    api.post("/admin/activate-account", { token, password }),
+    api.post("/activate-account", { token, password }),
   verifyResetToken: (token) =>
-    api.get(`/admin/verify-reset-token?token=${token}`),
+    api.get(`/verify-reset-token?token=${token}`),
   resetPassword: (token, password) =>
-    api.post("/admin/reset-password", { token, password }),
+    api.post("/reset-password", { token, password }),
 };
 
 // Users API endpoints

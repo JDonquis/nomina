@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\PasswordGenerateToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use App\Models\PasswordGenerateToken;
+use Illuminate\Support\Facades\Log;
 
 class UserService
 {
@@ -81,7 +82,9 @@ class UserService
             ->with('user')
             ->first();
 
-        return ['status' => isset($token->id), 'full_name' => $token->user->fullname ?? null];
+        Log::info('Este es el valor del token: ', [$token]);
+
+        return ['status' => isset($token->id), 'full_name' => $token->user->full_name ?? null];
     }
 
     public function setPassword($data)
@@ -98,4 +101,5 @@ class UserService
 
         return 0;
     }
+
 }

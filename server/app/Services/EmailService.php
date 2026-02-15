@@ -6,7 +6,6 @@ use Exception;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\CreateAdminPasswordEmail;
 use App\Mail\NewUserEmail;
 
 class EmailService

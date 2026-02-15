@@ -28,7 +28,7 @@
                                 haciendo clic en el siguiente botón:
                             </p>
                             <p style="text-align: center; margin: 30px 0;">
-                                <a href="{{ config('app.frontend_url') . '/set-password?token=' . $token }}"
+                                <a href="{{ config('app.frontend_url') . '/activar-cuenta?token=' . $token . '&email=' . urlencode($user->email) }}"
                                     style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px; text-align: center;">
                                     Establecer mi contraseña
                                 </a>
