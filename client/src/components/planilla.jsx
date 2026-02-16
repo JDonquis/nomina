@@ -428,28 +428,23 @@ const PrintPage = (props) => {
 
   return (
     <div>
-      {props.isHidden ? (
-        <button onClick={handlePrint} title="Imprimir">
-          <Icon
-            icon="material-symbols:print-rounded"
-            className="w-6 min-h-7 text-gray-500  ml-2"
-          />
-        </button>
-      ) : (
-        <div className="flex justify-center mb-4">
-          <FuturisticButton
-            onClick={handlePrint}
-            title="Imprimir"
-            className="flex gap-2 text-xl mx-auto py-1 px-2 "
-          >
-            <Icon
-              icon="material-symbols:download-rounded"
-              className="w-6 min-h-7 text-gray-700  mr-3 inline "
-            />
-            <span>Descargar / Imprimir</span>
-          </FuturisticButton>
-        </div>
-      )}
+  
+        {props.data.status ? (
+          <div className="flex justify-center mb-4">
+            <FuturisticButton
+              onClick={handlePrint}
+              title="Imprimir"
+              className="flex gap-2 text-xl mx-auto py-1 px-2 "
+            >
+              <Icon
+                icon="material-symbols:download-rounded"
+                className="w-6 min-h-7 text-gray-700  mr-3 inline "
+              />
+              <span>Descargar / Imprimir</span>
+            </FuturisticButton>
+          </div>
+        
+        ) : null}
       {props.data  && (
         <PrintableContent
           data={props.data}

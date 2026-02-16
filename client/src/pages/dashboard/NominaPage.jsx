@@ -148,6 +148,7 @@ export default function NominaPage() {
   }
 
   const defaultFormData = {
+    to_census: false,
     // Datos personales
     photo: "",
     nac: "V",
@@ -266,7 +267,7 @@ export default function NominaPage() {
     {
       name: "phone_number",
       label: "Teléfono",
-      type: "text",
+      type: "phone",
       required: false,
       className: "col-span-6",
     },
@@ -508,7 +509,6 @@ export default function NominaPage() {
 
         // Solo agregar archivos
         if (value instanceof File) {
-          console.log("✅ Agregando File:", key, value);
           submitData.append(key, value);
         }
         // Para booleanos, convertir a 0 o 1
@@ -544,6 +544,7 @@ export default function NominaPage() {
           : payrollAPI.createWorker(submitData);
 
       await internalRequest;
+ 
       // Handle success
       if (submitString === "Actualizar") {
         setSubmitString("Registrar");
@@ -789,7 +790,6 @@ export default function NominaPage() {
               <button
                 onClick={() => {
                   setIsModalOpen(true);
-                  console.log(cell.row.original);
                   setFormData({
                     ...cell.row.original,
                     ...cell.row.original.latest_census,
@@ -801,8 +801,8 @@ export default function NominaPage() {
               >
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
-
-              {cell.row.original.latest_census?.status ? (
+            
+              {/* {!cell.row.original.latest_census?.status ? (
                 <button
                   onClick={() => {
                     setIsCensusModalOpen(true);
@@ -815,9 +815,9 @@ export default function NominaPage() {
                 </button>
               ) : (
                 <div className="w-7 "></div>
-              )}
+              )} */}
 
-              {cell.row.original.latest_census  ? (
+              {cell.row.original.latest_census ? (
                 <button
                   onClick={() => {
                     getHistory(cell.row.original.id);
@@ -825,9 +825,12 @@ export default function NominaPage() {
                   className="text-gray-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
                   title="Ver historial"
                 >
-                  <Icon icon="material-symbols:history" width={20} height={20} />
+                  <Icon
+                    icon="material-symbols:history"
+                    width={20}
+                    height={20}
+                  />
                 </button>
-
               ) : (
                 <div className="w-7"></div>
               )}
@@ -836,7 +839,10 @@ export default function NominaPage() {
                 <button
                   onClick={() => {
                     setPDFmodal(true);
-                    console.log({...cell.row.original, ...cell.row.original.latest_census});
+                    console.log({
+                      ...cell.row.original,
+                      ...cell.row.original.latest_census,
+                    });
                     setPDFdata({
                       ...cell.row.original,
                       ...cell.row.original.latest_census,
@@ -907,7 +913,6 @@ export default function NominaPage() {
     fetchData();
   }, [fetchData]);
 
-  console.log({ user });
   // Create debounced function once
   const debouncedSaveFormData = useMemo(
     () =>
@@ -957,7 +962,6 @@ export default function NominaPage() {
     setIsFormInitialized(true); // ← Activar guardado automático
   }, []);
 
-  console.log({ formData });
   return (
     <>
       <title>Nómina - LabFalcón</title>
@@ -1090,26 +1094,6 @@ export default function NominaPage() {
             onSubmit={onSubmit}
           >
             <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
-              {submitString === "Actualizar" &&
-                formData.latest_census?.status && (
-                  <div className="bg-gray-200 p-3 rounded-xl text-center">
-                    <h5 className="font-bold">ÚLTIMO CENSO</h5>
-                    <p>
-                      <b>Realizado el </b>
-                      {new Date(
-                        formData.latest_census?.created_at,
-                      ).toLocaleString(navigator.language, {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </p>
-                    <p>
-                      <b>Registrado por </b>
-                      {formData.latest_census?.user?.full_name},<span> </span>
-                      {formData.latest_census?.user?.charge}
-                    </p>
-                  </div>
-                )}
               <h2 className="text-xl font-bold mb-2 col-span-2  ">
                 Datos personales
               </h2>
@@ -1173,15 +1157,38 @@ export default function NominaPage() {
                     return (
                       <>
                         {field.name == "type_pension" && (
-                          <div className="col-span-12 flex items-center">
-                            <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
-                              Datos de la pensión
-                            </h2>
-                            <hr className="w-full h-0.5 flex-auto bg-gray-300" />
-                          </div>
+                          <>
+                            <div className={`col-span-12 flex gap-3 items-center ${formData.to_census ? "bg-gray-200" : ""} p-2 rounded-xl`}>
+                             
+                              <FormField
+                                key="to_census"
+                                name="to_census"
+                                label="Censar al guardar"
+                                type="checkbox"
+                                value={formData.to_census}
+                                onChange={(e) =>
+                                  setFormData({...formData, to_census: e.target.checked})
+                                }
+                              />
+                               <Icon
+                                icon="ci:wavy-check"
+                                width={20} 
+                                className="text-color2 inline-block"
+                                height={20}
+                              />
+                            </div>
+                            {formData.to_census && (
+                            <div className="col-span-12 flex items-center">
+                              <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
+                                Datos de la pensión
+                              </h2>
+                              <hr className="w-full h-0.5 flex-auto bg-gray-300" />
+                            </div>
+                            )}
+                          </>
                         )}
 
-                        {field.name == "pension_survivor_status" ? (
+                        {field.name == "pension_survivor_status" && formData.to_census ? (
                           <>
                             <div className="col-span-12 flex items-center">
                               <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
@@ -1199,12 +1206,14 @@ export default function NominaPage() {
                             </div>
                           </>
                         ) : (
-                          <FormField
-                            key={field.name}
-                            {...field}
-                            value={formData[field.name]}
-                            onChange={handleChangeValue}
-                          />
+                          index < 13 || formData.to_census ? (
+                            <FormField
+                              key={field.name}
+                              {...field}
+                              value={formData[field.name]}
+                              onChange={handleChangeValue}
+                            />
+                          ) : null
                         )}
                       </>
                     );
@@ -1220,15 +1229,25 @@ export default function NominaPage() {
                   variant="contained"
                   disabled={loading}
                   startIcon={loading ? <CircularProgress size={20} /> : null}
-                  className={`px-16 py-3 rounded-md font-semibold hover:bg-color3 ${
+                  className={`px-16 py-4 gap-2 flex items-center justify-center min-w-80 rounded-md font-semibold ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   } ${
-                    submitString == "Actualizar"
-                      ? "bg-color4 text-color1"
-                      : "bg-color1 text-color4"
+                    formData.to_census
+                      ? submitString == "Actualizar"
+                        ? "bg-gradient-to-r from-color4 to-color2 text-color1 hover:from-color4 hover:to-color2"
+                        : "bg-gradient-to-r from-color1 to-color2 text-color4 hover:from-color1 hover:to-color2"
+                      : submitString == "Actualizar"
+                      ? "bg-color4 text-color1 hover:bg-color3"
+                      : "bg-color1 text-color4 hover:bg-color3"
                   }`}
                 >
-                  {loading ? "Procesando..." : submitString}
+                 <span>
+
+                  {loading ? "Procesando..." : submitString} </span>
+
+                   {(formData.to_census && !loading )&& (
+                    <span className="flex gap-1 items-center"> y Censar   <Icon icon="ci:wavy-check" width={20} height={20} /></span>
+                  )}
                 </button>
               </div>
             </div>
@@ -1303,7 +1322,7 @@ export default function NominaPage() {
           </div>
         </Modal>
 
-        <Modal
+        {/* <Modal
           title={`Censar a ${PDFdata.full_name}`}
           isOpen={isCensusModalOpen}
           onClose={() => setIsCensusModalOpen(false)}
@@ -1347,7 +1366,7 @@ export default function NominaPage() {
               Censar al usuario
             </button>
           </div>
-        </Modal>
+        </Modal> */}
 
         <Modal
           title={`Historial de censos de ${PDFdata.full_name}`}
@@ -1403,8 +1422,9 @@ export default function NominaPage() {
                     {/* <Planilla data={census} isHidden={false} /> */}
                     <button
                       onClick={() => {
-                        console.log( census )
+                        console.log(census);
                         setPDFdata({
+                          ...PDFdata,
                           ...census,
                         });
                         setPDFmodal(true);

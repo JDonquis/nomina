@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { authAPI } from "../services/api";
 import { useFeedback } from "../context/FeedbackContext";
 import { Icon } from "@iconify/react";
-import logoBlue from "../assets/logoBlue.webp";
+// import logoBlue from "../assets/logoBlue.webp";
+
 import secretariaLogo from "../assets/secretaria_logo.png";
 
 export default function ActivateAccountPage() {
@@ -22,7 +23,7 @@ export default function ActivateAccountPage() {
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get("token");
   const email = queryParams.get("email");
-  const pathname = window.location.pathname; 
+  const pathname = window.location.pathname;
 
   console.log(pathname);
 
@@ -41,9 +42,9 @@ export default function ActivateAccountPage() {
         if (pathname === "/activar-cuenta") {
           response = await authAPI.verifyInvitationToken(token);
         } else if (pathname === "/olvide-contrasena") {
-          console.log("no se hizo")
+          console.log("no se hizo");
           response = await authAPI.verifyResetToken(token);
-        } 
+        }
         setUserData(response.full_name);
         setVerifying(false);
         setLoading(false);
@@ -58,6 +59,7 @@ export default function ActivateAccountPage() {
     verifyToken();
   }, [token, showError]);
 
+  console.log(userData);
   // Validate password
   const validatePassword = () => {
     if (password.length < 8) {
@@ -90,12 +92,18 @@ export default function ActivateAccountPage() {
         showSuccess("Cuenta activada con éxito. Ahora puedes iniciar sesión.");
       } else if (pathname === "/olvide-contrasena") {
         await authAPI.resetPassword(token, password);
-        showSuccess("Contraseña restablecida con éxito. Ahora puedes iniciar sesión.");
+        showSuccess(
+          "Contraseña restablecida con éxito. Ahora puedes iniciar sesión.",
+        );
       }
       navigate("/");
     } catch (error) {
       console.error("Error activating account:", error);
-      showError(error.message || pathname === "/activar-cuenta" ? "Error al activar la cuenta" : "Error al restablecer la contraseña");
+      showError(
+        error.message || pathname === "/activar-cuenta"
+          ? "Error al activar la cuenta"
+          : "Error al restablecer la contraseña",
+      );
       setLoading(false);
     }
   };
@@ -154,9 +162,11 @@ export default function ActivateAccountPage() {
     <>
       <div className="flex gap-3 items-center justify-between py-3 md:absolute w-full px-10">
         <div className="flex gap-3 items-center">
-          <img src={logoBlue} className="w-10 md:w-16 h-max" alt=" logo" />
-          <span className="text-2xl font-exo2 font-bold text-color1">LabFalcon</span>
+          <span className="text-2xl font-exo2 font-bold text-color1">
+            Censo de fe de vida
+          </span>
         </div>
+
         <img
           src={secretariaLogo}
           className="w-10 md:w-16 h-max"
@@ -175,18 +185,18 @@ export default function ActivateAccountPage() {
               <Icon icon="heroicons:user" className="w-8 h-8 text-blue-500" />
             </div>
             <h1 className="text-lg md:text-2xl font-bold text-gray-800">
-              {pathname === "/activar-cuenta" ? "Activar Cuenta" : "Restablecer Contraseña"}
+              {pathname === "/activar-cuenta"
+                ? "Activar Cuenta"
+                : "Restablecer Contraseña"}
             </h1>
             <p className="text-gray-600 mt-2">
               {pathname === "/activar-cuenta" ? (
                 <span>
-                  !Hola {userData.full_name}!, establece tu contraseña para activar tu
+                  !Hola {userData}!, establece tu contraseña para activar tu
                   cuenta.
-
-                </span> ) : (
-                <span>
-                  Establece tu nueva contraseña.
                 </span>
+              ) : (
+                <span>Establece tu nueva contraseña.</span>
               )}
             </p>
           </div>
@@ -209,22 +219,31 @@ export default function ActivateAccountPage() {
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+              <div className="relative mb-1 ">
+                <label className="block  text-sm  mb-1" htmlFor="password">
                   Contraseña
                 </label>
                 <input
-                  type={showPassword ? "text" : "password"}
                   id="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 relative"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
-                <Icon onClick={() => setShowPassword(!showPassword)} icon="heroicons:eye-off-outline" className="w-5 h-5  absolute right-3 top-8 font-bold text-gray-900 cursor-pointer" />
+                {showPassword ? (
+                  <Icon
+                    onClick={() => setShowPassword(!showPassword)}
+                    icon="majesticons:eye-line"
+                    className=" w-5 h-5  absolute right-3 top-8 font-bold text-gray-900 cursor-pointer"
+                  />
+                ) : (
+                  <Icon
+                    onClick={() => setShowPassword(!showPassword)}
+                    icon="mdi:eye-off-outline"
+                    className=" w-5 h-5  absolute right-3 top-8 font-bold text-gray-900 cursor-pointer"
+                  />
+                )}
               </div>
 
               <div>
