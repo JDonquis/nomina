@@ -82,6 +82,95 @@ export default function NominaPage() {
   const [administrativeLocations, setAdministrativeLocations] = useState([]);
   const [typePaySheets, setTypePaySheets] = useState([]);
   const { user } = useAuth();
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const galleryInputRef = useRef(null);
+  const photoOptionsRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  // Close photo options menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (photoOptionsRef.current && !photoOptionsRef.current.contains(event.target)) {
+        setShowPhotoOptions(false);
+      }
+    };
+
+    if (showPhotoOptions) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPhotoOptions]);
+
+  // Open camera using MediaDevices API
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+      setCameraStream(stream);
+      setShowCameraModal(true);
+      setShowPhotoOptions(false);
+
+      // Wait for next render to ensure video element exists
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      showError('No se pudo acceder a la cámara. ' + error.message);
+    }
+  };
+
+  // Stop camera stream
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setShowCameraModal(false);
+  };
+
+  // Capture photo from camera
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        setFormData({
+          ...formData,
+          photo: file,
+          fotoChanged: submitString === "Actualizar" ? true : false,
+        });
+        stopCamera();
+      }, 'image/jpeg', 0.95);
+    }
+  };
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -1104,13 +1193,13 @@ export default function NominaPage() {
                     return (
                       <div
                         key={field.name + "_" + field.label + index}
-                        className="mb-5 col-span-12 flex justify-center  pb-4 mx-auto"
+                        className="mb-5 col-span-12 flex justify-center  pb-4 mx-auto relative"
                       >
-                        <label
-                          htmlFor="photo"
-                          className="mx-auto text-gray-600 text-sm"
-                        >
-                          <div className="bg-gray-200 mt-1 rounded-md w-36 h-44 flex items-center justify-center cursor-pointer hover:bg-gray-400 duration-150">
+                        <div ref={photoOptionsRef} className="mx-auto text-gray-600 text-sm">
+                          <div
+                            onClick={() => setShowPhotoOptions(!showPhotoOptions)}
+                            className="bg-gray-200 mt-1 rounded-md w-36 h-44 flex items-center justify-center cursor-pointer hover:bg-gray-400 duration-150"
+                          >
                             {formData.photo ? null : (
                               <Icon
                                 icon="tabler:photo-up"
@@ -1122,7 +1211,7 @@ export default function NominaPage() {
                               <img
                                 src={URL.createObjectURL(formData.photo)}
                                 alt="preview"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover rounded-md"
                               />
                             ) : null}
                             {formData.photo &&
@@ -1131,25 +1220,54 @@ export default function NominaPage() {
                               <img
                                 src={API_URL + "/storage/" + formData.photo}
                                 alt="preview"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover rounded-md"
                               />
                             ) : null}
                           </div>
-                        </label>
+
+                          {/* Photo Options Menu */}
+                          {showPhotoOptions && (
+                            <div className="absolute z-50 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
+                              <button
+                                type="button"
+                                onClick={openCamera}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 rounded-t-lg"
+                              >
+                                <Icon icon="mdi:camera" className="w-5 h-5 text-color1" />
+                                <span>Tomar foto</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  galleryInputRef.current?.click();
+                                  setShowPhotoOptions(false);
+                                }}
+                                className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 rounded-b-lg border-t border-gray-200"
+                              >
+                                <Icon icon="mdi:image" className="w-5 h-5 text-color1" />
+                                <span>Subir desde galería</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Gallery Input */}
                         <input
+                          ref={galleryInputRef}
                           type="file"
-                          name="photo"
-                          id="photo"
+                          name="photo-gallery"
                           className="hidden"
                           accept="image/*"
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              photo: e.target.files[0],
-                              fotoChanged:
-                                submitString === "Actualizar" ? true : false,
-                            })
-                          }
+                          onChange={(e) => {
+                            if (e.target.files[0]) {
+                              setFormData({
+                                ...formData,
+                                photo: e.target.files[0],
+                                fotoChanged:
+                                  submitString === "Actualizar" ? true : false,
+                              });
+                            }
+                          }}
                         />
                       </div>
                     );
@@ -1253,6 +1371,46 @@ export default function NominaPage() {
             </div>
           </form>
         </Modal>
+
+        {/* Camera Modal */}
+        <Modal
+          isOpen={showCameraModal}
+          onClose={stopCamera}
+          title="Tomar Foto"
+          size="lg"
+        >
+          <div className="flex flex-col items-center gap-4 p-4">
+            <div className="relative w-full max-w-2xl bg-black rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-auto"
+              />
+            </div>
+
+            <canvas ref={canvasRef} className="hidden" />
+
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={capturePhoto}
+                className="px-8 py-3 bg-color1 text-white rounded-md hover:bg-color3 flex items-center gap-2"
+              >
+                <Icon icon="mdi:camera" className="w-5 h-5" />
+                Capturar Foto
+              </button>
+              <button
+                type="button"
+                onClick={stopCamera}
+                className="px-8 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+
         {!isModalOpen && (
           <div
             className="ag-theme-alpine ag-grid-no-border"
