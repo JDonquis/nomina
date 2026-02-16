@@ -24,6 +24,8 @@ class UpdatePaySheetRequest extends FormRequest
     {
         $paySheetId = $this->route('pay_sheet') ? $this->route('pay_sheet')->id : null;
 
+
+
         return [
             // Personal Data
             'nac' => ['required', Rule::in(['V', 'E'])],
@@ -43,6 +45,7 @@ class UpdatePaySheetRequest extends FormRequest
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'email' => 'nullable|email',
             'address' => 'nullable|string',
+            'to_census' => 'required|boolean',
             'municipality' => ['nullable',Rule::in([
                 'Acosta',
                 'Bolívar',

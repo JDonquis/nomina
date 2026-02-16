@@ -142,6 +142,21 @@ class PaySheetService
 
         $userID =  Auth::id();
 
+        if($data['to_census']){
+
+            $censusData = array_merge($data, [
+                'pay_sheet_id' => $paySheet->id,
+                'status' => true,
+                'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
+                'user_id' => $userID
+            ]);
+
+            $census = Census::create($censusData);
+
+            $paySheet->update(['latest_census_id' => $census->id]);
+        }
+
+
         Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
@@ -188,6 +203,19 @@ class PaySheetService
 
         $userID = Auth::id();
 
+        if($data['to_census']){
+
+            $censusData = array_merge($data, [
+                'pay_sheet_id' => $paySheet->id,
+                'status' => true,
+                'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
+                'user_id' => $userID
+            ]);
+
+            $census = Census::create($censusData);
+
+            $paySheet->update(['latest_census_id' => $census->id]);
+        }
 
         Activity::create([
             'user_id' => $userID,
