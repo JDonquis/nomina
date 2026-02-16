@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable();
             $table->integer('id_affected')->nullable();
             $table->string('activity')->nullable();
+            $table->json('pay_sheet')->nullable();
             $table->timestamps();
         });
     }

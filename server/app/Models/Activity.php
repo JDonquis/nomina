@@ -9,7 +9,8 @@ class Activity extends Model
     protected $fillable = [
         'user_id',
         'id_affected',
-        'activity'
+        'activity',
+        'pay_sheet'
     ];
 
     public function user(){

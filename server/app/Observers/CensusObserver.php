@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Census;
 use App\Models\Activity;
 use App\Enums\ActivityEnum;
+use App\Models\PaySheet;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,10 +20,15 @@ class CensusObserver
         if (Auth::check()) {
             $userID =  Auth::id();
 
+        $paySheet = PaySheet::where('id',$census->pay_sheet_id)->first();
+
+        $paySheet->load('latestCensus');
+
             Activity::create([
                 'user_id' => $userID,
                 'id_affected' => $census->id,
                 'activity' => ActivityEnum::CENSUS_CREATED,
+                'pay_sheet' => $paySheet->toArray()
             ]);
         } else {
             Log::info('No se pudo crear el activity');
@@ -45,13 +51,18 @@ class CensusObserver
         if (Auth::check()) {
             $userID =  Auth::id();
 
+        $paySheet = PaySheet::where('id',$census->pay_sheet_id)->first();
+
+        $paySheet->load('latestCensus');
+
             Activity::create([
                 'user_id' => $userID,
                 'id_affected' => $census->id,
                 'activity' => ActivityEnum::CENSUS_DELETED,
+                'pay_sheet' => $paySheet->toArray()
             ]);
         } else {
-            Log::info('No se pudo crear el activity');
+            Log::info('No se pudo eliminar el census');
         }
     }
 
