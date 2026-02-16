@@ -32,7 +32,7 @@ class PaySheet extends Model
 
     public function censuses()
     {
-        return $this->hasMany(Census::class, 'pay_sheet_id');
+        return $this->hasMany(Census::class, 'pay_sheet_id')->orderBy('id','desc');
     }
 
     public function latestCensus()
