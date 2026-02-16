@@ -22,7 +22,7 @@ class CensusObserver
 
         $paySheet = PaySheet::where('id',$census->pay_sheet_id)->first();
 
-        $paySheet->load('latestCensus');
+        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
 
             Activity::create([
                 'user_id' => $userID,
@@ -53,7 +53,7 @@ class CensusObserver
 
         $paySheet = PaySheet::where('id',$census->pay_sheet_id)->first();
 
-        $paySheet->load('latestCensus');
+        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
 
             Activity::create([
                 'user_id' => $userID,

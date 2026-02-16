@@ -157,15 +157,16 @@ class PaySheetService
         }
 
 
+
+        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
+
         Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_CREATED,
+            'pay_sheet' => $paySheet->toArray()
+
         ]);
-
-
-        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
-
 
         return $paySheet;
     }
@@ -205,6 +206,9 @@ class PaySheetService
 
         if($data['to_census']){
 
+            // Actualizamos el status de los demas censos
+            Census::where('pay_sheet_id', $paySheet->id)->update(['status' => false]);
+
             $censusData = array_merge($data, [
                 'pay_sheet_id' => $paySheet->id,
                 'status' => true,
@@ -217,13 +221,17 @@ class PaySheetService
             $paySheet->update(['latest_census_id' => $census->id]);
         }
 
+
+
+        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
+
         Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_UPDATED,
-        ]);
+            'pay_sheet' => $paySheet->toArray()
 
-        $paySheet->load('typePaySheet', 'latestCensus.administrativeLocation');
+        ]);
 
         return $paySheet;
     }
