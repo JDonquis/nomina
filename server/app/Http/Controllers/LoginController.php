@@ -57,9 +57,6 @@ class LoginController extends Controller
 
         $isValid = $userService->checkSetPasswordToken($request->token);
 
-        Log::info('Llego aca: ', [$isValid]);
-
-
         if ($isValid['status'])
             return response()->json(['message' => 'OK', 'full_name' => $isValid['full_name']]);
         else
