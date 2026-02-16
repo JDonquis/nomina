@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\PasswordGenerateToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use App\Models\PasswordGenerateToken;
+use Illuminate\Support\Facades\Log;
 
 class UserService
 {
@@ -81,7 +82,9 @@ class UserService
             ->with('user')
             ->first();
 
-        return ['status' => isset($token->id), 'full_name' => $token->user->fullname ?? null];
+
+
+        return ['status' => isset($token->id), 'full_name' => $token->user->full_name ?? null];
     }
 
     public function setPassword($data)
@@ -92,10 +95,14 @@ class UserService
 
         $user = User::where('id', $token->user_id)->first();
 
-        $user->update(['password' => Hash::make($data['password'])]);
+        $user->update([
+            'password' => Hash::make($data['password']),
+            'email_verified_status' => true
+        ]);
 
         $token->delete();
 
         return 0;
     }
+
 }

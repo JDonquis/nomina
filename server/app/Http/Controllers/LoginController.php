@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\CheckSetPasswordTokenRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\SetPasswordRequest;
+use App\Models\User;
+use App\Services\UserService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -45,6 +49,26 @@ class LoginController extends Controller
         return response()->json([
             'message' => 'Sesión cerrada exitosamente',
         ]);
+    }
+
+   public function checkSetPasswordToken(CheckSetPasswordTokenRequest $request)
+    {
+        $userService = new UserService;
+
+        $isValid = $userService->checkSetPasswordToken($request->token);
+
+        if ($isValid['status'])
+            return response()->json(['message' => 'OK', 'full_name' => $isValid['full_name']]);
+        else
+            return response()->json(['message' => 'Not valid'], 400);
+    }
+
+    public function setPassword(SetPasswordRequest $request)
+    {
+        $userService = new UserService;
+        $userService->setPassword($request->validated());
+
+        return response()->json(['message' => 'Contraseña actualizada exitosamente']);
     }
 
 

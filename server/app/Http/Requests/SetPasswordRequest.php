@@ -26,10 +26,8 @@ class SetPasswordRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                'same:confirm_password',
                 'min:4'
             ],
-            'confirm_password' => 'required|string',
         ];
     }
 }
