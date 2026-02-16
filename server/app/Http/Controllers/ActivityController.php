@@ -12,6 +12,22 @@ class ActivityController extends Controller
      */
     public function __invoke(Request $request)
     {
-        return Activity::with('user')->orderBy('id','desc')->get();
+        $query =  Activity::query()->with('user');
+
+        $sortField = $params['sortField'] ?? 'created_at';
+        $sortDirection = $params['sortOrder'] ?? 'desc';
+
+        $allowedSortFields = ['id','created_at'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'created_at';
+        }
+
+        $query->orderBy($sortField, $sortDirection);
+
+        $perPage = $params['per_page'] ?? 15;
+        $perPage = max(1, min(100, $perPage));
+
+        return $query->paginate($perPage);
+
     }
 }
