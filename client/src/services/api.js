@@ -118,6 +118,10 @@ export const censusAPI = {
   deleteCensus: (id) => api.delete(`/admin/censuses/${id}`),
 }
 
+export const activitiesAPI = {
+  getActivities: (params) => api.get("/admin/activities", { params }),
+}
+
 export const typePaySheetsAPI = {
   getPaySheets: () => api.get("/admin/type-pay-sheets"),
 }
