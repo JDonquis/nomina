@@ -589,17 +589,23 @@ export default function NominaPage() {
   };
 
   const handleCensus = async (id) => {
-    if (
-      !window.confirm(`¿Está seguro de Censar a ${PDFdata.full_name} ahora?`)
-    ) {
-      return;
-    }
-
     try {
       await censusAPI.createCensus({ pay_sheet_id: id });
       showSuccess("Censo realizado con éxito");
       fetchData();
       setIsCensusModalOpen(false);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+  };
+
+  const getHistory = async (id) => {
+    try {
+      const res = await payrollAPI.getHistory(id);
+      setPDFdata(res.paySheet);
+      setIsHistoryModalOpen(true);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
@@ -795,9 +801,8 @@ export default function NominaPage() {
               >
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
-              
-              {( !cell.row.original.latest_census?.status) && (
-                
+
+              {cell.row.original.latest_census?.status ? (
                 <button
                   onClick={() => {
                     setIsCensusModalOpen(true);
@@ -808,24 +813,30 @@ export default function NominaPage() {
                 >
                   <Icon icon="ci:wavy-check" width={20} height={20} />
                 </button>
-
+              ) : (
+                <div className="w-7 "></div>
               )}
 
-              <button
-                onClick={() => {
-                  setIsHistoryModalOpen(true);
-                  setPDFdata(cell.row.original);
-                }}
-                className="text-gray-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
-                title="Ver historial"
-              >
-                <Icon icon="material-symbols:history" width={20} height={20} />
-              </button>
+              {cell.row.original.latest_census  ? (
+                <button
+                  onClick={() => {
+                    getHistory(cell.row.original.id);
+                  }}
+                  className="text-gray-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                  title="Ver historial"
+                >
+                  <Icon icon="material-symbols:history" width={20} height={20} />
+                </button>
+
+              ) : (
+                <div className="w-7"></div>
+              )}
 
               {cell.row.original.latest_census?.status && (
                 <button
                   onClick={() => {
                     setPDFmodal(true);
+                    console.log({...cell.row.original, ...cell.row.original.latest_census});
                     setPDFdata({
                       ...cell.row.original,
                       ...cell.row.original.latest_census,
@@ -996,8 +1007,15 @@ export default function NominaPage() {
               onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
             >
               <Icon icon="tdesign:data-filled" width={24} height={24} />
-              {isOptionsModalOpen ? <Icon icon="material-symbols:close" width={24} height={24} /> : <Icon icon="material-symbols:more-vert" width={24} height={24} /> }
-              
+              {isOptionsModalOpen ? (
+                <Icon icon="material-symbols:close" width={24} height={24} />
+              ) : (
+                <Icon
+                  icon="material-symbols:more-vert"
+                  width={24}
+                  height={24}
+                />
+              )}
             </button>
 
             <div
@@ -1256,17 +1274,15 @@ export default function NominaPage() {
                 rowsPerPageOptions={user?.is_admin ? [25, 50, 100] : []}
                 muiTablePaginationProps={{
                   rowsPerPageOptions: user.is_admin ? [25, 50, 100] : [],
-                  showFirstButton: user.is_admin ? true : false, 
-                  showLastButton: user.is_admin ? true : false, 
-                    className: !user.is_admin ? 'hide-rows-per-page' : '',
-                
+                  showFirstButton: user.is_admin ? true : false,
+                  showLastButton: user.is_admin ? true : false,
+                  className: !user.is_admin ? "hide-rows-per-page" : "",
                 }}
                 muiSearchTextFieldProps={{
                   placeholder: "Buscar",
                   sx: { minWidth: "300px" },
                   variant: "outlined",
                 }}
-                
               />
             }
           </div>
@@ -1279,7 +1295,7 @@ export default function NominaPage() {
           onClose={() => {
             setResultsToken(null);
             setPDFmodal(false);
-            setPDFdata(false);
+            // setPDFdata(false);
           }}
         >
           <div className="flex flex-col justify-center">
@@ -1333,37 +1349,75 @@ export default function NominaPage() {
           </div>
         </Modal>
 
-
-        <Modal 
+        <Modal
           title={`Historial de censos de ${PDFdata.full_name}`}
           isOpen={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
         >
-         <ul>
-            {PDFdata?.censuses?.map((census) => (
-              <li key={census.id} className="flex">
-                <div>
-                  <p>
-                    <b>Realizado el </b>
-                    {new Date(census.created_at).toLocaleString(navigator.language, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+          <ul>
+            {PDFdata?.censuses?.map((census, index) => (
+              <li
+                key={census.id}
+                className=" rounded overflow-hidden  bg-gray-100 mb-2.5"
+              >
+                <div className="flex rounded-xl  bg-gray-200 justify-between">
+                  <p className="text-color4 w-10 p-4 flex items-center justify-center bg-color1 text-sm">
+                    {index + 1}
                   </p>
-                  <p>
-                    <b>Registrado por </b>
-                    {census.user.full_name}, {census.user.charge}
-                  </p>
+                  <div className="p-3 text-center">
+                    {census.status ? (
+                      <p className="text-color2 text-sm font-semibold mb-3">
+                        CENSO VIGENTE
+                      </p>
+                    ) : null}
+                    <p className="flex gap-3">
+                      <b>
+                        {" "}
+                        <Icon
+                          icon="mingcute:time-line"
+                          width={20}
+                          height={20}
+                        />{" "}
+                      </b>
+                      {new Date(census.created_at).toLocaleString(
+                        navigator.language,
+                        {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        },
+                      )}
+                    </p>
+                    <p className="flex gap-3 mt-2 text-sm">
+                      <b>
+                        <Icon
+                          icon="material-symbols:person"
+                          width={20}
+                          height={20}
+                        />{" "}
+                      </b>
+                      {census.user.full_name}, {census.user.charge}
+                    </p>
+                  </div>
 
+                  <div>
+                    {/* <Planilla data={census} isHidden={false} /> */}
+                    <button
+                      onClick={() => {
+                        console.log( census )
+                        setPDFdata({
+                          ...census,
+                        });
+                        setPDFmodal(true);
+                      }}
+                      className="flex items-center justify-center h-full bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl rounded-l-none p-2 px-3"
+                    >
+                      <Icon icon="proicons:pdf-2" width={30} height={30} />
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <Planilla data={census} isHidden={false} />
-                </div>
-                <hr className="my-2" />
               </li>
             ))}
-         </ul>
-
+          </ul>
         </Modal>
       </div>
     </>

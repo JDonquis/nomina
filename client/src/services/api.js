@@ -105,6 +105,7 @@ export const payrollAPI = {
   updatePhoto: (id, photo) => api.post(`/admin/pay-sheets/photo/${id}`, photo, { headers: { "Content-Type": "multipart/form-data" } }),
   deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
   importExcel: (file) => api.post("/admin/pay-sheets/sheet", file, { headers: { "Content-Type": "multipart/form-data" } }),
+  getHistory: (id) => api.get(`/admin/pay-sheets/${id}`),
 };
 
 export const asicAPI = {
