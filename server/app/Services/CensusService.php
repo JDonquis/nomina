@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use App\Models\Census;
+use App\Models\PaySheet;
 use Illuminate\Support\Facades\Auth;
 
 class CensusService
@@ -147,6 +148,10 @@ class CensusService
         $data['expiration_date'] = Carbon::now()->endOfYear()->format('Y-m-d');
         $data['user_id'] = Auth::id();
         $census = Census::create($data);
+
+        PaySheet::where('id', $census->pay_sheet_id)->update(['latest_census_id' => $census->id]);
+        Census::where('pay_sheet_id', $census->pay_sheet_id)->whereNot('id', $census->id)->update(['status' => false]);
+
 
         return $census;
     }

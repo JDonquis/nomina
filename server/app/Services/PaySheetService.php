@@ -228,7 +228,20 @@ class PaySheetService
     public function destroy($paySheet)
     {
         Census::where('pay_sheet_id', $paySheet->id)->delete();
+
+        $userID = Auth::id();
+
+        Activity::create([
+            'user_id' => $userID,
+            'id_affected' => $paySheet->id,
+            'activity' => ActivityEnum::PAYSHEET_DELETED,
+        ]);
+
         $paySheet->delete();
+
+
+
+
 
         return 0;
     }

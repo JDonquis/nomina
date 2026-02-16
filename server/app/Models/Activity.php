@@ -11,4 +11,8 @@ class Activity extends Model
         'id_affected',
         'activity'
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }
