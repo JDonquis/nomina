@@ -13,6 +13,10 @@ class Activity extends Model
         'pay_sheet'
     ];
 
+    protected $casts = [
+        'pay_sheet' => 'array',
+    ];
+
     public function user(){
         return $this->belongsTo(User::class);
     }

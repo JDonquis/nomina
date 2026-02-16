@@ -164,7 +164,7 @@ class PaySheetService
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_CREATED,
-            'pay_sheet' => $paySheet->toArray()
+            'pay_sheet' => $paySheet
 
         ]);
 
@@ -229,7 +229,7 @@ class PaySheetService
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_UPDATED,
-            'pay_sheet' => $paySheet->toArray()
+            'pay_sheet' => $paySheet
 
         ]);
 
