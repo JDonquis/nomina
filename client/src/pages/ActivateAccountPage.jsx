@@ -13,6 +13,7 @@ export default function ActivateAccountPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { showSuccess, showError } = useFeedback();
@@ -43,7 +44,7 @@ export default function ActivateAccountPage() {
           console.log("no se hizo")
           response = await authAPI.verifyResetToken(token);
         } 
-        setUserData(response.data.full_name);
+        setUserData(response.full_name);
         setVerifying(false);
         setLoading(false);
       } catch (error) {
@@ -216,13 +217,14 @@ export default function ActivateAccountPage() {
                   Contraseña
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 relative"
                   required
                 />
+                <Icon onClick={() => setShowPassword(!showPassword)} icon="heroicons:eye-off-outline" className="w-5 h-5  absolute right-3 top-8 font-bold text-gray-900 cursor-pointer" />
               </div>
 
               <div>
@@ -233,7 +235,7 @@ export default function ActivateAccountPage() {
                   Confirmar Contraseña
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="confirmPassword"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

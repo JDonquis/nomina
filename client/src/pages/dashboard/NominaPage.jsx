@@ -72,6 +72,7 @@ export default function NominaPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [PDFmodal, setPDFmodal] = useState(false);
   const [isCensusModalOpen, setIsCensusModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
   const [resultsToken, setResultsToken] = useState(null);
@@ -794,6 +795,32 @@ export default function NominaPage() {
               >
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
+              
+              {( !cell.row.original.latest_census?.status) && (
+                
+                <button
+                  onClick={() => {
+                    setIsCensusModalOpen(true);
+                    setPDFdata(cell.row.original);
+                  }}
+                  className="text-color2 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                  title="Censar"
+                >
+                  <Icon icon="ci:wavy-check" width={20} height={20} />
+                </button>
+
+              )}
+
+              <button
+                onClick={() => {
+                  setIsHistoryModalOpen(true);
+                  setPDFdata(cell.row.original);
+                }}
+                className="text-gray-500 p-1 rounded-full hover:bg-gray-300 hover:underline"
+                title="Ver historial"
+              >
+                <Icon icon="material-symbols:history" width={20} height={20} />
+              </button>
 
               {cell.row.original.latest_census?.status && (
                 <button
@@ -969,7 +996,8 @@ export default function NominaPage() {
               onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
             >
               <Icon icon="tdesign:data-filled" width={24} height={24} />
-              <Icon icon="material-symbols:more-vert" width={24} height={24} />
+              {isOptionsModalOpen ? <Icon icon="material-symbols:close" width={24} height={24} /> : <Icon icon="material-symbols:more-vert" width={24} height={24} /> }
+              
             </button>
 
             <div
@@ -1225,7 +1253,7 @@ export default function NominaPage() {
                 enableColumnFilters={true}
                 enableSorting={true}
                 enableFilters={true}
-                rowsPerPageOptions={user.is_admin ? [25, 50, 100] : []}
+                rowsPerPageOptions={user?.is_admin ? [25, 50, 100] : []}
                 muiTablePaginationProps={{
                   rowsPerPageOptions: user.is_admin ? [25, 50, 100] : [],
                   showFirstButton: user.is_admin ? true : false, 
@@ -1260,7 +1288,7 @@ export default function NominaPage() {
         </Modal>
 
         <Modal
-          title="Censar"
+          title={`Censar a ${PDFdata.full_name}`}
           isOpen={isCensusModalOpen}
           onClose={() => setIsCensusModalOpen(false)}
         >
@@ -1303,6 +1331,39 @@ export default function NominaPage() {
               Censar al usuario
             </button>
           </div>
+        </Modal>
+
+
+        <Modal 
+          title={`Historial de censos de ${PDFdata.full_name}`}
+          isOpen={isHistoryModalOpen}
+          onClose={() => setIsHistoryModalOpen(false)}
+        >
+         <ul>
+            {PDFdata?.censuses?.map((census) => (
+              <li key={census.id} className="flex">
+                <div>
+                  <p>
+                    <b>Realizado el </b>
+                    {new Date(census.created_at).toLocaleString(navigator.language, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </p>
+                  <p>
+                    <b>Registrado por </b>
+                    {census.user.full_name}, {census.user.charge}
+                  </p>
+
+                </div>
+                <div>
+                  <Planilla data={census} isHidden={false} />
+                </div>
+                <hr className="my-2" />
+              </li>
+            ))}
+         </ul>
+
         </Modal>
       </div>
     </>
