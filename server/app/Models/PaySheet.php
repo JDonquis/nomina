@@ -45,7 +45,7 @@ class PaySheet extends Model
         'decease_date',
         'suspend_payment_status',
         'last_payment',
-
+        'status',
         'user_id'
 
     ];

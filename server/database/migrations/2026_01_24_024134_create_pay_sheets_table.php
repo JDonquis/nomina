@@ -186,7 +186,7 @@ return new class extends Migration
         $table->date('last_payment')->nullable();
 
         $table->foreignId('user_id')->nullable();
-
+        $table->boolean('status')->default(false);
 
 
         $table->timestamps();
