@@ -29,6 +29,7 @@ import { useAuth } from "../../context/AuthContext";
 import withoutPhoto from "../../assets/withoutPhoto.png";
 import { cities } from "../../constants/cities";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
+import typePensions from "../../constants/type_pensions";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -407,11 +408,7 @@ export default function NominaPage() {
       name: "type_pension",
       label: "Tipo de Pensión",
       type: "select",
-      options: [
-        { value: "Jubilacion", label: "Jubilación" },
-        { value: "Incapacidad", label: "Incapacidad" },
-        { value: "Sobrevivencia", label: "Sobrevivencia" },
-      ],
+      options: typePensions,
       className: "col-span-6",
     },
     {
