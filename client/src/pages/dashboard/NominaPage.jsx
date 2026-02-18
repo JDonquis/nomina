@@ -1055,7 +1055,7 @@ export default function NominaPage() {
     <>
       <title>Nómina - LabFalcón</title>
       <div style={{ height: 580, width: "100%" }}>
-        <div className="md:flex justify-between items-center mb-4">
+        <div className="md:flex fadeInUp justify-between items-center mb-4">
           <div>
             <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
               Nómina
@@ -1096,7 +1096,7 @@ export default function NominaPage() {
 
             <button
               title="más opciones"
-              className={`flex  items-center ${isOptionsModalOpen ? "bg-gray-200 text-gray-700 shadow-xl" : "bg-gray-100 text-gray-600 "} pl-2 rounded-md`}
+              className={` flex  items-center ${isOptionsModalOpen ? "bg-gray-200 text-gray-700 shadow-xl" : "bg-gray-100 text-gray-600 "} pl-2 rounded-md`}
               onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
             >
               <Icon icon="tdesign:data-filled" width={24} height={24} />
