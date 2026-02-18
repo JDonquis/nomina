@@ -12,7 +12,7 @@ class CensusService
     public function get($params = [])
     {
 
-        $query = Census::query()->with(['paySheet.typePaySheet', 'user']);
+        $query = Census::query()->with(['paySheet.typePaySheet']);
 
         if (!empty($params['search'])) {
             $search = $params['search'];

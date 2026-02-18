@@ -40,7 +40,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey],
+      [onChange, testKey]
     );
 
     return (
@@ -63,7 +63,7 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  },
+  }
 );
 
 export default function NominaPage() {
@@ -93,17 +93,20 @@ export default function NominaPage() {
   // Close photo options menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (photoOptionsRef.current && !photoOptionsRef.current.contains(event.target)) {
+      if (
+        photoOptionsRef.current &&
+        !photoOptionsRef.current.contains(event.target)
+      ) {
         setShowPhotoOptions(false);
       }
     };
 
     if (showPhotoOptions) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showPhotoOptions]);
 
@@ -111,8 +114,8 @@ export default function NominaPage() {
   const openCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false
+        video: { facingMode: "user" },
+        audio: false,
       });
       setCameraStream(stream);
       setShowCameraModal(true);
@@ -125,15 +128,15 @@ export default function NominaPage() {
         }
       }, 100);
     } catch (error) {
-      console.error('Error accessing camera:', error);
-      showError('No se pudo acceder a la cámara. ' + error.message);
+      console.error("Error accessing camera:", error);
+      showError("No se pudo acceder a la cámara. " + error.message);
     }
   };
 
   // Stop camera stream
   const stopCamera = () => {
     if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream.getTracks().forEach((track) => track.stop());
       setCameraStream(null);
     }
     setShowCameraModal(false);
@@ -148,18 +151,24 @@ export default function NominaPage() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      const context = canvas.getContext('2d');
+      const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      canvas.toBlob((blob) => {
-        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-        setFormData({
-          ...formData,
-          photo: file,
-          fotoChanged: submitString === "Actualizar" ? true : false,
-        });
-        stopCamera();
-      }, 'image/jpeg', 0.95);
+      canvas.toBlob(
+        (blob) => {
+          const file = new File([blob], `photo_${Date.now()}.jpg`, {
+            type: "image/jpeg",
+          });
+          setFormData({
+            ...formData,
+            photo: file,
+            fotoChanged: submitString === "Actualizar" ? true : false,
+          });
+          stopCamera();
+        },
+        "image/jpeg",
+        0.95
+      );
     }
   };
 
@@ -167,7 +176,7 @@ export default function NominaPage() {
   useEffect(() => {
     return () => {
       if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream.getTracks().forEach((track) => track.stop());
       }
     };
   }, [cameraStream]);
@@ -633,7 +642,7 @@ export default function NominaPage() {
           : payrollAPI.createWorker(submitData);
 
       await internalRequest;
- 
+
       // Handle success
       if (submitString === "Actualizar") {
         setSubmitString("Registrar");
@@ -706,7 +715,7 @@ export default function NominaPage() {
   const handleUncensus = async (id) => {
     if (
       !window.confirm(
-        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`,
+        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`
       )
     ) {
       return;
@@ -890,7 +899,7 @@ export default function NominaPage() {
               >
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
-            
+
               {/* {!cell.row.original.latest_census?.status ? (
                 <button
                   onClick={() => {
@@ -959,7 +968,7 @@ export default function NominaPage() {
         },
       },
     ],
-    [],
+    []
   );
 
   const [data, setData] = useState([]);
@@ -987,7 +996,7 @@ export default function NominaPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {}),
+          }, {})
         ),
       });
       setData(res.paySheets.data);
@@ -1011,7 +1020,7 @@ export default function NominaPage() {
         localStorage.setItem("formData", JSON.stringify(dataWithoutPhoto));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    [],
+    []
   );
 
   useEffect(() => {
@@ -1021,6 +1030,20 @@ export default function NominaPage() {
     }
   }, [formData, debouncedSaveFormData, isFormInitialized]);
 
+  useEffect(() => {
+    if (formData.type_pension == "Sobrevivencia") {
+      setFormData((prev) => ({
+        ...prev,
+        pension_survivor_status: true,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        pension_survivor_status: false,
+      }));
+    }
+  }, [formData.type_pension]);
+
   // Debounced global filter handler
   const debouncedGlobalFilter = useMemo(
     () =>
@@ -1028,7 +1051,7 @@ export default function NominaPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    [],
+    []
   );
 
   const handleChangeValue = useCallback((e) => {
@@ -1069,7 +1092,7 @@ export default function NominaPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString")),
+                    JSON.parse(localStorage.getItem("submitString"))
                   );
                   setIsModalOpen(true);
                 }}
@@ -1096,7 +1119,11 @@ export default function NominaPage() {
 
             <button
               title="más opciones"
-              className={` flex  items-center ${isOptionsModalOpen ? "bg-gray-200 text-gray-700 shadow-xl" : "bg-gray-100 text-gray-600 "} pl-2 rounded-md`}
+              className={`flex  items-center ${
+                isOptionsModalOpen
+                  ? "bg-gray-200 text-gray-700 shadow-xl"
+                  : "bg-gray-100 text-gray-600 "
+              } pl-2 rounded-md`}
               onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
             >
               <Icon icon="tdesign:data-filled" width={24} height={24} />
@@ -1112,7 +1139,9 @@ export default function NominaPage() {
             </button>
 
             <div
-              className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${isOptionsModalOpen ? "block" : "hidden"}`}
+              className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${
+                isOptionsModalOpen ? "block" : "hidden"
+              }`}
             >
               <p className="p-2 text-sm text-gray-500">Opciones</p>
               <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
@@ -1154,7 +1183,7 @@ export default function NominaPage() {
                     if (
                       window.confirm(
                         e.target.files[0].name +
-                          "   ¿Desea añadir los datos de este excel a la nómina?",
+                          "   ¿Desea añadir los datos de este excel a la nómina?"
                       )
                     ) {
                       importExcel(e);
@@ -1195,9 +1224,14 @@ export default function NominaPage() {
                         key={field.name + "_" + field.label + index}
                         className="mb-5 col-span-12 flex justify-center  pb-4 mx-auto relative"
                       >
-                        <div ref={photoOptionsRef} className="mx-auto text-gray-600 text-sm">
+                        <div
+                          ref={photoOptionsRef}
+                          className="mx-auto text-gray-600 text-sm"
+                        >
                           <div
-                            onClick={() => setShowPhotoOptions(!showPhotoOptions)}
+                            onClick={() =>
+                              setShowPhotoOptions(!showPhotoOptions)
+                            }
                             className="bg-gray-200 mt-1 rounded-md w-36 h-44 flex items-center justify-center cursor-pointer hover:bg-gray-400 duration-150"
                           >
                             {formData.photo ? null : (
@@ -1233,7 +1267,10 @@ export default function NominaPage() {
                                 onClick={openCamera}
                                 className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 rounded-t-lg"
                               >
-                                <Icon icon="mdi:camera" className="w-5 h-5 text-color1" />
+                                <Icon
+                                  icon="mdi:camera"
+                                  className="w-5 h-5 text-color1"
+                                />
                                 <span>Tomar foto</span>
                               </button>
                               <button
@@ -1244,7 +1281,10 @@ export default function NominaPage() {
                                 }}
                                 className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 rounded-b-lg border-t border-gray-200"
                               >
-                                <Icon icon="mdi:image" className="w-5 h-5 text-color1" />
+                                <Icon
+                                  icon="mdi:image"
+                                  className="w-5 h-5 text-color1"
+                                />
                                 <span>Subir desde galería</span>
                               </button>
                             </div>
@@ -1276,8 +1316,11 @@ export default function NominaPage() {
                       <>
                         {field.name == "type_pension" && (
                           <>
-                            <div className={`col-span-12 flex gap-3 items-center ${formData.to_census ? "bg-gray-200" : ""} p-2 rounded-xl`}>
-                             
+                            <div
+                              className={`col-span-12 flex gap-3 items-center ${
+                                formData.to_census ? "bg-gray-200" : ""
+                              } p-2 rounded-xl`}
+                            >
                               <FormField
                                 key="to_census"
                                 name="to_census"
@@ -1285,28 +1328,32 @@ export default function NominaPage() {
                                 type="checkbox"
                                 value={formData.to_census}
                                 onChange={(e) =>
-                                  setFormData({...formData, to_census: e.target.checked})
+                                  setFormData({
+                                    ...formData,
+                                    to_census: e.target.checked,
+                                  })
                                 }
                               />
-                               <Icon
+                              <Icon
                                 icon="ci:wavy-check"
-                                width={20} 
+                                width={20}
                                 className="text-color2 inline-block"
                                 height={20}
                               />
                             </div>
                             {formData.to_census && (
-                            <div className="col-span-12 flex items-center">
-                              <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
-                                Datos de la pensión
-                              </h2>
-                              <hr className="w-full h-0.5 flex-auto bg-gray-300" />
-                            </div>
+                              <div className="col-span-12 flex items-center">
+                                <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
+                                  Datos de la pensión
+                                </h2>
+                                <hr className="w-full h-0.5 flex-auto bg-gray-300" />
+                              </div>
                             )}
                           </>
                         )}
 
-                        {field.name == "pension_survivor_status" && formData.to_census ? (
+                        {field.name == "pension_survivor_status" &&
+                        formData.to_census ? (
                           <>
                             <div className="col-span-12 flex items-center">
                               <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
@@ -1315,24 +1362,19 @@ export default function NominaPage() {
                               <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                             </div>
                             <div className="col-span-12">
-                              <FormField
-                                key={field.name}
-                                {...field}
-                                value={formData[field.name]}
-                                onChange={handleChangeValue}
-                              />
+                              {!formData.pension_survivor_status && (
+                                <p> No aplica</p>
+                              )}
                             </div>
                           </>
-                        ) : (
-                          index < 13 || formData.to_census ? (
-                            <FormField
-                              key={field.name}
-                              {...field}
-                              value={formData[field.name]}
-                              onChange={handleChangeValue}
-                            />
-                          ) : null
-                        )}
+                        ) : index < 13 || formData.to_census ? (
+                          <FormField
+                            key={field.name}
+                            {...field}
+                            value={formData[field.name]}
+                            onChange={handleChangeValue}
+                          />
+                        ) : null}
                       </>
                     );
                   }
@@ -1359,12 +1401,14 @@ export default function NominaPage() {
                       : "bg-color1 text-color4 hover:bg-color3"
                   }`}
                 >
-                 <span>
+                  <span>{loading ? "Procesando..." : submitString} </span>
 
-                  {loading ? "Procesando..." : submitString} </span>
-
-                   {(formData.to_census && !loading )&& (
-                    <span className="flex gap-1 items-center"> y Censar   <Icon icon="ci:wavy-check" width={20} height={20} /></span>
+                  {formData.to_census && !loading && (
+                    <span className="flex gap-1 items-center">
+                      {" "}
+                      y Censar{" "}
+                      <Icon icon="ci:wavy-check" width={20} height={20} />
+                    </span>
                   )}
                 </button>
               </div>
@@ -1561,7 +1605,7 @@ export default function NominaPage() {
                         {
                           dateStyle: "medium",
                           timeStyle: "short",
-                        },
+                        }
                       )}
                     </p>
                     <p className="flex gap-3 mt-2 text-sm">

@@ -111,54 +111,27 @@ class PaySheetService
             $photoPath = $this->storePhoto($photo, $data['ci'] ?? 'unknown');
         }
 
-        $paySheetData = collect($data)->only([
-            'nac',
-            'ci',
-            'full_name',
-            'date_birth',
-            'sex',
-            'email',
-            'municipality',
-            'parish',
-            'address',
-            'type_pay_sheet_id',
-        ])->toArray();
-
-        $data = collect($data)->except([
-            'nac',
-            'ci',
-            'full_name',
-            'date_birth',
-            'sex',
-            'email',
-            'municipality',
-            'parish',
-            'address',
-            'type_pay_sheet_id',
-        ])->toArray();
-
-        $paySheetData['photo'] = $photoPath;
-        $paySheet = PaySheet::create($paySheetData);
-
         $userID =  Auth::id();
+        $data['photo'] = $photoPath;
+        $data['user_id'] = $userID;
+
+        $paySheet = PaySheet::create($data);
+
 
         if($data['to_census']){
 
-            $censusData = array_merge($data, [
+            Census::create([
                 'pay_sheet_id' => $paySheet->id,
                 'status' => true,
                 'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
-                'user_id' => $userID
+                'user_id' => $userID,
+                'data' => $paySheet->load('typePaySheet','user','administrativeLocation')
             ]);
 
-            $census = Census::create($censusData);
-
-            $paySheet->update(['latest_census_id' => $census->id]);
         }
 
 
-
-        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
+        $paySheet->load('typePaySheet', 'user', 'administrativeLocation');
 
         Activity::create([
             'user_id' => $userID,
@@ -173,57 +146,33 @@ class PaySheetService
 
     public function update($data, $paySheet)
     {
-
-        $paySheetData = collect($data)->only([
-            'nac',
-            'ci',
-            'full_name',
-            'date_birth',
-            'sex',
-            'email',
-            'municipality',
-            'parish',
-            'address',
-            'type_pay_sheet_id',
-        ])->toArray();
-
-        $data = collect($data)->except([
-            'nac',
-            'ci',
-            'full_name',
-            'date_birth',
-            'sex',
-            'email',
-            'municipality',
-            'parish',
-            'address',
-            'type_pay_sheet_id',
-        ])->toArray();
-
-        $paySheet->update($paySheetData);
-
         $userID = Auth::id();
+
+        $data['user_id'] = $userID;
+
+        $paySheet->update($data);
+
+
 
         if($data['to_census']){
 
             // Actualizamos el status de los demas censos
             Census::where('pay_sheet_id', $paySheet->id)->update(['status' => false]);
 
-            $censusData = array_merge($data, [
+            Census::create([
                 'pay_sheet_id' => $paySheet->id,
                 'status' => true,
                 'expiration_date' => Carbon::now()->endOfYear()->format('Y-m-d'),
-                'user_id' => $userID
+                'user_id' => $userID,
+                'data' => $paySheet->load('typePaySheet','user','administrativeLocation')
             ]);
 
-            $census = Census::create($censusData);
-
-            $paySheet->update(['latest_census_id' => $census->id]);
         }
 
 
 
-        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
+        $paySheet->load('typePaySheet', 'user', 'administrativeLocation');
+
 
         Activity::create([
             'user_id' => $userID,
@@ -252,10 +201,15 @@ class PaySheetService
 
         $userID = Auth::id();
 
+        $paySheet->load('typePaySheet', 'user', 'administrativeLocation');
+
+
         Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_UPDATED,
+            'pay_sheet' => $paySheet
+
         ]);
 
         return 0;
@@ -267,17 +221,17 @@ class PaySheetService
 
         $userID = Auth::id();
 
+        $paySheet->load('typePaySheet', 'user', 'administrativeLocation');
+
+
         Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_DELETED,
+            'pay_sheet' => $paySheet
         ]);
 
         $paySheet->delete();
-
-
-
-
 
         return 0;
     }
