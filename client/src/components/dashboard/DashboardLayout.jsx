@@ -13,7 +13,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-color1  py-0.5 relative">
-      <div className={`absolute  duration-1000 z-50 right-0 top-0 w-full h-full fadeOut pointer-events-none`} style={{background: "#172744"}} ></div>
+      <div className={`absolute  duration-700 z-50 right-0 top-0 w-full h-full fadeOut pointer-events-none`} style={{background: "#172744"}} ></div>
       <div className="w-full md:flex-none md:duration-75" style={{width: window.innerWidth < 768 ? '100%' : (isSidebarOpen ? '200px' : '72px')}}>
         <Sidebar  isSidebarOpen={isSidebarOpen} handleSidebarToggle={handleSidebarToggle} />
       </div>

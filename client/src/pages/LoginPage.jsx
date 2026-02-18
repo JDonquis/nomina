@@ -94,7 +94,7 @@ export default function LoginPage() {
     <>
       <title>Iniciar Sesión - Nómina</title>
       <div className="min-h-screen overflow-hidden relative  bg-color1 bg-cover bg-center">
-        <div className={`absolute h-full duration-1000 delay-300 z-10 right-0 top-0  ${animation ? "w-full  opacity-100" : "opacity-10  w-1 h-1"} `} style={{background: "#172744"}} ></div>
+        <div className={`absolute h-full duration-500 delay-200 z-10 right-0 top-0  ${animation ? "w-full  opacity-100" : "opacity-10  w-1 h-1"} `} style={{background: "#172744"}} ></div>
         <img
           src={background}
           alt="lab"

@@ -378,7 +378,7 @@ h5 {
 }
 
 .zoomAnimationToTheRight {
-  animation: zoomAnimationToTheRight 1.2s ease-out forwards;
+  animation: zoomAnimationToTheRight .7s ease-out forwards;
 }
 @keyframes zoomAnimationToTheRight {
   0% {
