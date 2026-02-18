@@ -12,8 +12,9 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-color1  py-0.5">
-      <div className="w-full md:flex-none md:duration-100" style={{width: window.innerWidth < 768 ? '100%' : (isSidebarOpen ? '200px' : '72px')}}>
+    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-color1  py-0.5 relative">
+      <div className={`absolute  duration-700 z-50 right-0 top-0 w-full h-full fadeOut pointer-events-none`} style={{background: "#172744"}} ></div>
+      <div className="w-full md:flex-none md:duration-75" style={{width: window.innerWidth < 768 ? '100%' : (isSidebarOpen ? '200px' : '72px')}}>
         <Sidebar  isSidebarOpen={isSidebarOpen} handleSidebarToggle={handleSidebarToggle} />
       </div>
       <div className="flex-grow p-4 sm:p-6 md:overflow-y-auto md:p-12 md:pt-8 bg-gray-50 rounded-2xl">

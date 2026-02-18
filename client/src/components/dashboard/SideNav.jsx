@@ -17,9 +17,9 @@ const links = [
   },
   {
     permission: true,
-    name: "Censados",
-    href: "/dashboard/censados",
-    icon: "ci:wavy-check",
+    name: "Movimientos",
+    href: "/dashboard/movimientos",
+    icon: "mdi:swap-horizontal",
   },
   {
     permission: "admin",

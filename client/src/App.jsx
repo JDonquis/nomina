@@ -13,7 +13,7 @@ import { useAuth } from './context/AuthContext';
 // Lazy load heavy components
 
 const NominaPage = lazy(() => import(/* webpackChunkName: "examenes" */ './pages/dashboard/NominaPage'));
-const CensadoPage = lazy(() => import(/* webpackChunkName: "censado" */ './pages/dashboard/CensadoPage'));
+const MovimientosPage = lazy(() => import(/* webpackChunkName: "movimientos" */ './pages/dashboard/MovimientosPage'));
 import UsuariosPage from './pages/dashboard/UsuariosPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 
@@ -56,9 +56,9 @@ function AppContent() {
                 } 
                 />
 
-                <Route path="censados" element={
+                <Route path="movimientos" element={
                   <Suspense fallback={<PageLoader />}>
-                    <CensadoPage />
+                    <MovimientosPage />
                   </Suspense>
                 } 
                 />

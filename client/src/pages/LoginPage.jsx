@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useFeedback } from "../context/FeedbackContext";
 import { authAPI } from "../services/api";
 import labFalconLogo from "../assets/logoBlue.webp";
-import doctor from "../assets/doctor.webp";
+import background from "../assets/background.webp";
 import secretariaLogo from "../assets/secretaria_logo.png";
 import { Icon } from "@iconify/react";
 import cintilloCorto from "../assets/cintilloCorto.png";
@@ -24,6 +24,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { user, login, loading: authLoading } = useAuth();
   const { showError, showSuccess } = useFeedback();
+  const [animation, setAnimation] = useState(false);
 
   const [loadingReset, setLoadingReset] = useState(false);
   // Redirect to dashboard if user is already logged in
@@ -52,6 +53,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setAnimation(true);
 
     try {
       // Use the authAPI.login method instead of fetch
@@ -59,12 +61,18 @@ export default function LoginPage() {
 
       // Login successful
       if (data) {
-        login(data, data.token);
-        navigate("/dashboard");
+        //make animations and then navigate to dashboard
+
+        setTimeout(() => {
+          
+          login(data, data.token);
+          navigate("/dashboard");
+        }, 300);
       }
     } catch (err) {
       showError(err.message);
       console.log(err);
+      setAnimation(false);
     } finally {
       setLoading(false);
     }
@@ -84,19 +92,20 @@ export default function LoginPage() {
 
   return (
     <>
-      <title>Iniemailar Sesión - Nómina</title>
-      <div className="min-h-screen overflow-hidden relative  bg-gray-600 bg-cover bg-center">
+      <title>Iniciar Sesión - Nómina</title>
+      <div className="min-h-screen overflow-hidden relative  bg-color1 bg-cover bg-center">
+        <div className={`absolute h-full duration-500 delay-200 z-10 right-0 top-0  ${animation ? "w-full  opacity-100" : "opacity-10  w-1 h-1"} `} style={{background: "#172744"}} ></div>
         <img
-          src={doctor}
+          src={background}
           alt="lab"
-          className="absolute  left-0 w-full h-full object-cover "
+          className={`absolute   w-full h-full object-cover object-right ${animation ? "zoomAnimationToTheRight " : ""}`}
         />
         <div
-          className=" absolute w-[300px] md:min-w-[400px] md:w-[450px] pb-3 top-24 z-50 md:top-12 lg:top-24 px-5 pt-4 md:pt-10 sm:pt-20 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-20 text-color1 md:p-16 rounded-3xl overflow-hidden"
+          className={`absolute w-[300px] md:min-w-[400px] md:w-[450px] pb-3 top-24 z-50 md:top-12 lg:top-24 px-5 pt-4 md:pt-10 sm:pt-20 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-20 text-white md:p-16 rounded-3xl overflow-hidden ${animation ? "fadeOut" : ""}`}
           style={{
-            background: "rgba(255, 255, 255, 0.2)",
-            backdropFilter: "blur(5px)",
-            WebkitBackdropFilter: "blur(35px)",
+            background: "rgba(255, 255, 255, 0.15)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(35px)", 
           }}
         >
           {/* <div className="mx-auto bg-color1 fadeInUp-delay-1 fadeInUp   backdrop-blur-none w-16 h-16 md:w-20 md:h-20 flex items-center justify-center aspect-square rounded-full p-2.5 md:p-4">
@@ -106,14 +115,16 @@ export default function LoginPage() {
               alt="logo del sistema"
             />
           </div> */}
-          <h1 className="fadeInUp mb-4 fadeInUp-delay-0-5 text-lg md:text-2xl font-bold  mt-4 text-center ">
-            Nomina
+          <h1 className="text-white fadeInUp mb-4 fadeInUp-delay-0-5 text-lg md:text-2xl font-bold  mt-4 text-center ">
+            Censo de fe de vida
           </h1>
-          <p className="fadeInUp fadeInUp-delay-0-5  text-dark text-xs md:text-md text-center">
-            Sistema de nómina de la Secretaria de Salud del estado Falcón
+          <p className="fadeInUp fadeInUp-delay-0-5  text-white  text-sm md:text-md text-center">
+            Sistema de censo de fe de vida de la Secretaria de Salud del estado Falcón
           </p>
 
-          <form onSubmit={handleSubmit} className="fadeInUp ">
+
+
+          <form onSubmit={handleSubmit} className={`fadeInUp  font-semibold `} >
             <div className="mb-4 mt-4 md:mt-10 ">
               <label className="block  text-sm  mb-1" htmlFor="email">
                 Email
@@ -123,7 +134,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setemail(e.target.value)}
-                className="w-full  text-gray-800 px-2 py-2 text-sm sm:px-3 sm:py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white/50  text-gray-800 px-2 py-2 text-sm sm:px-3 sm:py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -137,7 +148,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full   text-gray-800 px-2 py-2 text-sm sm:px-3 sm:py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                className="w-full   bg-white/50  text-gray-800 px-2 py-2 text-sm sm:px-3 sm:py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                 required
               />
               {showPassword ? (
@@ -179,7 +190,7 @@ export default function LoginPage() {
           </form>
         </div>
       </div>
-      <header className="flex gap-1 md:gap-4 flex-col md:flex-row items-center px-10 text-color1 text-sm z-40 w-full relative md:absolute  top-0 text-center -100 py-2 lg:py-5">
+      <header className={`flex gap-1 md:gap-4 flex-col md:flex-row items-center px-10 text-color1 text-sm z-40 w-full relative md:absolute  top-0 text-center -100 py-2 lg:py-5 ${animation ? "fadeOut" : ""}`}>
         <img
           src={secretariaLogo}
           alt="secretariaLogo"
