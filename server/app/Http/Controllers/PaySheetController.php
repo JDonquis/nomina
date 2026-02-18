@@ -34,7 +34,7 @@ class PaySheetController extends Controller
 
     public function show(PaySheet $paySheet){
 
-        $paySheet->load('typePaySheet', 'censuses.user', 'censuses.administrativeLocation');
+        $paySheet->load('typePaySheet', 'user', 'administrativeLocation','censuses');
 
         return response()->json([
             'message' => 'OK',

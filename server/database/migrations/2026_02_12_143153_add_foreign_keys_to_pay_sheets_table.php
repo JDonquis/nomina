@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pay_sheets', function (Blueprint $table) {
-            $table->foreignId('latest_census_id')->nullable()->constrained('censuses')->nullOnDelete();
-        });
+        // Schema::table('pay_sheets', function (Blueprint $table) {
+        //     $table->foreignId('latest_census_id')->nullable()->constrained('censuses')->nullOnDelete();
+        // });
     }
 
     /**
@@ -21,9 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pay_sheets', function (Blueprint $table) {
-            $table->dropForeign(['latest_census_id']);
-            $table->dropColumn('latest_census_id');
-        });
+        // Schema::table('pay_sheets', function (Blueprint $table) {
+        //     $table->dropForeign(['latest_census_id']);
+        //     $table->dropColumn('latest_census_id');
+        // });
     }
 };

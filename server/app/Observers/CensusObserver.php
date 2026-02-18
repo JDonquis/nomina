@@ -20,15 +20,11 @@ class CensusObserver
         if (Auth::check()) {
             $userID =  Auth::id();
 
-        $paySheet = PaySheet::where('id',$census->pay_sheet_id)->first();
-
-        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
-
             Activity::create([
                 'user_id' => $userID,
                 'id_affected' => $census->id,
                 'activity' => ActivityEnum::CENSUS_CREATED,
-                'pay_sheet' => $paySheet->toArray()
+                'pay_sheet' => $census->data
             ]);
         } else {
             Log::info('No se pudo crear el activity');
@@ -51,15 +47,11 @@ class CensusObserver
         if (Auth::check()) {
             $userID =  Auth::id();
 
-        $paySheet = PaySheet::where('id',$census->pay_sheet_id)->first();
-
-        $paySheet->load('typePaySheet', 'latestCensus.user', 'latestCensus.administrativeLocation');
-
             Activity::create([
                 'user_id' => $userID,
                 'id_affected' => $census->id,
                 'activity' => ActivityEnum::CENSUS_DELETED,
-                'pay_sheet' => $paySheet->toArray()
+                'pay_sheet' => $census->data
             ]);
         } else {
             Log::info('No se pudo eliminar el census');
