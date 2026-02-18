@@ -177,7 +177,7 @@ class StorePaySheetRequest extends FormRequest
         ])],
 
             // Pension Data
-            'type_pension' => ['nullable', Rule::in(['Jubilacion', 'Incapacidad', 'Sobrevivencia', 'Pensionado', 'Jubilado y Sobreviviente'])],
+            'type_pension' => ['nullable', Rule::in(['Jubilacion', 'Incapacidad', 'Sobrevivencia', 'Pensionado', 'Jubilado y sobreviviente'])],
             'type_pay_sheet_id' => 'nullable|integer|exists:type_pay_sheets,id',
             'last_charge' => 'nullable|string|max:255',
             'civil_status' => ['nullable', Rule::in(['S', 'C', 'V'])],

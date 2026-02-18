@@ -165,7 +165,7 @@ return new class extends Migration
         $table->string('photo')->nullable();
 
         // Pension Data
-        $table->enum('type_pension', ['Jubilacion', 'Incapacidad', 'Sobrevivencia', 'Pensionado', 'Jubilado y Sobreviviente']);
+        $table->enum('type_pension', ['Jubilacion', 'Incapacidad', 'Sobrevivencia', 'Pensionado', 'Jubilado y sobreviviente']);
         $table->string('last_charge')->nullable();
         $table->enum('civil_status', ['S', 'C', 'V']);
         $table->integer('minor_child_nro')->default(0);
