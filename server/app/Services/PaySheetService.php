@@ -128,6 +128,8 @@ class PaySheetService
                 'data' => $paySheet->load('typePaySheet','user','administrativeLocation')
             ]);
 
+            $paySheet->update(['status' => true]);
+
         }
 
 
@@ -166,6 +168,8 @@ class PaySheetService
                 'user_id' => $userID,
                 'data' => $paySheet->load('typePaySheet','user','administrativeLocation')
             ]);
+
+            $paySheet->update(['status' => true]);
 
         }
 
