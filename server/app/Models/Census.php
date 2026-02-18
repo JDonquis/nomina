@@ -10,7 +10,6 @@ class Census extends Model
 {
     protected $fillable = [
         'pay_sheet_id',
-        'user_id',
         'status',
         'expiration_date',
         'data',
