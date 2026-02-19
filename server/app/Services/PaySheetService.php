@@ -115,10 +115,55 @@ class PaySheetService
         $data['photo'] = $photoPath;
         $data['user_id'] = $userID;
 
-        $paySheet = PaySheet::create($data);
+        $paySheetData = collect($data)->only([
+             'nac',
+            'ci',
+            'email',
+            'phone_number',
+            'address',
+            'municipality',
+            'parish',
+            'state',
+            'city',
+            'full_name',
+            'date_birth',
+            'sex',
+            'type_pay_sheet_id',
+            'administrative_location_id',
+            'photo',
+        ])->toArray();
+
+        $paySheet = PaySheet::create($paySheetData);
 
 
         if($data['to_census']){
+
+            $pensionData = collect($data)->only([
+                // Pension Data
+                'type_pension',
+                'last_charge',
+                'civil_status',
+                'minor_child_nro',
+                'disabled_child_nro',
+                'receive_pension_from_another_organization_status',
+                'another_organization_name',
+                'has_authorizations',
+                // Pension Survivor
+                'pension_survivor_status',
+                'fullname_causative',
+                'age_causative',
+                'parent_causative',
+                'sex_causative',
+                'ci_causative',
+                'decease_date',
+                'suspend_payment_status',
+                'last_payment',
+                'user_id'
+            ])->toArray();
+
+            $pensionData['status'] = true;
+
+            $paySheet->update($pensionData);
 
             Census::create([
                 'pay_sheet_id' => $paySheet->id,
@@ -127,8 +172,6 @@ class PaySheetService
                 'user_id' => $userID,
                 'data' => $paySheet->load('typePaySheet','user','administrativeLocation')
             ]);
-
-            $paySheet->update(['status' => true]);
 
         }
 
@@ -152,11 +195,57 @@ class PaySheetService
 
         $data['user_id'] = $userID;
 
-        $paySheet->update($data);
+        $paySheetData = collect($data)->only([
+             'nac',
+            'ci',
+            'email',
+            'phone_number',
+            'address',
+            'municipality',
+            'parish',
+            'state',
+            'city',
+            'full_name',
+            'date_birth',
+            'sex',
+            'type_pay_sheet_id',
+            'administrative_location_id',
+            'photo',
+        ])->toArray();
+
+        $paySheet->update($paySheetData);
 
 
 
         if($data['to_census']){
+
+            $pensionData = collect($data)->only([
+                // Pension Data
+                'type_pension',
+                'last_charge',
+                'civil_status',
+                'minor_child_nro',
+                'disabled_child_nro',
+                'receive_pension_from_another_organization_status',
+                'another_organization_name',
+                'has_authorizations',
+                // Pension Survivor
+                'pension_survivor_status',
+                'fullname_causative',
+                'age_causative',
+                'parent_causative',
+                'sex_causative',
+                'ci_causative',
+                'decease_date',
+                'suspend_payment_status',
+                'last_payment',
+                'user_id'
+            ])->toArray();
+
+            $pensionData['status'] = true;
+
+            $paySheet->update($pensionData);
+
 
             // Actualizamos el status de los demas censos
             Census::where('pay_sheet_id', $paySheet->id)->update(['status' => false]);
@@ -169,7 +258,6 @@ class PaySheetService
                 'data' => $paySheet->load('typePaySheet','user','administrativeLocation')
             ]);
 
-            $paySheet->update(['status' => true]);
 
         }
 
