@@ -29,6 +29,7 @@ import { useAuth } from "../../context/AuthContext";
 import withoutPhoto from "../../assets/withoutPhoto.png";
 import { cities } from "../../constants/cities";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
+import typePensions from "../../constants/type_pensions";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -407,11 +408,7 @@ export default function NominaPage() {
       name: "type_pension",
       label: "Tipo de Pensión",
       type: "select",
-      options: [
-        { value: "Jubilacion", label: "Jubilación" },
-        { value: "Incapacidad", label: "Incapacidad" },
-        { value: "Sobrevivencia", label: "Sobrevivencia" },
-      ],
+      options: typePensions,
       className: "col-span-6",
     },
     {
@@ -580,7 +577,6 @@ export default function NominaPage() {
       const fieldsToSkip = [
         "type_pay_sheet", // Relación, ya tienes type_pay_sheet_id
         "administrative_location", // Relación, ya tienes administrative_location_id
-        "latest_census", // Relación
         "latestCensus", // Relación
         "created_at", // Timestamp automático
         "updated_at", // Timestamp automático
@@ -809,7 +805,7 @@ export default function NominaPage() {
       },
       {
         header: "Censado",
-        accessorKey: "latest_census.status",
+        accessorKey: "status",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["CENSADO", "NO CENSADO"],
@@ -830,12 +826,12 @@ export default function NominaPage() {
       //     size: 200,
       //   },
       {
-        accessorKey: "latest_census.phone_number",
+        accessorKey: "phone_number",
         header: "Teléfono",
         size: 100,
       },
       {
-        accessorKey: "latest_census.city",
+        accessorKey: "city",
         header: "Ciudad",
         size: 100,
         filterVariant: "select",
@@ -870,7 +866,7 @@ export default function NominaPage() {
       },
       {
         header: "Tipo de Pensión",
-        accessorKey: "latest_census.type_pension",
+        accessorKey: "type_pension",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
@@ -890,7 +886,6 @@ export default function NominaPage() {
                   setIsModalOpen(true);
                   setFormData({
                     ...cell.row.original,
-                    ...cell.row.original.latest_census,
                   });
                   setSubmitString("Actualizar");
                 }}
@@ -900,7 +895,7 @@ export default function NominaPage() {
                 <Icon icon="material-symbols:edit" width={20} height={20} />
               </button>
 
-              {/* {!cell.row.original.latest_census?.status ? (
+              {/* {!cell.row.original..status ? (
                 <button
                   onClick={() => {
                     setIsCensusModalOpen(true);
@@ -915,7 +910,7 @@ export default function NominaPage() {
                 <div className="w-7 "></div>
               )} */}
 
-              {cell.row.original.latest_census ? (
+              {cell.row.original.status? (
                 <button
                   onClick={() => {
                     getHistory(cell.row.original.id);
@@ -933,17 +928,15 @@ export default function NominaPage() {
                 <div className="w-7"></div>
               )}
 
-              {cell.row.original.latest_census?.status && (
+              {cell.row.original.status && (
                 <button
                   onClick={() => {
                     setPDFmodal(true);
                     console.log({
                       ...cell.row.original,
-                      ...cell.row.original.latest_census,
                     });
                     setPDFdata({
                       ...cell.row.original,
-                      ...cell.row.original.latest_census,
                     });
                   }}
                   className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
@@ -1078,7 +1071,7 @@ export default function NominaPage() {
     <>
       <title>Nómina - LabFalcón</title>
       <div style={{ height: 580, width: "100%" }}>
-        <div className="md:flex justify-between items-center mb-4">
+        <div className="md:flex fadeInUp justify-between items-center mb-4">
           <div>
             <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
               Nómina
@@ -1530,12 +1523,12 @@ export default function NominaPage() {
           onClose={() => setIsCensusModalOpen(false)}
         >
           <div>
-            {PDFdata.latest_census?.status && (
+            {PDFdata..status && (
               <div>
                 <h5 className="font-bold">ÚLTIMO CENSO</h5>
                 <p>
                   <b>Realizado el </b>
-                  {new Date(PDFdata.latest_census?.created_at).toLocaleString(
+                  {new Date(PDFdata..created_at).toLocaleString(
                     navigator.language,
                     {
                       dateStyle: "medium",
@@ -1545,16 +1538,16 @@ export default function NominaPage() {
                 </p>
                 <p>
                   <b>Registrado por </b>
-                  {PDFdata.latest_census?.user?.full_name},
-                  {PDFdata.latest_census?.user?.charge}
+                  {PDFdata..user?.full_name},
+                  {PDFdata..user?.charge}
                 </p>
               </div>
             )}
           </div>
           <div className="flex gap-4 justify-between mt-4">
-            {PDFdata.latest_census?.status && (
+            {PDFdata..status && (
               <button
-                onClick={() => handleUncensus(PDFdata.latest_census.id)}
+                onClick={() => handleUncensus(PDFdata.id)}
                 className="bg-gray-300 hover:shadow-xl hover:brightness-110 rounded-xl p-3 px-5"
               >
                 Anular el censo
