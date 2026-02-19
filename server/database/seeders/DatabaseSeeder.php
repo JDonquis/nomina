@@ -16,9 +16,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        AdministrativeLocation::create([
-            'name' => 'Hospital de Carabobo',
-        ]);
 
         $this->call([
             UserSeeder::class,
