@@ -77,17 +77,43 @@ class TypePaySheetSeeder extends Seeder
         ]);
 
         TypePaySheet::create([
-            'name' => "PENSIONADOS SOBREVIVIENTES DESCENTRALIZADOS",
+            'name' => "PENSIONADOS SOBREVIVIENTES NO DESCENTRALIZADOS",
             'code' => 257,
             'type_personal' => 'SOBREVIVIENTE',
 
         ]);
 
         TypePaySheet::create([
-            'name' => "PENSIONADOS SOBREVIVIENTES NO DESCENTRALIZADOS",
+            'name' => "PENSIONADOS SOBREVIVIENTES DESCENTRALIZADOS",
             'code' => 258,
             'type_personal' => 'SOBREVIVIENTE',
 
         ]);
+
+        TypePaySheet::create([
+            'name' => "JUBILADOS EMPLEADOS DESCENTRALIZADOS",
+            'code' => 259,
+            'type_personal' => 'EMPLEADO',
+        ]);
+
+        TypePaySheet::create([
+            'name' => "JUBILADOS OBREROS DESCENTRALIZADOS",
+            'code' => 260,
+            'type_personal' => 'OBRERO',
+        ]);
+
+        TypePaySheet::create([
+            'name' => "PENSIONADOS EMPLEADOS POR INCAPICIDAD DESCENTRALIZADOS",
+            'code' => 261,
+            'type_personal' => 'EMPLEADO',
+        ]);
+
+        TypePaySheet::create([
+            'name' => "PENSIONADOS OBREROS POR INCAPICIDAD DESCENTRALIZADOS",
+            'code' => 262,
+            'type_personal' => 'OBRERO',
+        ]);
+
+
     }
 }

@@ -100,9 +100,9 @@ export default function UsuariosPage() {
 
   const handleDelete = async (id) => {
     try {
-                usersAPI.deleteUser(id);
-        fetchData()
+              await  usersAPI.deleteUser(id);
               showSuccess("Operación completada con éxito");
+              fetchData()
 
 
    } catch (error) {
