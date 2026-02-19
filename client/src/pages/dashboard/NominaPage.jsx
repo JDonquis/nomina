@@ -731,17 +731,20 @@ export default function NominaPage() {
   };
 
   const importExcel = async (e) => {
+    setLoading(true);
     try {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append("file", file);
       const res = await payrollAPI.importExcel(formData);
       showSuccess(res.message);
+      fetchData();
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
       showError(errorMessage);
     }
+    setLoading(false);
   };
 
   const columns = useMemo(
@@ -1631,6 +1634,7 @@ export default function NominaPage() {
                   width={24}
                   height={24}
                 />
+                
                 <input
                   type="file"
                   name="importExcel"
@@ -1649,6 +1653,17 @@ export default function NominaPage() {
                   }}
                 />
               </label>
+              {loading ? (
+                  <div className="flex w-full items-center gap-2">
+                    <Icon
+                      icon="eos-icons:loading"
+                      width={24}
+                      height={24}
+                      className="animate-spin"
+                    />
+                    <span>Subiendo...</span>
+                  </div>
+                ) : null}
             </div>
           </Modal>
       </div>
