@@ -55,7 +55,7 @@ const PrintableContent = forwardRef((props, ref) => {
       <div className="flex mt-5">
         <div>
           <div className="flex justify-center items-center">
-            {props.data.latest_census?.status ? (
+            {props.data.status ? (
               <div className="min-h-7 items-center flex justify-center bg-color2 rounded-tl-md w-full text-center">
                 <p className="text-white font-bold">CENSADO</p>
               </div>

@@ -76,6 +76,7 @@ export default function NominaPage() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
+  const [historyData, setHistoryData] = useState([]);
   const [resultsToken, setResultsToken] = useState(null);
   const [origins, setOrigins] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState(false);
@@ -568,6 +569,7 @@ export default function NominaPage() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log({formData})
 
     try {
       // Crear FormData para enviar archivos
@@ -699,7 +701,7 @@ export default function NominaPage() {
   const getHistory = async (id) => {
     try {
       const res = await payrollAPI.getHistory(id);
-      setPDFdata(res.paySheet);
+      setHistoryData(res.paySheet);
       setIsHistoryModalOpen(true);
     } catch (error) {
       const errorMessage =
@@ -886,6 +888,7 @@ export default function NominaPage() {
                   setIsModalOpen(true);
                   setFormData({
                     ...cell.row.original,
+                    to_census: false,
                   });
                   setSubmitString("Actualizar");
                 }}
@@ -928,7 +931,7 @@ export default function NominaPage() {
                 <div className="w-7"></div>
               )}
 
-              {cell.row.original.status && (
+              {cell.row.original.status ? (
                 <button
                   onClick={() => {
                     setPDFmodal(true);
@@ -944,6 +947,8 @@ export default function NominaPage() {
                 >
                   <Icon icon="proicons:pdf-2" width={20} height={20} />
                 </button>
+              ) : (
+                <div className="w-7"></div>
               )}
               <button
                 onClick={() => handleDelete(cell.row.original.id)}
@@ -963,6 +968,8 @@ export default function NominaPage() {
     ],
     []
   );
+
+  console.log(historyData);
 
   const [data, setData] = useState([]);
   const [rowCount, setRowCount] = useState(0);
@@ -1024,7 +1031,7 @@ export default function NominaPage() {
   }, [formData, debouncedSaveFormData, isFormInitialized]);
 
   useEffect(() => {
-    if (formData.type_pension == "Sobrevivencia") {
+    if (formData.type_pension == "Sobrevivencia" || formData.type_pension == "Jubilado y sobreviviente") {
       setFormData((prev) => ({
         ...prev,
         pension_survivor_status: true,
@@ -1355,9 +1362,9 @@ export default function NominaPage() {
                               <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                             </div>
                             <div className="col-span-12">
-                              {formData.pension_survivor_status && (
+                              {!formData.pension_survivor_status ? (
                                 <p> No aplica</p>
-                              )}
+                              ): null}
                             </div>
                           </>
                         ) : index < 13 || formData.to_census ? (
@@ -1564,12 +1571,12 @@ export default function NominaPage() {
         </Modal> */}
 
         <Modal
-          title={`Historial de censos de ${PDFdata.full_name}`}
+          title={`Historial de censos de ${historyData?.full_name}`}
           isOpen={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
         >
           <ul>
-            {PDFdata?.censuses?.map((census, index) => (
+            {historyData?.censuses?.map((census, index) => (
               <li
                 key={census.id}
                 className=" rounded overflow-hidden  bg-gray-100 mb-2.5"
@@ -1609,7 +1616,7 @@ export default function NominaPage() {
                           height={20}
                         />{" "}
                       </b>
-                      {census.user.full_name}, {census.user.charge}
+                      {census.data.user.full_name}, {census.data.user.charge}
                     </p>
                   </div>
 
@@ -1619,8 +1626,9 @@ export default function NominaPage() {
                       onClick={() => {
                         console.log(census);
                         setPDFdata({
-                          ...PDFdata,
-                          ...census,
+                          ...census.data,
+                          status: census.status,
+
                         });
                         setPDFmodal(true);
                       }}
