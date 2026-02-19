@@ -1362,7 +1362,7 @@ export default function NominaPage() {
                               <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                             </div>
                             <div className="col-span-12">
-                              {!formData.pension_survivor_status && (
+                              {formData.pension_survivor_status && (
                                 <p> No aplica</p>
                               )}
                             </div>
