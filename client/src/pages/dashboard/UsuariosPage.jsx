@@ -5,6 +5,7 @@ import Modal from "../../components/Modal";
 import FuturisticButton from "../../components/FuturisticButton";
 import {MaterialReactTable} from 'material-react-table';
 import { ReusableForm } from "../../components/forms";
+import { useFeedback } from "../../context/FeedbackContext";
 
 
 // En las versiones más recientes, no necesitas registrar módulos para funcionalidades básicas
@@ -22,6 +23,7 @@ export default function UsuariosPage() {
   };
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Crear");
+  const { showError, showSuccess, showInfo } = useFeedback();
 
   // Form configuration for ReusableForm
   const userFormFields = [
@@ -78,19 +80,40 @@ export default function UsuariosPage() {
       } else {
         await usersAPI.createUser(submittedFormData);
       }
-
+      
       // Reset form data after successful submission
       setFormData(structuredClone(defaultFormData));
-
+      
       setIsModalOpen(false);
       fetchData();
-    } catch (error) {
-      throw new Error(
-        error ||
-          `Error al ${submitString.toLowerCase()} el usuario.`
-      );  
-    }
+      showSuccess("Usuario creado")
+  } catch (error) {
+      // This will only catch errors from the internal API
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    } ;  
+    
   };
+
+  const handleDelete = async (id) => {
+    try {
+                usersAPI.deleteUser(id);
+        fetchData()
+              showSuccess("Operación completada con éxito");
+
+
+   } catch (error) {
+      // This will only catch errors from the internal API
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    } ;  
+  }
 
   const columns = useMemo( () => [
     {
@@ -147,8 +170,10 @@ export default function UsuariosPage() {
 
           <button
             onClick={() => {
-              usersAPI.deleteUser(row.original.id);
-              fetchData();
+              if (window.confirm("¿Está seguro de eliminar a este usuario?")) {
+                handleDelete(row.original.id)
+
+              }
             }}
             className="mx-1 p-1 hover:p-2 duration-75 text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-full"
 
