@@ -106,7 +106,7 @@ class UserController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'No puedes eliminar tu mismo usuario'
-                ],400);
+                ],500);
             }
 
             $user->delete();
