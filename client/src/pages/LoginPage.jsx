@@ -212,7 +212,7 @@ export default function LoginPage() {
           href="https://www.linkedin.com/in/juan-franemailsco-villasmil-tovar-50a3a1161/"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:opaemailty-100 text-xs opaemailty-65 cursor-pointer"
+          className=" hover:opaemailty-100 text-xs opaemailty-65 cursor-pointer"
         >
           Desarrollado por Juan Villasmil y Juan Donquis
         </a>

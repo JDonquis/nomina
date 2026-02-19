@@ -65,119 +65,119 @@ class StorePaySheetRequest extends FormRequest
                 'Zamora'
             ])],
             'parish' => ['nullable', Rule::in([
-            // Municipio Acosta
-            'Capadare',
-            'La Pastora',
-            'Libertador',
-            'San Juan de los Cayos',
-            // Municipio Bolívar
-            'Aracua',
-            'La Peña',
-            'San Luis',
-            // Municipio Buchivacoa
-            'Bariro',
-            'Borojó',
-            'Capatárida',
-            'Guajiro',
-            'Seque',
-            'Valle de Eroa',
-            'Zazárida',
-            // Municipio Cacique Manaure
-            'Cacique Manaure',
-            // Municipio Carirubana
-            'Norte',
-            'Carirubana',
-            'Santa Ana',
-            'Urbana Punta Cardón',
-            // Municipio Colina
-            'La Vela de Coro',
-            'Acurigua',
-            'Guaibacoa',
-            'Las Calderas',
-            'Mataruca',
-            // Municipio Dabajuro
-            'Dabajuro',
-            // Municipio Democracia
-            'Agua Clara',
-            'Avaria',
-            'Pedregal',
-            'Piedra Grande',
-            'Purureche',
-            // Municipio Falcón
-            'Adaure',
-            'Adícora',
-            'Baraived',
-            'Buena Vista',
-            'Jadacaquiva',
-            'El Vínculo',
-            'El Hato',
-            'Moruy',
-            'Pueblo Nuevo',
-            // Municipio Federación
-            'Agua Larga',
-            'Churuguara',
-            'El Paují',
-            'Independencia',
-            'Mapararí',
-            // Municipio Jacura
-            'Agua Linda',
-            'Araurima',
-            'Jacura',
-            // Municipio José Laurencio Silva
-            'Tucacas',
-            'Boca de Aroa',
-            // Municipio Los Taques
-            'Los Taques',
-            'Judibana',
-            // Municipio Mauroa
-            'Mene de Mauroa',
-            'San Félix',
-            'Casigua',
-            // Municipio Miranda
-            'Guzmán Guillermo',
-            'Mitare',
-            'Río Seco',
-            'Sabaneta',
-            'San Antonio',
-            'San Gabriel',
-            'Santa Ana',
-            // Municipio Monseñor Iturriza
-            'Boca del Tocuyo',
-            'Chichiriviche',
-            'Tocuyo de la Costa',
-            // Municipio Palmasola
-            'Palmasola',
-            // Municipio Petit
-            'Cabure',
-            'Colina',
-            'Curimagua',
-            // Municipio Píritu
-            'San José de la Costa',
-            'Píritu',
-            // Municipio San Francisco
-            'Mirimire',
-            // Municipio Sucre
-            'Sucre',
-            'Pecaya',
-            // Municipio Tocópero
-            'Tocópero',
-            // Municipio Unión
-            'El Charal',
-            'Las Vegas del Tuy',
-            'Santa Cruz de Bucaral',
-            // Municipio Urumaco
-            'Bruzual',
-            'Urumaco',
-            // Municipio Zamora
-            'Puerto Cumarebo',
-            'La Ciénaga',
-            'La Soledad',
-            'Pueblo Cumarebo',
-            'Zazárida'
+                // Municipio Acosta
+                'Capadare',
+                'La Pastora',
+                'Libertador',
+                'San Juan de los Cayos',
+                // Municipio Bolívar
+                'Aracua',
+                'La Peña',
+                'San Luis',
+                // Municipio Buchivacoa
+                'Bariro',
+                'Borojó',
+                'Capatárida',
+                'Guajiro',
+                'Seque',
+                'Valle de Eroa',
+                'Zazárida',
+                // Municipio Cacique Manaure
+                'Cacique Manaure',
+                // Municipio Carirubana
+                'Norte',
+                'Carirubana',
+                'Santa Ana',
+                'Urbana Punta Cardón',
+                // Municipio Colina
+                'La Vela de Coro',
+                'Acurigua',
+                'Guaibacoa',
+                'Las Calderas',
+                'Mataruca',
+                // Municipio Dabajuro
+                'Dabajuro',
+                // Municipio Democracia
+                'Agua Clara',
+                'Avaria',
+                'Pedregal',
+                'Piedra Grande',
+                'Purureche',
+                // Municipio Falcón
+                'Adaure',
+                'Adícora',
+                'Baraived',
+                'Buena Vista',
+                'Jadacaquiva',
+                'El Vínculo',
+                'El Hato',
+                'Moruy',
+                'Pueblo Nuevo',
+                // Municipio Federación
+                'Agua Larga',
+                'Churuguara',
+                'El Paují',
+                'Independencia',
+                'Mapararí',
+                // Municipio Jacura
+                'Agua Linda',
+                'Araurima',
+                'Jacura',
+                // Municipio José Laurencio Silva
+                'Tucacas',
+                'Boca de Aroa',
+                // Municipio Los Taques
+                'Los Taques',
+                'Judibana',
+                // Municipio Mauroa
+                'Mene de Mauroa',
+                'San Félix',
+                'Casigua',
+                // Municipio Miranda
+                'Guzmán Guillermo',
+                'Mitare',
+                'Río Seco',
+                'Sabaneta',
+                'San Antonio',
+                'San Gabriel',
+                'Santa Ana',
+                // Municipio Monseñor Iturriza
+                'Boca del Tocuyo',
+                'Chichiriviche',
+                'Tocuyo de la Costa',
+                // Municipio Palmasola
+                'Palmasola',
+                // Municipio Petit
+                'Cabure',
+                'Colina',
+                'Curimagua',
+                // Municipio Píritu
+                'San José de la Costa',
+                'Píritu',
+                // Municipio San Francisco
+                'Mirimire',
+                // Municipio Sucre
+                'Sucre',
+                'Pecaya',
+                // Municipio Tocópero
+                'Tocópero',
+                // Municipio Unión
+                'El Charal',
+                'Las Vegas del Tuy',
+                'Santa Cruz de Bucaral',
+                // Municipio Urumaco
+                'Bruzual',
+                'Urumaco',
+                // Municipio Zamora
+                'Puerto Cumarebo',
+                'La Ciénaga',
+                'La Soledad',
+                'Pueblo Cumarebo',
+                'Zazárida'
         ])],
 
             // Pension Data
-            'type_pension' => ['nullable', Rule::in(['Jubilacion', 'Incapacidad', 'Sobrevivencia'])],
+            'type_pension' => ['nullable', Rule::in(['Jubilacion', 'Incapacidad', 'Sobrevivencia', 'Pensionado', 'Jubilado y sobreviviente'])],
             'type_pay_sheet_id' => 'nullable|integer|exists:type_pay_sheets,id',
             'last_charge' => 'nullable|string|max:255',
             'civil_status' => ['nullable', Rule::in(['S', 'C', 'V'])],

@@ -143,7 +143,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Fecha_nac</p>
               </div>
               <div className="px-3 min-h-7 text-xs flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.date_birth}</p>
+                <p className="font-semibold">{props.data.date_birth.replaceAll("-", "/")}</p>
               </div>
             </div>
 

@@ -16,6 +16,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale"; // Para español
 import PrintPage from "../../components/planilla.jsx";
 import Modal from "../../components/Modal.jsx";
+import FormField from "../../components/forms/FormField.jsx";
 
 export default function MovimientosPage() {
   const [administrativeLocations, setAdministrativeLocations] = useState([]);
@@ -298,8 +299,8 @@ export default function MovimientosPage() {
         ),
       });
       console.log({res})
-      setData(res);
-      setRowCount(2);
+      setData(res.data);
+      setRowCount(res.total);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -367,6 +368,9 @@ export default function MovimientosPage() {
         title="Detalles"
       >
         <div className="flex flex-col justify-center">
+          {/* {PDFdata.activity == "Creación de registro" || PDFdata.activity == "Actualización de registro" ? 
+           
+          } */}
           <p>{JSON.stringify(PDFdata, null, 2)}</p>
         </div>
       </Modal>
