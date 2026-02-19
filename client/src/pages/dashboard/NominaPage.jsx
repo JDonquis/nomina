@@ -1084,7 +1084,7 @@ export default function NominaPage() {
               Nómina
             </h1>
           </div>
-          <div className="flex gap-3 relative">
+          <div className="flex gap-3 z-50 relative">
             {isThereLocalStorageFormData && (
               <button
                 title="Restaurar formulario sin guardar"
@@ -1119,7 +1119,7 @@ export default function NominaPage() {
 
             <button
               title="más opciones"
-              className={`flex  items-center ${
+              className={`flex  z-50 items-center ${
                 isOptionsModalOpen
                   ? "bg-gray-200 text-gray-700 shadow-xl"
                   : "bg-gray-100 text-gray-600 "
@@ -1138,60 +1138,7 @@ export default function NominaPage() {
               )}
             </button>
 
-            <div
-              className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${
-                isOptionsModalOpen ? "block" : "hidden"
-              }`}
-            >
-              <p className="p-2 text-sm text-gray-500">Opciones</p>
-              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
-                <Icon icon="material-symbols:download" width={24} height={24} />
-                <span>Exportar Datos</span>
-                <Icon icon="tabler:json" width={24} height={24} />
-              </button>
-              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
-                <Icon
-                  icon="streamline-ultimate:common-file-text-add-bold"
-                  width={24}
-                  height={24}
-                />
-                <span>Importar Datos</span>
-                <Icon icon="tabler:json" width={24} height={24} />
-              </button>
-              <label
-                htmlFor="importExcel"
-                className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md"
-              >
-                <Icon
-                  icon="streamline-ultimate:common-file-text-add-bold"
-                  width={24}
-                  height={24}
-                />
-                <span>Importar Nómina desde Excel</span>
-                <Icon
-                  icon="vscode-icons:file-type-excel"
-                  width={24}
-                  height={24}
-                />
-                <input
-                  type="file"
-                  name="importExcel"
-                  id="importExcel"
-                  className="hidden"
-                  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                  onChange={(e) => {
-                    if (
-                      window.confirm(
-                        e.target.files[0].name +
-                          "   ¿Desea añadir los datos de este excel a la nómina?"
-                      )
-                    ) {
-                      importExcel(e);
-                    }
-                  }}
-                />
-              </label>
-            </div>
+         
           </div>
         </div>
         <Modal
@@ -1457,7 +1404,7 @@ export default function NominaPage() {
 
         {!isModalOpen && (
           <div
-            className="ag-theme-alpine ag-grid-no-border"
+            className="ag-theme-alpine z-40 ag-grid-no-border"
             style={{ height: 500 }}
           >
             {
@@ -1642,6 +1589,68 @@ export default function NominaPage() {
             ))}
           </ul>
         </Modal>
+
+        <Modal 
+          isOpen={isOptionsModalOpen}
+          title="Mas opciones"
+          size="md"
+                    onClose={() => setIsOptionsModalOpen(false)}
+
+          >
+   <div
+              className={`px-4   z-50 top-12 w-96 flex flex-col  rounded-md   ${
+                isOptionsModalOpen ? "block" : "hidden"
+              }`}
+            >
+              <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+                <Icon icon="material-symbols:download" width={24} height={24} />
+                <span>Exportar Datos</span>
+                <Icon icon="tabler:json" width={24} height={24} />
+              </button>
+              <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+                <Icon
+                  icon="streamline-ultimate:common-file-text-add-bold"
+                  width={24}
+                  height={24}
+                />
+                <span>Importar Datos</span>
+                <Icon icon="tabler:json" width={24} height={24} />
+              </button>
+              <label
+                htmlFor="importExcel"
+                className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              >
+                <Icon
+                  icon="streamline-ultimate:common-file-text-add-bold"
+                  width={24}
+                  height={24}
+                />
+                <span>Importar Nómina desde Excel</span>
+                <Icon
+                  icon="vscode-icons:file-type-excel"
+                  width={24}
+                  height={24}
+                />
+                <input
+                  type="file"
+                  name="importExcel"
+                  id="importExcel"
+                  className="hidden"
+                  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                  onChange={(e) => {
+                    if (
+                      window.confirm(
+                        e.target.files[0].name +
+                          "   ¿Desea añadir los datos de este excel a la nómina?"
+                      )
+                    ) {
+                      importExcel(e);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </Modal>
       </div>
     </>
   );
