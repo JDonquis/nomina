@@ -1317,7 +1317,7 @@ export default function NominaPage() {
                               ): null}
                             </div>
                           </>
-                        ) : index < 13 || formData.to_census ? (
+                        ) : index < 14 || formData.to_census ? (
                           <FormField
                             key={field.name}
                             {...field}
