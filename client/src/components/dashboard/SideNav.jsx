@@ -102,15 +102,15 @@ export default function SideNav(props) {
           <button
             onClick={handleLogout}
             title="Cerrar sesión"
-            className=" flex text-white text-opacity-50 h-[48px] grow items-center justify-center gap-2 rounded-md  text-sm font-medium hover:bg-sky-100 hover:text-white md:flex-none md:justify-start md:p-2 md:px-1"
+            className=" flex text-white text-opacity-50 h-[48px] grow items-center justify-center gap-2 rounded-md  text-sm font-medium hover:bg-sky-100 hover:text-color3 md:flex-none md:justify-start md:p-2 md:px-1"
           >
             <Icon icon="tabler:logout" width="24" height="24" />
             {props.isSidebarOpen ? (
               <span className="sr-only">Cerrar sesión</span>
             ) : null}
           </button>
-          <p className="text-xs text-left text-opacity-55  text-white ">
-            {props.isSidebarOpen ? user?.first_name : null}
+          <p className="text-xs text-left text-opacity-55 capitalize  text-white ">
+            {props.isSidebarOpen ? user?.full_name : null}
           </p>
         </div>
       </div>

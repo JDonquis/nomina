@@ -569,7 +569,6 @@ export default function NominaPage() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log({ formData });
 
     try {
       // Crear FormData para enviar archivos
@@ -674,7 +673,6 @@ export default function NominaPage() {
       if (res.status) {
         showSuccess("Trabajador eliminado con éxito");
       }
-      console.log(res.status);
       fetchData();
     } catch (error) {
       const errorMessage =
@@ -938,9 +936,7 @@ export default function NominaPage() {
                 <button
                   onClick={() => {
                     setPDFmodal(true);
-                    console.log({
-                      ...cell.row.original,
-                    });
+                   
                     setPDFdata({
                       ...cell.row.original,
                     });
@@ -964,6 +960,7 @@ export default function NominaPage() {
                     width={20}
                     height={20}
                   />
+                  {user.is_admin}
                 </button>
               ) : null}
             </div>
@@ -974,7 +971,6 @@ export default function NominaPage() {
     []
   );
 
-  console.log(historyData);
 
   const [data, setData] = useState([]);
   const [rowCount, setRowCount] = useState(0);
@@ -1577,7 +1573,6 @@ export default function NominaPage() {
                     {/* <Planilla data={census} isHidden={false} /> */}
                     <button
                       onClick={() => {
-                        console.log(census);
                         setPDFdata({
                           ...census.data,
                           status: census.status,
