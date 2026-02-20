@@ -569,7 +569,7 @@ export default function NominaPage() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log({formData})
+    console.log({ formData });
 
     try {
       // Crear FormData para enviar archivos
@@ -916,7 +916,7 @@ export default function NominaPage() {
                 <div className="w-7 "></div>
               )} */}
 
-              {cell.row.original.status? (
+              {cell.row.original.status ? (
                 <button
                   onClick={() => {
                     getHistory(cell.row.original.id);
@@ -953,17 +953,19 @@ export default function NominaPage() {
               ) : (
                 <div className="w-7"></div>
               )}
-              <button
-                onClick={() => handleDelete(cell.row.original.id)}
-                className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
-                title="Eliminar"
-              >
-                <Icon
-                  icon="material-symbols:delete-outline"
-                  width={20}
-                  height={20}
-                />
-              </button>
+              {user.is_admin ? (
+                <button
+                  onClick={() => handleDelete(cell.row.original.id)}
+                  className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
+                  title="Eliminar"
+                >
+                  <Icon
+                    icon="material-symbols:delete-outline"
+                    width={20}
+                    height={20}
+                  />
+                </button>
+              ) : null}
             </div>
           );
         },
@@ -1034,7 +1036,10 @@ export default function NominaPage() {
   }, [formData, debouncedSaveFormData, isFormInitialized]);
 
   useEffect(() => {
-    if (formData.type_pension == "Sobrevivencia" || formData.type_pension == "Jubilado y sobreviviente") {
+    if (
+      formData.type_pension == "Sobrevivencia" ||
+      formData.type_pension == "Jubilado y sobreviviente"
+    ) {
       setFormData((prev) => ({
         ...prev,
         pension_survivor_status: true,
@@ -1140,8 +1145,6 @@ export default function NominaPage() {
                 />
               )}
             </button>
-
-         
           </div>
         </div>
         <Modal
@@ -1314,7 +1317,7 @@ export default function NominaPage() {
                             <div className="col-span-12">
                               {!formData.pension_survivor_status ? (
                                 <p> No aplica</p>
-                              ): null}
+                              ) : null}
                             </div>
                           </>
                         ) : index < 14 || formData.to_census ? (
@@ -1578,7 +1581,6 @@ export default function NominaPage() {
                         setPDFdata({
                           ...census.data,
                           status: census.status,
-
                         });
                         setPDFmodal(true);
                       }}
@@ -1593,79 +1595,78 @@ export default function NominaPage() {
           </ul>
         </Modal>
 
-        <Modal 
+        <Modal
           isOpen={isOptionsModalOpen}
           title="Mas opciones"
           size="md"
-                    onClose={() => setIsOptionsModalOpen(false)}
-
+          onClose={() => setIsOptionsModalOpen(false)}
+        >
+          <div
+            className={`px-4   z-50 top-12 w-96 flex flex-col  rounded-md   ${
+              isOptionsModalOpen ? "block" : "hidden"
+            }`}
           >
-   <div
-              className={`px-4   z-50 top-12 w-96 flex flex-col  rounded-md   ${
-                isOptionsModalOpen ? "block" : "hidden"
-              }`}
+            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+              <Icon icon="material-symbols:download" width={24} height={24} />
+              <span>Exportar Datos</span>
+              <Icon icon="tabler:json" width={24} height={24} />
+            </button>
+            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+              <Icon
+                icon="streamline-ultimate:common-file-text-add-bold"
+                width={24}
+                height={24}
+              />
+              <span>Importar Datos</span>
+              <Icon icon="tabler:json" width={24} height={24} />
+            </button>
+            <label
+              htmlFor="importExcel"
+              className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
             >
-              <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
-                <Icon icon="material-symbols:download" width={24} height={24} />
-                <span>Exportar Datos</span>
-                <Icon icon="tabler:json" width={24} height={24} />
-              </button>
-              <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+              <Icon
+                icon="streamline-ultimate:common-file-text-add-bold"
+                width={24}
+                height={24}
+              />
+              <span>Importar Nómina desde Excel</span>
+              <Icon
+                icon="vscode-icons:file-type-excel"
+                width={24}
+                height={24}
+              />
+
+              <input
+                type="file"
+                name="importExcel"
+                id="importExcel"
+                className="hidden"
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                onChange={(e) => {
+                  if (
+                    window.confirm(
+                      e.target.files[0].name +
+                        "   ¿Desea añadir los datos de este excel a la nómina?"
+                    )
+                  ) {
+                    importExcel(e);
+                  }
+                }}
+              />
+            </label>
+            {loading ? (
+              <div className="flex w-full items-center gap-2">
                 <Icon
-                  icon="streamline-ultimate:common-file-text-add-bold"
+                  icon="eos-icons:loading"
                   width={24}
                   height={24}
+                  className="animate-spin"
                 />
-                <span>Importar Datos</span>
-                <Icon icon="tabler:json" width={24} height={24} />
-              </button>
-              <label
-                htmlFor="importExcel"
-                className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
-              >
-                <Icon
-                  icon="streamline-ultimate:common-file-text-add-bold"
-                  width={24}
-                  height={24}
-                />
-                <span>Importar Nómina desde Excel</span>
-                <Icon
-                  icon="vscode-icons:file-type-excel"
-                  width={24}
-                  height={24}
-                />
-                
-                <input
-                  type="file"
-                  name="importExcel"
-                  id="importExcel"
-                  className="hidden"
-                  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                  onChange={(e) => {
-                    if (
-                      window.confirm(
-                        e.target.files[0].name +
-                          "   ¿Desea añadir los datos de este excel a la nómina?"
-                      )
-                    ) {
-                      importExcel(e);
-                    }
-                  }}
-                />
-              </label>
-              {loading ? (
-                  <div className="flex w-full items-center gap-2">
-                    <Icon
-                      icon="eos-icons:loading"
-                      width={24}
-                      height={24}
-                      className="animate-spin"
-                    />
-                    <span>Subiendo...</span>
-                  </div>
-                ) : null}
-            </div>
-          </Modal>
+                <span>Subiendo...</span>
+              </div>
+            ) : null}
+          </div>
+        </Modal>
       </div>
     </>
   );

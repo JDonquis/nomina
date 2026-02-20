@@ -388,14 +388,14 @@ const PrintableContent = forwardRef((props, ref) => {
         </div>
       </div>
 
-      {props.data.latest_census && (
+      {props.data && (
         <>
           <div className="bg-gray-200 mt-3 py-0.5 text-center">
             <p>Funcionario responsable del censo</p>
           </div>
           <div className="flex justify-between">
-            <p>{props.data.latest_census?.user?.full_name}</p>
-            <p>{props.data.latest_census?.user?.charge}</p>
+            <p>{props.data?.user?.full_name}</p>
+            <p>{props.data?.user?.charge}</p>
           </div>
         </>
       )}
@@ -407,7 +407,7 @@ const PrintPage = (props) => {
   const componentRef = useRef(null);
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: `Planilla_${props.data.full_name}_${props.data.ci}_${props.data.latest_census?.created_at}`,
+    documentTitle: `Planilla_${props.data.full_name}_${props.data.ci}_${props.data?.created_at}`,
     pageStyle: `
       @page {
         size: A4;
