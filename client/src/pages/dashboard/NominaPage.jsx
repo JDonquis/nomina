@@ -26,7 +26,7 @@ import Planilla from "../../components/planilla";
 import debounce from "lodash.debounce";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import withoutPhoto from "../../assets/withoutphoto.webp";
+import withoutPhoto from "../../assets/withoutPhoto.webp";
 import { cities } from "../../constants/cities";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
 import typePensions from "../../constants/type_pensions";

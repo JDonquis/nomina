@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Icon } from "@iconify/react";
 import SecretrariaLogo from "../assets/secretaria_logo.png";
-import withoutPhoto from "../assets/withoutphoto.webp";
+import withoutPhoto from "../assets/withoutPhoto.webp";
 
 import FuturisticButton from "./FuturisticButton";
 import cintillo from "../assets/cintillo.jpeg";
