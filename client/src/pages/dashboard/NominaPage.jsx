@@ -76,6 +76,7 @@ export default function NominaPage() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
+  const [historyData, setHistoryData] = useState([]);
   const [resultsToken, setResultsToken] = useState(null);
   const [origins, setOrigins] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState(false);
@@ -672,7 +673,6 @@ export default function NominaPage() {
       if (res.status) {
         showSuccess("Trabajador eliminado con éxito");
       }
-      console.log(res.status);
       fetchData();
     } catch (error) {
       const errorMessage =
@@ -699,7 +699,7 @@ export default function NominaPage() {
   const getHistory = async (id) => {
     try {
       const res = await payrollAPI.getHistory(id);
-      setPDFdata(res.paySheet);
+      setHistoryData(res.paySheet);
       setIsHistoryModalOpen(true);
     } catch (error) {
       const errorMessage =
@@ -729,17 +729,20 @@ export default function NominaPage() {
   };
 
   const importExcel = async (e) => {
+    setLoading(true);
     try {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append("file", file);
       const res = await payrollAPI.importExcel(formData);
       showSuccess(res.message);
+      fetchData();
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
       showError(errorMessage);
     }
+    setLoading(false);
   };
 
   const columns = useMemo(
@@ -888,6 +891,7 @@ export default function NominaPage() {
                   setIsModalOpen(true);
                   setFormData({
                     ...cell.row.original,
+                    to_census: false,
                   });
                   setSubmitString("Actualizar");
                 }}
@@ -912,7 +916,7 @@ export default function NominaPage() {
                 <div className="w-7 "></div>
               )} */}
 
-              {cell.row.original.status? (
+              {cell.row.original.status ? (
                 <button
                   onClick={() => {
                     getHistory(cell.row.original.id);
@@ -930,13 +934,11 @@ export default function NominaPage() {
                 <div className="w-7"></div>
               )}
 
-              {cell.row.original.status && (
+              {cell.row.original.status ? (
                 <button
                   onClick={() => {
                     setPDFmodal(true);
-                    console.log({
-                      ...cell.row.original,
-                    });
+                   
                     setPDFdata({
                       ...cell.row.original,
                     });
@@ -946,18 +948,23 @@ export default function NominaPage() {
                 >
                   <Icon icon="proicons:pdf-2" width={20} height={20} />
                 </button>
+              ) : (
+                <div className="w-7"></div>
               )}
-              <button
-                onClick={() => handleDelete(cell.row.original.id)}
-                className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
-                title="Eliminar"
-              >
-                <Icon
-                  icon="material-symbols:delete-outline"
-                  width={20}
-                  height={20}
-                />
-              </button>
+              {user.is_admin ? (
+                <button
+                  onClick={() => handleDelete(cell.row.original.id)}
+                  className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
+                  title="Eliminar"
+                >
+                  <Icon
+                    icon="material-symbols:delete-outline"
+                    width={20}
+                    height={20}
+                  />
+                  {user.is_admin}
+                </button>
+              ) : null}
             </div>
           );
         },
@@ -965,6 +972,7 @@ export default function NominaPage() {
     ],
     []
   );
+
 
   const [data, setData] = useState([]);
   const [rowCount, setRowCount] = useState(0);
@@ -1026,7 +1034,10 @@ export default function NominaPage() {
   }, [formData, debouncedSaveFormData, isFormInitialized]);
 
   useEffect(() => {
-    if (formData.type_pension == "Sobrevivencia") {
+    if (
+      formData.type_pension == "Sobrevivencia" ||
+      formData.type_pension == "Jubilado y sobreviviente"
+    ) {
       setFormData((prev) => ({
         ...prev,
         pension_survivor_status: true,
@@ -1079,7 +1090,7 @@ export default function NominaPage() {
               Nómina
             </h1>
           </div>
-          <div className="flex gap-3 relative">
+          <div className="flex gap-3 z-50 relative">
             {isThereLocalStorageFormData && (
               <button
                 title="Restaurar formulario sin guardar"
@@ -1114,7 +1125,7 @@ export default function NominaPage() {
 
             <button
               title="más opciones"
-              className={`flex  items-center ${
+              className={`flex  z-50 items-center ${
                 isOptionsModalOpen
                   ? "bg-gray-200 text-gray-700 shadow-xl"
                   : "bg-gray-100 text-gray-600 "
@@ -1132,61 +1143,6 @@ export default function NominaPage() {
                 />
               )}
             </button>
-
-            <div
-              className={`px-4 absolute right-0 z-50 top-12 w-96 flex flex-col py-4  bg-gray-200 rounded-md shadow-xl border border-gray-100 ${
-                isOptionsModalOpen ? "block" : "hidden"
-              }`}
-            >
-              <p className="p-2 text-sm text-gray-500">Opciones</p>
-              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
-                <Icon icon="material-symbols:download" width={24} height={24} />
-                <span>Exportar Datos</span>
-                <Icon icon="tabler:json" width={24} height={24} />
-              </button>
-              <button className="items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md">
-                <Icon
-                  icon="streamline-ultimate:common-file-text-add-bold"
-                  width={24}
-                  height={24}
-                />
-                <span>Importar Datos</span>
-                <Icon icon="tabler:json" width={24} height={24} />
-              </button>
-              <label
-                htmlFor="importExcel"
-                className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-white gap-2 rounded-md"
-              >
-                <Icon
-                  icon="streamline-ultimate:common-file-text-add-bold"
-                  width={24}
-                  height={24}
-                />
-                <span>Importar Nómina desde Excel</span>
-                <Icon
-                  icon="vscode-icons:file-type-excel"
-                  width={24}
-                  height={24}
-                />
-                <input
-                  type="file"
-                  name="importExcel"
-                  id="importExcel"
-                  className="hidden"
-                  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                  onChange={(e) => {
-                    if (
-                      window.confirm(
-                        e.target.files[0].name +
-                          "   ¿Desea añadir los datos de este excel a la nómina?"
-                      )
-                    ) {
-                      importExcel(e);
-                    }
-                  }}
-                />
-              </label>
-            </div>
           </div>
         </div>
         <Modal
@@ -1363,12 +1319,12 @@ export default function NominaPage() {
                               <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                             </div>
                             <div className="col-span-12">
-                              {!formData.pension_survivor_status && (
+                              {!formData.pension_survivor_status ? (
                                 <p> No aplica</p>
-                              )}
+                              ) : null}
                             </div>
                           </>
-                        ) : index < 13 || formData.to_census ? (
+                        ) : index < 14 || formData.to_census ? (
                           <FormField
                             key={field.name}
                             {...field}
@@ -1458,7 +1414,7 @@ export default function NominaPage() {
 
         {!isModalOpen && (
           <div
-            className="ag-theme-alpine ag-grid-no-border"
+            className="ag-theme-alpine z-40 ag-grid-no-border"
             style={{ height: 500 }}
           >
             {
@@ -1572,12 +1528,12 @@ export default function NominaPage() {
         </Modal> */}
 
         <Modal
-          title={`Historial de censos de ${PDFdata.full_name}`}
+          title={`Historial de censos de ${historyData?.full_name}`}
           isOpen={isHistoryModalOpen}
           onClose={() => setIsHistoryModalOpen(false)}
         >
           <ul>
-            {PDFdata?.censuses?.map((census, index) => (
+            {historyData?.censuses?.map((census, index) => (
               <li
                 key={census.id}
                 className=" rounded overflow-hidden  bg-gray-100 mb-2.5"
@@ -1617,7 +1573,7 @@ export default function NominaPage() {
                           height={20}
                         />{" "}
                       </b>
-                      {census.user.full_name}, {census.user.charge}
+                      {census.data.user.full_name}, {census.data.user.charge}
                     </p>
                   </div>
 
@@ -1625,10 +1581,9 @@ export default function NominaPage() {
                     {/* <Planilla data={census} isHidden={false} /> */}
                     <button
                       onClick={() => {
-                        console.log(census);
                         setPDFdata({
-                          ...PDFdata,
-                          ...census,
+                          ...census.data,
+                          status: census.status,
                         });
                         setPDFmodal(true);
                       }}
@@ -1641,6 +1596,79 @@ export default function NominaPage() {
               </li>
             ))}
           </ul>
+        </Modal>
+
+        <Modal
+          isOpen={isOptionsModalOpen}
+          title="Mas opciones"
+          size="md"
+          onClose={() => setIsOptionsModalOpen(false)}
+        >
+          <div
+            className={`px-4   z-50 top-12 w-96 flex flex-col  rounded-md   ${
+              isOptionsModalOpen ? "block" : "hidden"
+            }`}
+          >
+            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+              <Icon icon="material-symbols:download" width={24} height={24} />
+              <span>Exportar Datos</span>
+              <Icon icon="tabler:json" width={24} height={24} />
+            </button>
+            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+              <Icon
+                icon="streamline-ultimate:common-file-text-add-bold"
+                width={24}
+                height={24}
+              />
+              <span>Importar Datos</span>
+              <Icon icon="tabler:json" width={24} height={24} />
+            </button>
+            <label
+              htmlFor="importExcel"
+              className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            >
+              <Icon
+                icon="streamline-ultimate:common-file-text-add-bold"
+                width={24}
+                height={24}
+              />
+              <span>Importar Nómina desde Excel</span>
+              <Icon
+                icon="vscode-icons:file-type-excel"
+                width={24}
+                height={24}
+              />
+
+              <input
+                type="file"
+                name="importExcel"
+                id="importExcel"
+                className="hidden"
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                onChange={(e) => {
+                  if (
+                    window.confirm(
+                      e.target.files[0].name +
+                        "   ¿Desea añadir los datos de este excel a la nómina?"
+                    )
+                  ) {
+                    importExcel(e);
+                  }
+                }}
+              />
+            </label>
+            {loading ? (
+              <div className="flex w-full items-center gap-2">
+                <Icon
+                  icon="eos-icons:loading"
+                  width={24}
+                  height={24}
+                  className="animate-spin"
+                />
+                <span>Subiendo...</span>
+              </div>
+            ) : null}
+          </div>
         </Modal>
       </div>
     </>

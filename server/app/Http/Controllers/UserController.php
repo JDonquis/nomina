@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
-use App\Models\User;
-use Illuminate\Http\Request;
-use App\Services\UserService;
-use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\User;
+use App\Services\UserService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -100,6 +101,13 @@ class UserController extends Controller
     {
 
         try {
+
+            if($user->id == Auth::id()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No puedes eliminar tu mismo usuario'
+                ],500);
+            }
 
             $user->delete();
 

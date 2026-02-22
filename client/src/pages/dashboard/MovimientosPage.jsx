@@ -371,6 +371,7 @@ export default function MovimientosPage() {
           {/* {PDFdata.activity == "Creación de registro" || PDFdata.activity == "Actualización de registro" ? 
            
           } */}
+          <h1>Esto está en desarrollo</h1>
           <p>{JSON.stringify(PDFdata, null, 2)}</p>
         </div>
       </Modal>

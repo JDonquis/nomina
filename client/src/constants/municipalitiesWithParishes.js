@@ -33,7 +33,7 @@ const municipalitiesWithParishes = {
     { value: "Acurigua", label: "Acurigua" },
     { value: "Guaibacoa", label: "Guaibacoa" },
     { value: "Las Calderas", label: "Las Calderas" },
-    { value: "Macoruca", label: "Macoruca" }
+    { value: "Mataruca", label: "Mataruca" }
   ],
   "Dabajuro": [
     { value: "Dabajuro", label: "Dabajuro" }
@@ -88,7 +88,7 @@ const municipalitiesWithParishes = {
     { value: "Sabaneta", label: "Sabaneta" },
     { value: "San Antonio", label: "San Antonio" },
     { value: "San Gabriel", label: "San Gabriel" },
-    { value: "Santa Ana Miranda", label: "Santa Ana Miranda" }
+    { value: "Santa Ana", label: "Santa Ana" }
   ],
   "Monseñor Iturriza": [
     { value: "Boca del Tocuyo", label: "Boca del Tocuyo" },
