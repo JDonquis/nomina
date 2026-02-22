@@ -16,7 +16,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-
+use Intervention\Image\Laravel\Facades\Image;
 class PaySheetService
 {
 
@@ -331,12 +331,17 @@ class PaySheetService
 
 
     private function storePhoto($photo, string $ci): string
-    {
-        $extension = $photo->getClientOriginalExtension();
-        $fileName = 'photo_' . $ci . '_' . time() . '.' . $extension;
+{
+    $fileName = 'photo_' . $ci . '_' . time() . '.webp';
+    $path = 'photos/pay_sheets/' . $fileName;
 
-        return $photo->storeAs('photos/pay_sheets', $fileName, 'public');
-    }
+    $encoded = Image::read($photo)
+        ->toWebp(quality: 80);
+
+    Storage::disk('public')->put($path, $encoded);
+
+    return $path;
+}
 
     private function deletePhoto($photoPath)
     {
