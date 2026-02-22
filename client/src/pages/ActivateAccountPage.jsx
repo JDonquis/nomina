@@ -38,13 +38,7 @@ export default function ActivateAccountPage() {
       }
 
       try {
-        let response;
-        if (pathname === "/activar-cuenta") {
-          response = await authAPI.verifyInvitationToken(token);
-        } else if (pathname === "/olvide-contrasena") {
-          console.log("no se hizo");
-          response = await authAPI.verifyResetToken(token);
-        }
+        let response = await authAPI.verifyInvitationToken(token);
         setUserData(response.full_name);
         setVerifying(false);
         setLoading(false);
@@ -87,11 +81,10 @@ export default function ActivateAccountPage() {
     setLoading(true);
 
     try {
+      await authAPI.activateAccount(token, password);
       if (pathname === "/activar-cuenta") {
-        await authAPI.activateAccount(token, password);
         showSuccess("Cuenta activada con éxito. Ahora puedes iniciar sesión.");
       } else if (pathname === "/olvide-contrasena") {
-        await authAPI.resetPassword(token, password);
         showSuccess(
           "Contraseña restablecida con éxito. Ahora puedes iniciar sesión.",
         );

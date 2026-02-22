@@ -26,7 +26,7 @@ const municipalitiesWithParishes = {
     { value: "Carirubana", label: "Carirubana" },
     { value: "Norte", label: "Norte" },
     { value: "Punta Cardón", label: "Punta Cardón" },
-    { value: "Santa Ana Carirubana", label: "Santa Ana Carirubana" }
+    { value: "Santa Ana (Carirubana)", label: "Santa Ana (Carirubana)" }
   ],
   "Colina": [
     { value: "La Vela de Coro", label: "La Vela de Coro" },

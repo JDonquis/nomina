@@ -3,10 +3,9 @@ import { usersAPI } from "../../services/api";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
 import FuturisticButton from "../../components/FuturisticButton";
-import {MaterialReactTable} from 'material-react-table';
+import { MaterialReactTable } from "material-react-table";
 import { ReusableForm } from "../../components/forms";
 import { useFeedback } from "../../context/FeedbackContext";
-
 
 // En las versiones más recientes, no necesitas registrar módulos para funcionalidades básicas
 // La versión Community ya incluye el ClientSideRowModel por defecto
@@ -46,13 +45,16 @@ export default function UsuariosPage() {
       name: "charge",
       label: "Cargo",
       type: "text",
+      required: true,
+      className: "col-span-2",
     },
- 
+
     {
       name: "is_admin",
       label: "Administrador",
       type: "checkbox",
-      helperText: "Gestiona otros usuarios, además de tener ciertos privilegios en nómina",
+      helperText:
+        "Gestiona otros usuarios, además de tener ciertos privilegios en nómina",
     },
   ];
 
@@ -80,42 +82,39 @@ export default function UsuariosPage() {
       } else {
         await usersAPI.createUser(submittedFormData);
       }
-      
+
       // Reset form data after successful submission
       setFormData(structuredClone(defaultFormData));
-      
+
       setIsModalOpen(false);
+      showSuccess("Usuario creado");
       fetchData();
-      showSuccess("Usuario creado")
-  } catch (error) {
+    } catch (error) {
       // This will only catch errors from the internal API
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Error en el sistema principal";
       showError(errorMessage);
-    } ;  
-    
+    }
   };
 
   const handleDelete = async (id) => {
     try {
-              await  usersAPI.deleteUser(id);
-              showSuccess("Operación completada con éxito");
-              fetchData()
-
-
-   } catch (error) {
+      await usersAPI.deleteUser(id);
+      // showSuccess("Operación completada con éxito");
+      fetchData();
+    } catch (error) {
       // This will only catch errors from the internal API
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Error en el sistema principal";
       showError(errorMessage);
-    } ;  
-  }
+    }
+  };
 
-  const columns = useMemo( () => [
+  const columns = useMemo(() => [
     {
       accessorKey: "id",
       header: "ID",
@@ -126,7 +125,7 @@ export default function UsuariosPage() {
       header: "Nombre",
       size: 310,
     },
- 
+
     {
       accessorKey: "email",
       header: "Correo Electrónico",
@@ -137,14 +136,44 @@ export default function UsuariosPage() {
       accessorKey: "is_admin",
       header: "Gestión de Usuarios",
       size: 180,
-      Cell: ({ cell }) => cell.getValue() ? <Icon className="text-color2" icon="iconamoon:check-fill" width={20} height={20} /> :  <Icon className="text-red-300" icon="line-md:close" width={18} height={17} />,
+      Cell: ({ cell }) =>
+        cell.getValue() ? (
+          <Icon
+            className="text-color2"
+            icon="iconamoon:check-fill"
+            width={20}
+            height={20}
+          />
+        ) : (
+          <Icon
+            className="text-red-300"
+            icon="line-md:close"
+            width={18}
+            height={17}
+          />
+        ),
     },
 
     {
       accessorKey: "email_verified_status",
       header: "Estado",
       size: 180,
-      Cell: ({ cell }) => cell.getValue() ? <Icon className="text-color2" icon="iconamoon:check-fill" width={20} height={20} /> :  <Icon className="text-red-300" icon="line-md:close" width={18} height={17} />,
+      Cell: ({ cell }) =>
+        cell.getValue() ? (
+          <Icon
+            className="text-color2"
+            icon="iconamoon:check-fill"
+            width={20}
+            height={20}
+          />
+        ) : (
+          <Icon
+            className="text-red-300"
+            icon="line-md:close"
+            width={18}
+            height={17}
+          />
+        ),
     },
     {
       header: "Acciones",
@@ -161,29 +190,30 @@ export default function UsuariosPage() {
               setSubmitString("Actualizar");
             }}
             className="mx-1 p-1 hover:p-2 duration-75 text-gray-500 hover:bg-blue-100 hover:text-color3 rounded-full"
-
             title="Editar"
           >
-
             <Icon icon="material-symbols:edit" width={20} height={20} />
           </button>
 
           <button
             onClick={() => {
               if (window.confirm("¿Está seguro de eliminar a este usuario?")) {
-                handleDelete(row.original.id)
-
+                handleDelete(row.original.id);
               }
             }}
             className="mx-1 p-1 hover:p-2 duration-75 text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-full"
-
             title="Eliminar"
-          > <Icon icon="material-symbols:delete-outline" width={20} height={20} />
+          >
+            {" "}
+            <Icon
+              icon="material-symbols:delete-outline"
+              width={20}
+              height={20}
+            />
           </button>
         </div>
       ),
-    }
-
+    },
   ]);
   const [rowData, setRowData] = useState([]);
 
@@ -205,7 +235,9 @@ export default function UsuariosPage() {
       <title>Gestión de Usuarios - Nómina</title>
       <div style={{ height: 580, width: "100%" }}>
         <div className="md:flex justify-between items-center mb-4">
-          <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">Gestión de Usuarios</h1>
+          <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
+            Gestión de Usuarios
+          </h1>
           <FuturisticButton
             onClick={() => {
               if (submitString === "Actualizar") {
