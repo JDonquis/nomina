@@ -795,7 +795,7 @@ export default function NominaPage() {
       {
         accessorKey: "full_name",
         header: "Nombre completo",
-        size: 110,
+    
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,

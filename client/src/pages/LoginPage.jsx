@@ -5,9 +5,9 @@ import { useFeedback } from "../context/FeedbackContext";
 import { authAPI } from "../services/api";
 import labFalconLogo from "../assets/logoBlue.webp";
 import background from "../assets/background.webp";
-import secretariaLogo from "../assets/secretaria_logo.png";
+import secretariaLogo from "../assets/secretaria_logo.webp";
 import { Icon } from "@iconify/react";
-import cintilloCorto from "../assets/cintilloCorto.png";
+import cintilloCorto from "../assets/cintilloCorto.webp";
 
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
@@ -117,7 +117,7 @@ export default function LoginPage() {
               alt="logo del sistema"
             />
           </div> */}
-          <h1 className="text-white fadeInUp mb-4 fadeInUp-delay-0-5 text-lg md:text-2xl font-bold  mt-4 text-center ">
+          <h1 className="text-white fadeInUp mb-4 fadeInUp-delay-0-5 text-lg md:text-4xl font-bold  mt-4 text-center ">
             Censo de fe de vida
           </h1>
           <p className="fadeInUp fadeInUp-delay-0-5  text-white  text-sm md:text-md text-center">
