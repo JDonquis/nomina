@@ -962,7 +962,6 @@ export default function NominaPage() {
                     width={20}
                     height={20}
                   />
-                  {user.is_admin}
                 </button>
               ) : null}
             </div>
