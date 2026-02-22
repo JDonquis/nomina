@@ -7,7 +7,7 @@ import {
 } from "../../services/api.js";
 import { MaterialReactTable } from "material-react-table";
 import { API_URL } from "../../config/env.js";
-import withoutPhoto from "../../assets/withoutphoto.webp";
+import withoutPhoto from "../../assets/withoutPhoto.webp";
 import { Icon } from "@iconify/react";
 import { cities } from "../../constants/cities.js";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
