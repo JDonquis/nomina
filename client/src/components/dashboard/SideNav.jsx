@@ -62,6 +62,9 @@ export default function SideNav(props) {
             src={secretariaLogo}
             className={`${props.isSidebarOpen ? 'w-12 h-12' : 'w-10 h-8'} logo w-12 duration-150 `}
             alt="logo del sistema"
+            width={48}
+            height={48}
+            loading="lazy"
           />
           
             <p className={ props.isSidebarOpen ? "block duration-300  absolute -bottom-1 right-3 font-semibold self-end opacity-100 font-exo2" : "opacity-0 absolute font-exo2"}>

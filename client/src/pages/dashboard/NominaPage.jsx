@@ -769,7 +769,8 @@ export default function NominaPage() {
                 borderRadius: "4px",
                 objectFit: "cover",
               }}
-              // This ensures the image is loaded before the print dialog opens
+              width={50}
+              height={50}
               loading="lazy"
             />
           ) : (
@@ -782,7 +783,8 @@ export default function NominaPage() {
                 borderRadius: "4px",
                 objectFit: "cover",
               }}
-              // This ensures the image is loaded before the print dialog opens
+              width={50}
+              height={50}
               loading="lazy"
             />
           ),
@@ -1239,6 +1241,9 @@ export default function NominaPage() {
                                 src={URL.createObjectURL(formData.photo)}
                                 alt="preview"
                                 className="w-full h-full object-cover rounded-md"
+                                width={144}
+                                height={176}
+                                loading="lazy"
                               />
                             ) : null}
                             {formData.photo &&
@@ -1248,6 +1253,9 @@ export default function NominaPage() {
                                 src={API_URL + "/storage/" + formData.photo}
                                 alt="preview"
                                 className="w-full h-full object-cover rounded-md"
+                                width={144}
+                                height={176}
+                                loading="lazy"
                               />
                             ) : null}
                           </div>
