@@ -30,6 +30,8 @@ class UserService
             }
         });
 
+        $query->orderBy('id','desc');
+
         return $query->get();
     }
 
