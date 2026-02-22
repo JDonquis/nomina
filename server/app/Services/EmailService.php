@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Mail\ChangePasswordEmail;
 use Exception;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,26 @@ class EmailService
             ]);
 
             throw new Exception("Error enviando email de creación de contraseña: {$e->getMessage()}");
+        }
+    }
+
+    public function sendEmailToChangePassword($user){
+        try {
+            $userService = new UserService;
+            $token = $userService->generateTokenForPassword($user->id);
+            Mail::to($user->email)->send(new ChangePasswordEmail($user, $token));
+
+            return 0;
+        } catch (Exception $e) {
+
+            Log::error('Error enviando email de cambio de contraseña', [
+                'admin_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            throw new Exception("Error enviando email de cambio de contraseña: {$e->getMessage()}");
         }
     }
 }

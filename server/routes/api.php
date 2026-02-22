@@ -14,6 +14,7 @@ Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken']);
 Route::post('activate-account', [LoginController::class, 'setPassword']);
 
+Route::post('forgot-password', [LoginController::class, 'forgotPassword'])->name('login');
 
 
 

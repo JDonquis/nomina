@@ -62,6 +62,13 @@ class UserService
         return $user;
     }
 
+    public function forgotPassword($data){
+        $user = User::where('email',$data['email'])->first();
+
+        $emailService = new EmailService;
+        $emailService->sendEmailToChangePassword($user);
+    }
+
     public function generateTokenForPassword($userID)
     {
         $token = bin2hex(random_bytes(32));

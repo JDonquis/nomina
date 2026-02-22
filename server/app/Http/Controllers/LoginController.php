@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CheckSetPasswordTokenRequest;
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\SetPasswordRequest;
 use App\Models\User;
@@ -69,6 +70,15 @@ class LoginController extends Controller
         $userService->setPassword($request->validated());
 
         return response()->json(['message' => 'Contraseña actualizada exitosamente']);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request){
+
+        $userService = new UserService;
+        $userService->forgotPassword($request->validated());
+
+        return response()->json(['message' => 'OK']);
+
     }
 
 
