@@ -87,7 +87,7 @@ class StorePaySheetRequest extends FormRequest
                 // Municipio Carirubana
                 'Norte',
                 'Carirubana',
-                'Santa Ana',
+                'Santa Ana (Carirubana)',
                 'Urbana Punta Cardón',
                 // Municipio Colina
                 'La Vela de Coro',

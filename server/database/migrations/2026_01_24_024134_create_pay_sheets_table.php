@@ -68,7 +68,7 @@ return new class extends Migration
             // Municipio Carirubana
             'Norte',
             'Carirubana',
-            'Santa Ana Carirubana',
+            'Santa Ana (Carirubana)',
             'Urbana Punta Cardón',
             // Municipio Colina
             'La Vela de Coro',
@@ -121,7 +121,7 @@ return new class extends Migration
             'Sabaneta',
             'San Antonio',
             'San Gabriel',
-            'Santa Ana Miranda',
+            'Santa Ana',
             // Municipio Monseñor Iturriza
             'Boca del Tocuyo',
             'Chichiriviche',

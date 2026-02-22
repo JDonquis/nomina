@@ -160,6 +160,8 @@ class CensusService
     {
         $census->delete();
 
+        
+
         return 0;
     }
 }

@@ -408,6 +408,7 @@ class PaySheetService
                         'date_birth' => $this->formatDate($fechaNacimiento),
                         'sex' => $this->formatSex($sexo),
                         'type_pay_sheet_id' => $typePaySheet->id,
+
                     ]
                 );
 
