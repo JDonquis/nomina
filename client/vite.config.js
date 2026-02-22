@@ -43,6 +43,21 @@ export default defineConfig({
               },
             },
           },
+          {
+            // Cache build assets and images under /assets/ with a long TTL for repeat visits
+            urlPattern: /\/assets\/.*$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "assets-cache",
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
         ],
       },
       manifest: {

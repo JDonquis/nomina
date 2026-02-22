@@ -171,6 +171,9 @@ export default function ActivateAccountPage() {
           src={secretariaLogo}
           className="w-10 md:w-16 h-max"
           alt=" secretariaLogo"
+          width={64}
+          height={64}
+          loading="lazy"
         />
       </div>
       {pathname === "/activar-cuenta" ? (

@@ -18,13 +18,59 @@
   <!-- Fonts - FIXED: Match your CSS import exactly -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload"
+  <link
+    rel="preload"
     href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-    as="style">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap">
+    as="style"
+    onload="this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap">
+  </noscript>
+
+  <!-- Replace blocking stylesheet link with preload + onload fallback -->
+  <link rel="preload" href="/assets/index-k0lpqbYH.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/assets/index-k0lpqbYH.css"></noscript>
 
   <title>Nómina</title>
+  <!-- Defer local generated CSS under /assets/ by converting matching stylesheet links
+       to preload + onload to avoid blocking LCP. Uses a MutationObserver so Vite
+       injected links are handled in dev and production builds. -->
+  <script>
+    (function () {
+      const isTarget = (href) => /\/assets\/index-.*\.css$/.test(href);
+      const processLink = (link) => {
+        try {
+          if (
+            link &&
+            link.rel === "stylesheet" &&
+            link.href &&
+            isTarget(new URL(link.href, location).pathname)
+          ) {
+            link.rel = "preload";
+            link.as = "style";
+            link.onload = function () {
+              this.rel = "stylesheet";
+            };
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      };
+
+      // Process any existing stylesheet links
+      document.querySelectorAll('link[rel="stylesheet"]').forEach(processLink);
+
+      // Observe head for Vite/dev injected styles
+      const mo = new MutationObserver((records) => {
+        for (const r of records) {
+          r.addedNodes.forEach((n) => {
+            if (n && n.tagName === "LINK") processLink(n);
+          });
+        }
+      });
+      mo.observe(document.head || document.documentElement, { childList: true });
+    })();
+  </script>
 </head>
 
 <body>

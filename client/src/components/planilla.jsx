@@ -43,7 +43,7 @@ const PrintableContent = forwardRef((props, ref) => {
         }}
         className="my-2  mb-0 relative flex flex-col justify-center items-center py-4"
       >
-        <img src={cintillo} alt="" className="w-full h-auto" />
+        <img src={cintillo} alt="" className="w-full h-auto" width={1120} height={140} loading="eager" />
 
         <h3 className="text-center font-bold  gap-3 my-3  mt-4 text-color1">
           PLANILLA DEL CENSO DE FE DE VIDA DEL PERSONAL JUBILADO Y PENSIONADO
@@ -74,7 +74,8 @@ const PrintableContent = forwardRef((props, ref) => {
               borderRadius: "0  0px 0px 6px",
               objectFit: "cover",
             }}
-            // This ensures the image is loaded before the print dialog opens
+            width={124}
+            height={136}
             loading="lazy"
           />
         </div>
@@ -388,14 +389,14 @@ const PrintableContent = forwardRef((props, ref) => {
         </div>
       </div>
 
-      {props.data.latest_census && (
+      {props.data && (
         <>
           <div className="bg-gray-200 mt-3 py-0.5 text-center">
             <p>Funcionario responsable del censo</p>
           </div>
           <div className="flex justify-between">
-            <p>{props.data.latest_census?.user?.full_name}</p>
-            <p>{props.data.latest_census?.user?.charge}</p>
+            <p>{props.data?.user?.full_name}</p>
+            <p>{props.data?.user?.charge}</p>
           </div>
         </>
       )}
@@ -407,7 +408,7 @@ const PrintPage = (props) => {
   const componentRef = useRef(null);
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: `Planilla_${props.data.full_name}_${props.data.ci}_${props.data.latest_census?.created_at}`,
+    documentTitle: `Planilla_${props.data.full_name}_${props.data.ci}_${props.data?.created_at}`,
     pageStyle: `
       @page {
         size: A4;

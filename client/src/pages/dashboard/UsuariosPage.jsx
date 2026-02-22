@@ -269,9 +269,9 @@ export default function UsuariosPage() {
             enableColumnFilters
             enableSorting
             enablePagination
-            initialState={{ pagination: { pageSize: 5 } }}
+            initialState={{ pagination: { pageSize: 25 } }}
             muiTablePaginationProps={{
-              rowsPerPageOptions: [5, 10, 20],
+              rowsPerPageOptions: [5, 10, 20, 25],
               showFirstButton: true,
               showLastButton: true,
             }}

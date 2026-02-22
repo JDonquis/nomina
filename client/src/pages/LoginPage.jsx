@@ -5,9 +5,9 @@ import { useFeedback } from "../context/FeedbackContext";
 import { authAPI } from "../services/api";
 import labFalconLogo from "../assets/logoBlue.webp";
 import background from "../assets/background.webp";
-import secretariaLogo from "../assets/secretaria_logo.png";
+import secretariaLogo from "../assets/secretaria_logo.webp";
 import { Icon } from "@iconify/react";
-import cintilloCorto from "../assets/cintilloCorto.png";
+import cintilloCorto from "../assets/cintilloCorto.webp";
 
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
@@ -99,6 +99,8 @@ export default function LoginPage() {
           src={background}
           alt="lab"
           className={`absolute   w-full h-full object-cover object-right ${animation ? "zoomAnimationToTheRight " : ""}`}
+          aria-hidden="true"
+          loading="eager"
         />
         <div
           className={`absolute w-[300px] md:min-w-[400px] md:w-[450px] pb-3 top-24 z-50 md:top-12 lg:top-24 px-5 pt-4 md:pt-10 sm:pt-20 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-20 text-white md:p-16 rounded-3xl overflow-hidden ${animation ? "fadeOut" : ""}`}
@@ -115,7 +117,7 @@ export default function LoginPage() {
               alt="logo del sistema"
             />
           </div> */}
-          <h1 className="text-white fadeInUp mb-4 fadeInUp-delay-0-5 text-lg md:text-2xl font-bold  mt-4 text-center ">
+          <h1 className="text-white fadeInUp mb-4 fadeInUp-delay-0-5 text-lg md:text-4xl font-bold  mt-4 text-center ">
             Censo de fe de vida
           </h1>
           <p className="fadeInUp fadeInUp-delay-0-5  text-white  text-sm md:text-md text-center">
@@ -195,11 +197,17 @@ export default function LoginPage() {
           src={secretariaLogo}
           alt="secretariaLogo"
           className="w-12 h-12  aspect-square  "
+          width={48}
+          height={48}
+          loading="lazy"
         />
         <img
           src={cintilloCorto}
           alt=""
           className="max-w-[240px] h-min rounded-xl "
+          width={240}
+          height={48}
+          loading="lazy"
         />
 
       </header>
