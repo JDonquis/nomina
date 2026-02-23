@@ -39,14 +39,13 @@ class PaySheetService
         if (!empty($params['filters'])) {
             $filters = json_decode($params['filters'], true);
 
-            if (isset($filters['latest_census.status'])) {
-                $filter = $filters['latest_census.status'];
+            if (isset($filters['status'])) {
+                $filter = $filters['status'];
 
                 if ($filter == 'CENSADO') {
-                    $query->whereHas('latestCensus', fn($q) => $q->where('status', true));
+                    $query->where('status', true);
                 } else {
-                    $query->whereDoesntHave('latestCensus')
-                        ->orWhereHas('latestCensus', fn($q) => $q->where('status', false));
+                    $query->where('status', false);
                 }
             }
 
