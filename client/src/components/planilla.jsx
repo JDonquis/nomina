@@ -43,7 +43,14 @@ const PrintableContent = forwardRef((props, ref) => {
         }}
         className="my-2  mb-0 relative flex flex-col justify-center items-center py-4"
       >
-        <img src={cintillo} alt="" className="w-full h-auto" width={1120} height={140} loading="eager" />
+        <img
+          src={cintillo}
+          alt=""
+          className="w-full h-auto"
+          width={1120}
+          height={140}
+          loading="eager"
+        />
 
         <h3 className="text-center font-bold  gap-3 my-3  mt-4 text-color1">
           PLANILLA DEL CENSO DE FE DE VIDA DEL PERSONAL JUBILADO Y PENSIONADO
@@ -66,7 +73,11 @@ const PrintableContent = forwardRef((props, ref) => {
             )}
           </div>
           <img
-            src={ props.data.photo ? API_URL + "/storage/" + props.data.photo : withoutPhoto}
+            src={
+              props.data.photo
+                ? API_URL + "/storage/" + props.data.photo
+                : withoutPhoto
+            }
             alt="Profile"
             style={{
               width: "124px",
@@ -144,7 +155,9 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Fecha_nac</p>
               </div>
               <div className="px-3 min-h-7 text-xs flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.date_birth.replaceAll("-", "/")}</p>
+                <p className="font-semibold">
+                  {props.data.date_birth.replaceAll("-", "/")}
+                </p>
               </div>
             </div>
 
@@ -394,8 +407,18 @@ const PrintableContent = forwardRef((props, ref) => {
           <div className="bg-gray-200 mt-3 py-0.5 text-center">
             <p>Funcionario responsable del censo</p>
           </div>
-          <div className="flex justify-between">
+          <div className=" flex justify-between items-center">
             <p>{props.data?.user?.full_name}</p>
+            <p className="text-xs mt-1">
+              Censado el{" "}
+              {new Date(props.data?.updated_at).toLocaleString(
+                navigator.language,
+                {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }
+              )}
+            </p>
             <p>{props.data?.user?.charge}</p>
           </div>
         </>
@@ -425,28 +448,26 @@ const PrintPage = (props) => {
       }
     `,
   });
-  console.log(props.data)
+  console.log(props.data);
 
   return (
     <div>
-  
-        {props.data.status ? (
-          <div className="flex justify-center mb-4">
-            <FuturisticButton
-              onClick={handlePrint}
-              title="Imprimir"
-              className="flex gap-2 text-xl mx-auto py-1 px-2 "
-            >
-              <Icon
-                icon="material-symbols:download-rounded"
-                className="w-6 min-h-7 text-gray-700  mr-3 inline "
-              />
-              <span>Descargar / Imprimir</span>
-            </FuturisticButton>
-          </div>
-        
-        ) : null}
-      {props.data  && (
+      {props.data.status ? (
+        <div className="flex justify-center mb-4">
+          <FuturisticButton
+            onClick={handlePrint}
+            title="Imprimir"
+            className="flex gap-2 text-xl mx-auto py-1 px-2 "
+          >
+            <Icon
+              icon="material-symbols:download-rounded"
+              className="w-6 min-h-7 text-gray-700  mr-3 inline "
+            />
+            <span>Descargar / Imprimir</span>
+          </FuturisticButton>
+        </div>
+      ) : null}
+      {props.data && (
         <PrintableContent
           data={props.data}
           ref={componentRef}
