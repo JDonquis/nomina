@@ -90,7 +90,7 @@ class UpdatePaySheetRequest extends FormRequest
                 'Guajiro',
                 'Seque',
                 'Valle de Eroa',
-                'Zazárida',
+                'Zazárida Buchivacoa',
                 // Municipio Cacique Manaure
                 'Cacique Manaure',
                 // Municipio Carirubana
@@ -182,7 +182,7 @@ class UpdatePaySheetRequest extends FormRequest
                 'La Ciénaga',
                 'La Soledad',
                 'Pueblo Cumarebo',
-                'Zazárida'
+                'Zazárida Zamora'
         ])],
 
             // Pension Data
