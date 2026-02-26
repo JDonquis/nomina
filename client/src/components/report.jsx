@@ -65,35 +65,36 @@ const PrintableContent = forwardRef((props, ref) => {
       <table className="border text-left rounded-md w-full">
         <thead >
           <tr>
-            <th rowSpan={2} className="px-2 p-1" style={{ width: "200px" }}>
+            <th rowSpan={2} className="px-2 p-1" style={{ width: "300px" }}>
               ASIC
             </th>
 
             <th className=" bg-gray-200 text-center px-2 p-1 " colSpan={days.length}>
               DIA
             </th>
-            <th className=" bg-gray-50 text-center px-2 p-1" rowSpan={2}>
+            <th className=" bg-gray-50  px-2 p-1 text-right" rowSpan={2}>
               TOTAL
             </th>
           </tr>
 
           <tr className="bg-gray-100 text-sm">
             {days.map((day) => (
-              <th className="p-1 px-2 w-12" key={day.id}>{day.label}</th>
+              <th className="p-1 px-2 w-[37px]" key={day.id}>{day.label}</th>
             ))}
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="">
           {asics.map((asic) => (
-            <tr key={asic.id}>
-              <td className="p-1 px-2 border-r">{asic.name}</td>
+            <tr key={asic.id} className="odd:bg-white even:bg-gray-50">
+              <td className="p-1 px-2 border-r text-sm">{asic.name}</td>
 
               {days.map((day) => (
-                <td className="p-1 px-2 w-12 text-right border-r" key={day.id}>{asic.censadosPorDia[day.id] ?? "-"}</td>
+                <td className="p-1 px-2 w-[37px] text-right border-r" key={day.id}>{asic.censadosPorDia[day.id] ?? "-"}</td>
               ))}
               <td className="p-1 px-2 text-right">{Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0)}</td>
             </tr>
+            
           ))}
         </tbody>
       </table>
