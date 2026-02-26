@@ -103,6 +103,54 @@ class PaySheetService
         return $query->paginate($perPage);
     }
 
+    public function report()
+{
+    $censuses = Census::with('paySheet.administrativeLocation')
+        ->where('status', true) // Solo censos válidos
+        ->whereHas('paySheet', function($query) {
+            $query->where('status', true); // Solo pay_sheets censados
+        })
+        ->get()
+        ->groupBy(function($census) {
+            // Agrupar por mes (formato: Enero, Febrero, etc.)
+            return $census->created_at->translatedFormat('F');
+        })
+        ->map(function($monthlyCensuses, $month) {
+            // Por cada mes, agrupar por día
+            $days = $monthlyCensuses
+                ->groupBy(function($census) {
+                    return $census->created_at->format('d'); // Día del mes
+                })
+                ->map(function($dailyCensuses, $day) {
+                    // Por cada día, agrupar por ASIC y contar
+                    $asics = $dailyCensuses
+                        ->groupBy(function($census) {
+                            // Obtener el nombre del ASIC de la relación
+                            return $census->paySheet->administrativeLocation->name ?? 'SIN_ASIC';
+                        })
+                        ->map(function($asicCensuses, $asicName) {
+                            return count($asicCensuses); // Contar censos por ASIC
+                        })
+                        ->toArray();
+
+                    return [
+                        $day => $asics
+                    ];
+                })
+                ->values() // Resetear índices para que sea una lista de objetos
+                ->toArray();
+
+            return [
+                'month' => $month,
+                'days' => $days
+            ];
+        })
+        ->values() // Resetear índices para que sea una lista de objetos
+        ->toArray();
+
+    return response()->json($censuses);
+}
+
     public function store($data, $photo)
     {
         $photoPath = null;
