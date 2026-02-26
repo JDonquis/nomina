@@ -167,7 +167,7 @@ public function report($year = null)
     while ($start <= $end) {
         $days[] = [
             'id' => $start->format('Y-m-d'),
-            'label' => $start->format('d')
+            'label' => $start->format('d/m')
         ];
         $start->addDay();
     }
