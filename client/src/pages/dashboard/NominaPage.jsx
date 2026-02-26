@@ -30,6 +30,7 @@ import withoutPhoto from "../../assets/withoutPhoto.webp";
 import { cities } from "../../constants/cities";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
 import typePensions from "../../constants/type_pensions";
+import PrintPage from "../../components/report";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -75,8 +76,10 @@ export default function NominaPage() {
   const [isCensusModalOpen, setIsCensusModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
   const [historyData, setHistoryData] = useState([]);
+  const [reportData, setReportData] = useState({});
   const [resultsToken, setResultsToken] = useState(null);
   const [origins, setOrigins] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState(false);
@@ -1013,6 +1016,19 @@ export default function NominaPage() {
     fetchData();
   }, [fetchData]);
 
+
+  const generateReport = async () => {
+    try {
+      const res = await payrollAPI.getReport();
+      console.log(res);
+      setReportData(res);
+      setIsReportModalOpen(true);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+  };
   // Create debounced function once
   const debouncedSaveFormData = useMemo(
     () =>
@@ -1604,10 +1620,17 @@ export default function NominaPage() {
           onClose={() => setIsOptionsModalOpen(false)}
         >
           <div
-            className={`px-4   z-50 top-12 w-96 flex flex-col  rounded-md   ${
+            className={`px-4   z-50 top-12 w-full flex flex-col  rounded-md   ${
               isOptionsModalOpen ? "block" : "hidden"
             }`}
           >
+            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={generateReport}
+            >
+              <Icon icon="material-symbols:download" width={24} height={24} />
+              <span>Generar Reporte de Censados por ASIC </span>
+              <Icon icon="tabler:pdf" width={24} height={24} />
+            </button>
             <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
               <Icon icon="material-symbols:download" width={24} height={24} />
               <span>Exportar Datos</span>
@@ -1668,6 +1691,11 @@ export default function NominaPage() {
               </div>
             ) : null}
           </div>
+        </Modal>
+
+
+        <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Reporte de Censados por ASIC" size="full">
+          <PrintPage data={reportData} year={new Date().getFullYear()} />
         </Modal>
       </div>
     </>
