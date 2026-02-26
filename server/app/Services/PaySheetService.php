@@ -103,52 +103,79 @@ class PaySheetService
         return $query->paginate($perPage);
     }
 
-    public function report()
+public function report($year = null)
 {
-    $censuses = Census::with('paySheet.administrativeLocation')
-        ->where('status', true) // Solo censos válidos
-        ->whereHas('paySheet', function($query) {
-            $query->where('status', true); // Solo pay_sheets censados
-        })
-        ->get()
-        ->groupBy(function($census) {
-            // Agrupar por mes (formato: Enero, Febrero, etc.)
-            return $census->created_at->translatedFormat('F');
-        })
-        ->map(function($monthlyCensuses, $month) {
-            // Por cada mes, agrupar por día
-            $days = $monthlyCensuses
-                ->groupBy(function($census) {
-                    return $census->created_at->format('d'); // Día del mes
-                })
-                ->map(function($dailyCensuses, $day) {
-                    // Por cada día, agrupar por ASIC y contar
-                    $asics = $dailyCensuses
-                        ->groupBy(function($census) {
-                            // Obtener el nombre del ASIC de la relación
-                            return $census->paySheet->administrativeLocation->name ?? 'SIN_ASIC';
-                        })
-                        ->map(function($asicCensuses, $asicName) {
-                            return count($asicCensuses); // Contar censos por ASIC
-                        })
-                        ->toArray();
+    Carbon::setLocale('es');
 
-                    return [
-                        $day => $asics
-                    ];
+    // Usar año actual si no se proporciona
+    $year = $year ?? now()->year;
+
+    // Obtener todos los censos válidos del año especificado
+    $censuses = Census::with('paySheet.administrativeLocation')
+        ->where('status', true)
+        ->whereHas('paySheet', function($query) {
+            $query->where('status', true);
+        })
+        ->whereYear('created_at', $year)
+        ->get();
+
+    // Si no hay censos en el año, retornar arrays vacíos
+    if ($censuses->isEmpty()) {
+        return response()->json([
+            'asics' => [],
+            'days' => []
+        ]);
+    }
+
+    // Generar array de ASICs con sus censos por día
+    $asics = $censuses
+        ->groupBy(function($census) {
+            return $census->paySheet->administrativeLocation->id ?? 'sin-asic';
+        })
+        ->map(function($asicCensuses, $asicId) {
+            $asic = $asicCensuses->first()->paySheet->administrativeLocation;
+            $asicName = $asic->name ?? 'SIN ASIC';
+
+            // Agrupar censos por fecha para este ASIC
+            $censadosPorDia = $asicCensuses
+                ->groupBy(function($census) {
+                    return $census->created_at->format('Y-m-d');
                 })
-                ->values() // Resetear índices para que sea una lista de objetos
+                ->map(function($dayCensuses) {
+                    return count($dayCensuses);
+                })
                 ->toArray();
 
             return [
-                'month' => $month,
-                'days' => $days
+                'id' => $asicId,
+                'name' => $asicName,
+                'censadosPorDia' => $censadosPorDia
             ];
         })
-        ->values() // Resetear índices para que sea una lista de objetos
+        ->values()
         ->toArray();
 
-    return response()->json($censuses);
+    // Obtener la primera y última fecha del año con censos
+    $firstDate = $censuses->min('created_at');
+    $lastDate = $censuses->max('created_at');
+
+    // Generar array de días desde el primer censo hasta el último censo
+    $days = [];
+    $start = Carbon::parse($firstDate)->startOfDay();
+    $end = Carbon::parse($lastDate)->startOfDay();
+
+    while ($start <= $end) {
+        $days[] = [
+            'id' => $start->format('Y-m-d'),
+            'label' => $start->format('d')
+        ];
+        $start->addDay();
+    }
+
+    return response()->json([
+        'asics' => $asics,
+        'days' => $days
+    ]);
 }
 
     public function store($data, $photo)
