@@ -96,12 +96,19 @@ const PrintableContent = forwardRef((props, ref) => {
             </tr>
           ))}
           <tr className="bg-gray-100 text-sm text-right font-bold">
-            <td
-              colSpan={days.length + 1}
-              className="p-1 px-2 border-r text-left text-sm "
-            >
-              TOTAL
-            </td>
+            <td className="p-1 px-2 border-r text-left text-sm ">TOTAL</td>
+            {days.map((day) => {
+              return (
+                <td
+                  className="p-1 px-2 w-[37px] text-right border-r"
+                  key={day.id}
+                >
+                  {asics.reduce((total, asic) => {
+                    return total + (asic.censadosPorDia[day.id] ?? 0);
+                  }, 0)}
+                </td>
+              );
+            })}
             <td className="p-1 px-2 text-right">
               {asics.reduce((total, asic) => {
                 const asicTotal = Object.values(asic.censadosPorDia).reduce(
