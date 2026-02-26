@@ -1,31 +1,12 @@
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { forwardRef, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Icon } from "@iconify/react";
-import SecretrariaLogo from "../assets/secretaria_logo.png";
-import withoutPhoto from "../assets/withoutPhoto.webp";
+import secretaria_logo from "../assets/secretaria_logo.webp";
+import cintilloCorto from "../assets/cintilloCorto.webp";
 
 import FuturisticButton from "./FuturisticButton";
-import cintillo from "../assets/cintillo.jpeg";
-import { API_URL } from "../config/env.js";
-
-const calculateAge = (birthDate) => {
-  const today = new Date();
-  const birthDateObj = new Date(birthDate);
-  let age = today.getFullYear() - birthDateObj.getFullYear();
-  const monthDiff = today.getMonth() - birthDateObj.getMonth();
-
-  if (
-    monthDiff < 0 ||
-    (monthDiff === 0 && today.getDate() < birthDateObj.getDate())
-  ) {
-    age--;
-  }
-
-  return age;
-};
 
 const PrintableContent = forwardRef((props, ref) => {
-  console.log({ props });
   const { data, year } = props;
   const { asics, days } = data;
   return (
@@ -34,8 +15,7 @@ const PrintableContent = forwardRef((props, ref) => {
       className="w-full mx-auto bg-white relative"
       style={{
         padding: "3mm",
-        width: "297mm",
-        height: "210mm",
+        width: "320mm",
         paddingTop: "0mm !important",
       }}
     >
@@ -44,32 +24,43 @@ const PrintableContent = forwardRef((props, ref) => {
           marginBlock: "12px !important",
           marginBottom: "12px !important",
         }}
-        className="my-2  mb-0 relative flex flex-col justify-between items-center py-4"
+        className="my-2  mb-0 relative flex  justify-between items-center py-4"
       >
         <img
-          src={cintillo}
+          src={cintilloCorto}
           alt=""
-          className="w-80 h-auto"
-          width={700}
+          className="w-36 h-auto"
+          width={288}
           loading="eager"
         />
-
-        <h3 className="text-center font-bold  gap-3 my-3  mt-4 text-color1">
-          REPORTE DE CENSADOS POR CADA ASIC DURANTE EL PERIODO DE CENSO {year}
-        </h3>
-        <h4 className="text-center font-bold  gap-3 my-3  -mt-3 text-gray-600">
-          OFICINA DE RECURSOS HUMANOS
-        </h4>
+        <div className="-ml-10">
+          <h3 className="text-center font-bold  gap-3 my-3  mt-4 text-color1">
+            REPORTE DE CENSADOS POR CADA ASIC DURANTE EL PERIODO DE CENSO {year}
+          </h3>
+          <h4 className="text-center font-bold  gap-3 my-3  -mt-3 text-gray-600">
+            OFICINA DE RECURSOS HUMANOS
+          </h4>
+        </div>
+        <img
+          src={secretaria_logo}
+          alt=""
+          className="w-12 h-auto"
+          width={48}
+          loading="eager"
+        />
       </header>
 
       <table className="border text-left rounded-md w-full">
-        <thead >
+        <thead>
           <tr>
             <th rowSpan={2} className="px-2 p-1" style={{ width: "300px" }}>
               ASIC
             </th>
 
-            <th className=" bg-gray-200 text-center px-2 p-1 " colSpan={days.length}>
+            <th
+              className=" bg-gray-200 text-center px-2 p-1 "
+              colSpan={days.length}
+            >
               DIA
             </th>
             <th className=" bg-gray-50  px-2 p-1 text-right" rowSpan={2}>
@@ -77,9 +68,11 @@ const PrintableContent = forwardRef((props, ref) => {
             </th>
           </tr>
 
-          <tr className="bg-gray-100 text-sm">
+          <tr className="bg-gray-100 text-sm ">
             {days.map((day) => (
-              <th className="p-1 px-2 w-[37px]" key={day.id}>{day.label}</th>
+              <th className="p-1 px-2 w-[37px] font-semibold" key={day.id}>
+                {day.label}
+              </th>
             ))}
           </tr>
         </thead>
@@ -90,12 +83,35 @@ const PrintableContent = forwardRef((props, ref) => {
               <td className="p-1 px-2 border-r text-sm">{asic.name}</td>
 
               {days.map((day) => (
-                <td className="p-1 px-2 w-[37px] text-right border-r" key={day.id}>{asic.censadosPorDia[day.id] ?? "-"}</td>
+                <td
+                  className="p-1 px-2 w-[37px] text-right border-r"
+                  key={day.id}
+                >
+                  {asic.censadosPorDia[day.id] ?? "-"}
+                </td>
               ))}
-              <td className="p-1 px-2 text-right">{Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0)}</td>
+              <td className="p-1 px-2 text-right">
+                {Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0)}
+              </td>
             </tr>
-            
           ))}
+          <tr className="bg-gray-100 text-sm text-right font-bold">
+            <td
+              colSpan={days.length + 1}
+              className="p-1 px-2 border-r text-left text-sm "
+            >
+              TOTAL
+            </td>
+            <td className="p-1 px-2 text-right">
+              {asics.reduce((total, asic) => {
+                const asicTotal = Object.values(asic.censadosPorDia).reduce(
+                  (a, b) => a + b,
+                  0,
+                );
+                return total + asicTotal;
+              }, 0)}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -110,7 +126,7 @@ const PrintPage = (props) => {
     pageStyle: `
         @page {
       size: legal landscape;
-      margin: 10mm;
+      margin: 4mm;
     }
       body {
         font-family: Arial, sans-serif;
@@ -124,7 +140,6 @@ const PrintPage = (props) => {
       }
     `,
   });
-  console.log({ props });
 
   return (
     <div>
