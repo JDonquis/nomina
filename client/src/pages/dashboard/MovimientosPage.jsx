@@ -19,6 +19,7 @@ import { es } from "date-fns/locale"; // Para español
 import PrintPage from "../../components/planilla.jsx";
 import Modal from "../../components/Modal.jsx";
 import FormField from "../../components/forms/FormField.jsx";
+import debounce from "lodash.debounce";
 
 const defaultFormData = {
   activity: "",
@@ -97,6 +98,15 @@ export default function MovimientosPage() {
     fetchInitialData();
   }, [fetchInitialData]);
 
+  const debouncedGlobalFilter = useMemo(
+    () =>
+      debounce((value) => {
+        setGlobalFilter(value);
+        setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
+      }, 300),
+    [],
+  );
+
   const columns = useMemo(
     () => [
       {
@@ -104,6 +114,7 @@ export default function MovimientosPage() {
         header: "Fecha",
         size: 155,
         enableColumnFilter: true,
+        filterVariant: "date",
         enableSorting: true,
         Cell: ({ cell }) => {
           const dateString = cell.getValue();
@@ -122,6 +133,8 @@ export default function MovimientosPage() {
         header: "Realizado por",
         size: 150,
         enableColumnFilter: true,
+        filterVariant: "select",
+        filterSelectOptions: users.map((user) => user.full_name),
         enableSorting: true,
       },
       {
@@ -129,6 +142,26 @@ export default function MovimientosPage() {
         header: "Actividad",
         size: 150,
         enableColumnFilter: true,
+        filterVariant: "select",
+
+        filterSelectOptions: [
+          //       case CENSUS_CREATED = 'Creacion de Censo';
+          // case CENSUS_UPDATED = 'Actualizacion de Censo';
+          // case CENSUS_DELETED = 'Eliminacion de Censo';
+          // case PAYSHEET_CREATED = 'Creacion de registro';
+          // case PAYSHEET_UPDATED = 'Actualizacion de registro';
+          // case PAYSHEET_DELETED = 'Eliminación de registro';
+          // case REPOSITORY_EXPORT = 'Repositorio exportado';
+          // case REPOSITORY_IMPORT = 'Repositorio importado'
+          "Creacion de Censo",
+          "Actualizacion de Censo",
+          "Eliminacion de Censo",
+          "Creacion de registro",
+          "Actualizacion de registro",
+          "Eliminación de registro",
+          "Repositorio exportado",
+          "Repositorio importado",
+        ],
         enableSorting: true,
       },
       {
@@ -293,7 +326,10 @@ export default function MovimientosPage() {
                   setFormData({
                     ...cell.row.original.pay_sheet,
                     activity: cell.row.original.activity,
-                    to_census: cell.row.original.activity === "Creacion de Censo" ? true : false,
+                    to_census:
+                      cell.row.original.activity === "Creacion de Censo"
+                        ? true
+                        : false,
                   });
                   console.log(cell.row.original);
                 }}
@@ -598,12 +634,11 @@ export default function MovimientosPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    console.log({ columnFilters });
 
     try {
       const res = await activitiesAPI.getActivities({
         page: pagination.pageIndex + 1,
-        limit: pagination.pageSize,
+        per_page: pagination.pageSize,
         sortField: sorting[0]?.id || "id",
         sortOrder: sorting[0]?.desc ? "desc" : "asc",
         search: globalFilter, // Global search
@@ -685,7 +720,9 @@ export default function MovimientosPage() {
           {/* {PDFdata.activity == "Creación de registro" || PDFdata.activity == "Actualización de registro" ? 
            
           } */}
-          <h1 className="text-xl font-bold mb-2 text-gray-300 col-span-2 text-center uppercase ">{formData.activity}</h1>
+          <h1 className="text-xl font-bold mb-2 text-gray-300 col-span-2 text-center uppercase ">
+            {formData.activity}
+          </h1>
           <form
             className={`px-12 space-y-5 md:space-y-0 gap-7 w-full relative`}
           >
@@ -798,7 +835,6 @@ export default function MovimientosPage() {
                       <>
                         {field.name == "type_pension" && (
                           <>
-                          
                             {formData.to_census && (
                               <div className="col-span-12 flex items-center">
                                 <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
