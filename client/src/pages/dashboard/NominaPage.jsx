@@ -42,7 +42,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey]
+      [onChange, testKey],
     );
 
     return (
@@ -65,7 +65,7 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  }
+  },
 );
 
 export default function NominaPage() {
@@ -172,7 +172,7 @@ export default function NominaPage() {
           stopCamera();
         },
         "image/jpeg",
-        0.95
+        0.95,
       );
     }
   };
@@ -348,8 +348,7 @@ export default function NominaPage() {
       name: "administrative_location_id",
       label: "Ubicación administrativa",
       type: "select",
-      filterVariant: "select",
-      filterSelectOptions: administrativeLocations.map((location) => location.label),
+
       required: false,
       className: "col-span-6",
     },
@@ -715,7 +714,7 @@ export default function NominaPage() {
   const handleUncensus = async (id) => {
     if (
       !window.confirm(
-        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`
+        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`,
       )
     ) {
       return;
@@ -799,7 +798,7 @@ export default function NominaPage() {
       {
         accessorKey: "full_name",
         header: "Nombre completo",
-    
+
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
@@ -874,14 +873,15 @@ export default function NominaPage() {
         },
       },
       {
-
-    
         header: "Ubicación administrativa",
         accessorKey: "administrative_location.name",
-        size: 100,
+        size: 130,
         filterVariant: "select",
-        filterSelectOptions: [...administrativeLocations.map((location) => location.label), "Sin asignar"],
         enableColumnFilter: true,
+
+        filterSelectOptions: administrativeLocations.map(
+          (location) => location.label,
+        ).concat("Sin asignar"),
         enableSorting: true,
       },
       {
@@ -944,7 +944,7 @@ export default function NominaPage() {
                 <button
                   onClick={() => {
                     setPDFmodal(true);
-                   
+
                     setPDFdata({
                       ...cell.row.original,
                     });
@@ -975,9 +975,8 @@ export default function NominaPage() {
         },
       },
     ],
-    []
+    [administrativeLocations],
   );
-
 
   const [data, setData] = useState([]);
   const [rowCount, setRowCount] = useState(0);
@@ -1004,7 +1003,7 @@ export default function NominaPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {})
+          }, {}),
         ),
       });
       setData(res.paySheets.data);
@@ -1018,7 +1017,6 @@ export default function NominaPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
 
   const generateReport = async () => {
     try {
@@ -1041,7 +1039,7 @@ export default function NominaPage() {
         localStorage.setItem("formData", JSON.stringify(dataWithoutPhoto));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -1075,7 +1073,7 @@ export default function NominaPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    []
+    [],
   );
 
   const handleChangeValue = useCallback((e) => {
@@ -1116,7 +1114,7 @@ export default function NominaPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString"))
+                    JSON.parse(localStorage.getItem("submitString")),
                   );
                   setIsModalOpen(true);
                 }}
@@ -1372,8 +1370,8 @@ export default function NominaPage() {
                         ? "bg-gradient-to-r from-color4 to-color2 text-color1 hover:from-color4 hover:to-color2"
                         : "bg-gradient-to-r from-color1 to-color2 text-color4 hover:from-color1 hover:to-color2"
                       : submitString == "Actualizar"
-                      ? "bg-color4 text-color1 hover:bg-color3"
-                      : "bg-color1 text-color4 hover:bg-color3"
+                        ? "bg-color4 text-color1 hover:bg-color3"
+                        : "bg-color1 text-color4 hover:bg-color3"
                   }`}
                 >
                   <span>{loading ? "Procesando..." : submitString} </span>
@@ -1581,7 +1579,7 @@ export default function NominaPage() {
                         {
                           dateStyle: "medium",
                           timeStyle: "short",
-                        }
+                        },
                       )}
                     </p>
                     <p className="flex gap-3 mt-2 text-sm">
@@ -1628,7 +1626,8 @@ export default function NominaPage() {
               isOptionsModalOpen ? "block" : "hidden"
             }`}
           >
-            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
               onClick={generateReport}
             >
               <Icon icon="material-symbols:download" width={24} height={24} />
@@ -1675,7 +1674,7 @@ export default function NominaPage() {
                   if (
                     window.confirm(
                       e.target.files[0].name +
-                        "   ¿Desea añadir los datos de este excel a la nómina?"
+                        "   ¿Desea añadir los datos de este excel a la nómina?",
                     )
                   ) {
                     importExcel(e);
@@ -1697,8 +1696,12 @@ export default function NominaPage() {
           </div>
         </Modal>
 
-
-        <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title="Reporte de Censados por ASIC" size="full">
+        <Modal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          title="Reporte de Censados por ASIC"
+          size="full"
+        >
           <PrintPage data={reportData} year={new Date().getFullYear()} />
         </Modal>
       </div>
