@@ -54,6 +54,14 @@ class PaySheetService
                 $query->where('ci', 'LIKE', "%{$filter}%");
             }
 
+            if (isset($filters['administrative_location.name'])) {
+                $filter = $filters['administrative_location.name'];
+                $query->whereHas('administrativeLocation', function ($subQuery) use ($filter){
+
+                    $subQuery->where('name', $filter);
+                });
+            }
+
             if (isset($filters['full_name'])) {
                 $filter = $filters['full_name'];
                 $query->where('full_name', 'LIKE', "%{$filter}%");
@@ -340,13 +348,17 @@ public function report($year = null)
         $paySheet->load('typePaySheet', 'user', 'administrativeLocation');
 
 
-        Activity::create([
+        if(!$data['to_census']){
+            Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_UPDATED,
             'pay_sheet' => $paySheet
 
         ]);
+        }
+
+
 
         return $paySheet;
     }
