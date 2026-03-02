@@ -27,3 +27,4 @@ class Census extends Model
 
 
 }
+
