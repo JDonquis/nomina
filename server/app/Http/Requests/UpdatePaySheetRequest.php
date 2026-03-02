@@ -40,7 +40,7 @@ class UpdatePaySheetRequest extends FormRequest
             'sex' => 'nullable|string|in:M,F,Sin asignar',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
-            'administrative_location_id' => 'nullable|integer|exists:administrative_locations,id',
+            'administrative_location_id' => 'required|integer|exists:administrative_locations,id',
             'phone_number' => 'nullable|string|max:20',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'email' => 'nullable|email',
