@@ -348,8 +348,9 @@ export default function NominaPage() {
       name: "administrative_location_id",
       label: "Ubicación administrativa",
       type: "select",
+      filterVariant: "select",
+      filterSelectOptions: administrativeLocations.map((location) => location.label),
       required: false,
-      options: administrativeLocations,
       className: "col-span-6",
     },
     {
@@ -873,11 +874,13 @@ export default function NominaPage() {
         },
       },
       {
-        header: "Tipo de Pensión",
-        accessorKey: "type_pension",
+
+    
+        header: "Ubicación administrativa",
+        accessorKey: "administrative_location.name",
         size: 100,
         filterVariant: "select",
-        filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
+        filterSelectOptions: [...administrativeLocations.map((location) => location.label), "Sin asignar"],
         enableColumnFilter: true,
         enableSorting: true,
       },
@@ -1447,6 +1450,7 @@ export default function NominaPage() {
                   density: "compact",
                   columnVisibility: {
                     created_at: false,
+                    city: false,
                   },
                 }}
                 state={{
