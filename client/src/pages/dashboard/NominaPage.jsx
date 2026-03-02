@@ -94,6 +94,31 @@ export default function NominaPage() {
   const photoOptionsRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const administrative_locations = await asicAPI.getASIC();
+      // Transform API response to match select component format { value, label }
+      const formattedLocations = administrative_locations.map((location) => ({
+        value: location.id,
+        label: location.name,
+      }));
+      setAdministrativeLocations(formattedLocations);
+
+      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
+        value: type_pay_sheet.id,
+        label: type_pay_sheet.name,
+      }));
+      setTypePaySheets(formattedTypePaySheets);
+    } catch (e) {
+      console.error("Failed to fetch data", e);
+    }
+  }, []);
+  // Form configuration for ReusableForm
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   // Close photo options menu when clicking outside
   useEffect(() => {
@@ -185,32 +210,6 @@ export default function NominaPage() {
       }
     };
   }, [cameraStream]);
-
-  const fetchInitialData = useCallback(async () => {
-    try {
-      const administrative_locations = await asicAPI.getASIC();
-      // Transform API response to match select component format { value, label }
-      const formattedLocations = administrative_locations.map((location) => ({
-        value: location.id,
-        label: location.name,
-      }));
-      setAdministrativeLocations(formattedLocations);
-
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
-      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
-        value: type_pay_sheet.id,
-        label: type_pay_sheet.name,
-      }));
-      setTypePaySheets(formattedTypePaySheets);
-    } catch (e) {
-      console.error("Failed to fetch data", e);
-    }
-  }, []);
-  // Form configuration for ReusableForm
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
 
   {
     /* 
@@ -348,7 +347,7 @@ export default function NominaPage() {
       name: "administrative_location_id",
       label: "Ubicación administrativa",
       type: "select",
-
+      options: administrativeLocations,
       required: false,
       className: "col-span-6",
     },
@@ -564,7 +563,7 @@ export default function NominaPage() {
         formData.pension_survivor_status ? "col-span-6" : "hidden"
       }`,
     },
-  ]);
+  ] , );
 
   const [submitString, setSubmitString] = useState("Registrar");
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -879,9 +878,9 @@ export default function NominaPage() {
         filterVariant: "select",
         enableColumnFilter: true,
 
-        filterSelectOptions: administrativeLocations.map(
-          (location) => location.label,
-        ).concat("Sin asignar"),
+        filterSelectOptions: administrativeLocations
+          .map((location) => location.label)
+          .concat("Sin asignar"),
         enableSorting: true,
       },
       {
