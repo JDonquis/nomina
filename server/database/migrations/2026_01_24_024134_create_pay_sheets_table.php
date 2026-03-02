@@ -154,7 +154,7 @@ return new class extends Migration
             'La Ciénaga',
             'La Soledad',
             'Pueblo Cumarebo',
-            'Zazárida Buchivacoa Zamora']);
+            'Zazárida Zamora']);
         $table->string('state')->default('Falcon');
         $table->string('city')->nullable()->default('Sin asignar');
         $table->string('full_name');

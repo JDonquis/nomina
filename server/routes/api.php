@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
     Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
     Route::post('pay-sheets/photo/{paySheet}', [PaySheetController::class, 'updatePhoto']);
+    Route::get('pay-sheets/generate/report',[PaySheetController::class,'report']);
 
     // Census
     Route::get('censuses', [CensusController::class, 'index']);

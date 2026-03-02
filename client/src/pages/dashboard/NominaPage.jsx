@@ -30,6 +30,7 @@ import withoutPhoto from "../../assets/withoutPhoto.webp";
 import { cities } from "../../constants/cities";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
 import typePensions from "../../constants/type_pensions";
+import PrintPage from "../../components/report";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -41,7 +42,7 @@ const MemoizedTestField = React.memo(
       (e) => {
         onChange(testKey, e);
       },
-      [onChange, testKey]
+      [onChange, testKey],
     );
 
     return (
@@ -64,7 +65,7 @@ const MemoizedTestField = React.memo(
       prevProps.fieldName === nextProps.fieldName &&
       JSON.stringify(prevProps.field) === JSON.stringify(nextProps.field)
     );
-  }
+  },
 );
 
 export default function NominaPage() {
@@ -75,8 +76,10 @@ export default function NominaPage() {
   const [isCensusModalOpen, setIsCensusModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
   const [historyData, setHistoryData] = useState([]);
+  const [reportData, setReportData] = useState({});
   const [resultsToken, setResultsToken] = useState(null);
   const [origins, setOrigins] = useState([]);
   const [loadingMessage, setLoadingMessage] = useState(false);
@@ -92,6 +95,31 @@ export default function NominaPage() {
   const photoOptionsRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const administrative_locations = await asicAPI.getASIC();
+      // Transform API response to match select component format { value, label }
+      const formattedLocations = administrative_locations.map((location) => ({
+        value: location.id,
+        label: location.name,
+      }));
+      setAdministrativeLocations(formattedLocations);
+
+      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
+        value: type_pay_sheet.id,
+        label: type_pay_sheet.name,
+      }));
+      setTypePaySheets(formattedTypePaySheets);
+    } catch (e) {
+      console.error("Failed to fetch data", e);
+    }
+  }, []);
+  // Form configuration for ReusableForm
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   // Close photo options menu when clicking outside
   useEffect(() => {
@@ -170,7 +198,7 @@ export default function NominaPage() {
           stopCamera();
         },
         "image/jpeg",
-        0.95
+        0.95,
       );
     }
   };
@@ -183,32 +211,6 @@ export default function NominaPage() {
       }
     };
   }, [cameraStream]);
-
-  const fetchInitialData = useCallback(async () => {
-    try {
-      const administrative_locations = await asicAPI.getASIC();
-      // Transform API response to match select component format { value, label }
-      const formattedLocations = administrative_locations.map((location) => ({
-        value: location.id,
-        label: location.name,
-      }));
-      setAdministrativeLocations(formattedLocations);
-
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
-      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
-        value: type_pay_sheet.id,
-        label: type_pay_sheet.name,
-      }));
-      setTypePaySheets(formattedTypePaySheets);
-    } catch (e) {
-      console.error("Failed to fetch data", e);
-    }
-  }, []);
-  // Form configuration for ReusableForm
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
 
   {
     /* 
@@ -346,8 +348,8 @@ export default function NominaPage() {
       name: "administrative_location_id",
       label: "Ubicación administrativa",
       type: "select",
-      required: false,
       options: administrativeLocations,
+      required: false,
       className: "col-span-6",
     },
     {
@@ -562,7 +564,7 @@ export default function NominaPage() {
         formData.pension_survivor_status ? "col-span-6" : "hidden"
       }`,
     },
-  ]);
+  ] , );
 
   const [submitString, setSubmitString] = useState("Registrar");
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -712,7 +714,7 @@ export default function NominaPage() {
   const handleUncensus = async (id) => {
     if (
       !window.confirm(
-        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`
+        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`,
       )
     ) {
       return;
@@ -871,12 +873,15 @@ export default function NominaPage() {
         },
       },
       {
-        header: "Tipo de Pensión",
-        accessorKey: "type_pension",
-        size: 100,
+        header: "Ubicación administrativa",
+        accessorKey: "administrative_location.name",
+        size: 130,
         filterVariant: "select",
-        filterSelectOptions: ["Jubilación", "Incapacidad", "Sobrevivencia"],
         enableColumnFilter: true,
+
+        filterSelectOptions: administrativeLocations
+          .map((location) => location.label)
+          .concat("Sin asignar"),
         enableSorting: true,
       },
       {
@@ -970,7 +975,7 @@ export default function NominaPage() {
         },
       },
     ],
-    []
+    [administrativeLocations],
   );
 
   const [data, setData] = useState([]);
@@ -998,7 +1003,7 @@ export default function NominaPage() {
           columnFilters.reduce((acc, curr) => {
             acc[curr.id] = curr.value;
             return acc;
-          }, {})
+          }, {}),
         ),
       });
       setData(res.paySheets.data);
@@ -1013,6 +1018,18 @@ export default function NominaPage() {
     fetchData();
   }, [fetchData]);
 
+  const generateReport = async () => {
+    try {
+      const res = await payrollAPI.getReport();
+      console.log(res);
+      setReportData(res);
+      setIsReportModalOpen(true);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+  };
   // Create debounced function once
   const debouncedSaveFormData = useMemo(
     () =>
@@ -1022,7 +1039,7 @@ export default function NominaPage() {
         localStorage.setItem("formData", JSON.stringify(dataWithoutPhoto));
         localStorage.setItem("submitString", JSON.stringify(submitStr));
       }, 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -1056,7 +1073,7 @@ export default function NominaPage() {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
       }, 300),
-    []
+    [],
   );
 
   const handleChangeValue = useCallback((e) => {
@@ -1097,7 +1114,7 @@ export default function NominaPage() {
                 onClick={() => {
                   setFormData(JSON.parse(localStorage.getItem("formData")));
                   setSubmitString(
-                    JSON.parse(localStorage.getItem("submitString"))
+                    JSON.parse(localStorage.getItem("submitString")),
                   );
                   setIsModalOpen(true);
                 }}
@@ -1353,8 +1370,8 @@ export default function NominaPage() {
                         ? "bg-gradient-to-r from-color4 to-color2 text-color1 hover:from-color4 hover:to-color2"
                         : "bg-gradient-to-r from-color1 to-color2 text-color4 hover:from-color1 hover:to-color2"
                       : submitString == "Actualizar"
-                      ? "bg-color4 text-color1 hover:bg-color3"
-                      : "bg-color1 text-color4 hover:bg-color3"
+                        ? "bg-color4 text-color1 hover:bg-color3"
+                        : "bg-color1 text-color4 hover:bg-color3"
                   }`}
                 >
                   <span>{loading ? "Procesando..." : submitString} </span>
@@ -1442,6 +1459,7 @@ export default function NominaPage() {
                   density: "compact",
                   columnVisibility: {
                     created_at: false,
+                    city: false,
                   },
                 }}
                 state={{
@@ -1572,7 +1590,7 @@ export default function NominaPage() {
                         {
                           dateStyle: "medium",
                           timeStyle: "short",
-                        }
+                        },
                       )}
                     </p>
                     <p className="flex gap-3 mt-2 text-sm">
@@ -1615,10 +1633,18 @@ export default function NominaPage() {
           onClose={() => setIsOptionsModalOpen(false)}
         >
           <div
-            className={`px-4   z-50 top-12 w-96 flex flex-col  rounded-md   ${
+            className={`px-4   z-50 top-12 w-full flex flex-col  rounded-md   ${
               isOptionsModalOpen ? "block" : "hidden"
             }`}
           >
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={generateReport}
+            >
+              <Icon icon="material-symbols:download" width={24} height={24} />
+              <span>Generar Reporte de Censados por ASIC </span>
+              <Icon icon="tabler:pdf" width={24} height={24} />
+            </button>
             <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
               <Icon icon="material-symbols:download" width={24} height={24} />
               <span>Exportar Datos</span>
@@ -1659,7 +1685,7 @@ export default function NominaPage() {
                   if (
                     window.confirm(
                       e.target.files[0].name +
-                        "   ¿Desea añadir los datos de este excel a la nómina?"
+                        "   ¿Desea añadir los datos de este excel a la nómina?",
                     )
                   ) {
                     importExcel(e);
@@ -1679,6 +1705,15 @@ export default function NominaPage() {
               </div>
             ) : null}
           </div>
+        </Modal>
+
+        <Modal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          title="Reporte de Censados por ASIC"
+          size="full"
+        >
+          <PrintPage data={reportData} year={new Date().getFullYear()} />
         </Modal>
       </div>
     </>

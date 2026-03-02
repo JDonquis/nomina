@@ -54,6 +54,14 @@ class PaySheetService
                 $query->where('ci', 'LIKE', "%{$filter}%");
             }
 
+            if (isset($filters['administrative_location.name'])) {
+                $filter = $filters['administrative_location.name'];
+                $query->whereHas('administrativeLocation', function ($subQuery) use ($filter){
+
+                    $subQuery->where('name', $filter);
+                });
+            }
+
             if (isset($filters['full_name'])) {
                 $filter = $filters['full_name'];
                 $query->where('full_name', 'LIKE', "%{$filter}%");
@@ -102,6 +110,81 @@ class PaySheetService
 
         return $query->paginate($perPage);
     }
+
+public function report($year = null)
+{
+    Carbon::setLocale('es');
+
+    // Usar año actual si no se proporciona
+    $year = $year ?? now()->year;
+
+    // Obtener todos los censos válidos del año especificado
+    $censuses = Census::with('paySheet.administrativeLocation')
+        ->where('status', true)
+        ->whereHas('paySheet', function($query) {
+            $query->where('status', true);
+        })
+        ->whereYear('created_at', $year)
+        ->get();
+
+    // Si no hay censos en el año, retornar arrays vacíos
+    if ($censuses->isEmpty()) {
+        return response()->json([
+            'asics' => [],
+            'days' => []
+        ]);
+    }
+
+    // Generar array de ASICs con sus censos por día
+    $asics = $censuses
+        ->groupBy(function($census) {
+            return $census->paySheet->administrativeLocation->id ?? 'sin-asic';
+        })
+        ->map(function($asicCensuses, $asicId) {
+            $asic = $asicCensuses->first()->paySheet->administrativeLocation;
+            $asicName = $asic->name ?? 'SIN ASIC';
+
+            // Agrupar censos por fecha para este ASIC
+            $censadosPorDia = $asicCensuses
+                ->groupBy(function($census) {
+                    return $census->created_at->format('Y-m-d');
+                })
+                ->map(function($dayCensuses) {
+                    return count($dayCensuses);
+                })
+                ->toArray();
+
+            return [
+                'id' => $asicId,
+                'name' => $asicName,
+                'censadosPorDia' => $censadosPorDia
+            ];
+        })
+        ->values()
+        ->toArray();
+
+    // Obtener la primera y última fecha del año con censos
+    $firstDate = $censuses->min('created_at');
+    $lastDate = $censuses->max('created_at');
+
+    // Generar array de días desde el primer censo hasta el último censo
+    $days = [];
+    $start = Carbon::parse($firstDate)->startOfDay();
+    $end = Carbon::parse($lastDate)->startOfDay();
+
+    while ($start <= $end) {
+        $days[] = [
+            'id' => $start->format('Y-m-d'),
+            'label' => $start->format('d/m')
+        ];
+        $start->addDay();
+    }
+
+    return response()->json([
+        'asics' => $asics,
+        'days' => $days
+    ]);
+}
 
     public function store($data, $photo)
     {
@@ -265,13 +348,17 @@ class PaySheetService
         $paySheet->load('typePaySheet', 'user', 'administrativeLocation');
 
 
-        Activity::create([
+        if(!$data['to_census']){
+            Activity::create([
             'user_id' => $userID,
             'id_affected' => $paySheet->id,
             'activity' => ActivityEnum::PAYSHEET_UPDATED,
             'pay_sheet' => $paySheet
 
         ]);
+        }
+
+
 
         return $paySheet;
     }
