@@ -87,6 +87,7 @@ export default function NominaPage() {
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
+  const [isFrontCamera, setIsFrontCamera] = useState(true);
   const galleryInputRef = useRef(null);
   const photoOptionsRef = useRef(null);
   const videoRef = useRef(null);
@@ -795,7 +796,7 @@ export default function NominaPage() {
       {
         accessorKey: "full_name",
         header: "Nombre completo",
-    
+
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
@@ -938,7 +939,7 @@ export default function NominaPage() {
                 <button
                   onClick={() => {
                     setPDFmodal(true);
-                   
+
                     setPDFdata({
                       ...cell.row.original,
                     });
@@ -971,7 +972,6 @@ export default function NominaPage() {
     ],
     []
   );
-
 
   const [data, setData] = useState([]);
   const [rowCount, setRowCount] = useState(0);
@@ -1158,7 +1158,7 @@ export default function NominaPage() {
           size="xl"
         >
           <form
-            className={`px-12 space-y-5 md:space-y-0 gap-7 w-full relative`}
+            className={`px-3 md:px-12 space-y-5 md:space-y-0 gap-7 w-full relative`}
             onSubmit={onSubmit}
           >
             <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
@@ -1166,13 +1166,13 @@ export default function NominaPage() {
                 Datos personales
               </h2>
 
-              <div className="grid grid-cols-12 gap-4">
+              <div className="md:grid space-y-3 md:grid-cols-12 gap-4">
                 {patientFormFields.map((field, index) => {
                   if (field.name == "photo") {
                     return (
                       <div
                         key={field.name + "_" + field.label + index}
-                        className="mb-5 col-span-12 flex justify-center  pb-4 mx-auto relative"
+                        className="mb-5 md:col-span-12 flex justify-center  pb-4 mx-auto relative"
                       >
                         <div
                           ref={photoOptionsRef}
@@ -1273,7 +1273,7 @@ export default function NominaPage() {
                         {field.name == "type_pension" && (
                           <>
                             <div
-                              className={`col-span-12 flex gap-3 items-center ${
+                              className={`md:col-span-12 flex gap-3 items-center ${
                                 formData.to_census ? "bg-gray-200" : ""
                               } p-2 rounded-xl`}
                             >
@@ -1298,7 +1298,7 @@ export default function NominaPage() {
                               />
                             </div>
                             {formData.to_census && (
-                              <div className="col-span-12 flex items-center">
+                              <div className="md:col-span-12 flex items-center">
                                 <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
                                   Datos de la pensión
                                 </h2>
@@ -1311,13 +1311,13 @@ export default function NominaPage() {
                         {field.name == "pension_survivor_status" &&
                         formData.to_census ? (
                           <>
-                            <div className="col-span-12 flex items-center">
+                            <div className="md:col-span-12 flex items-center">
                               <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
                                 Pensión sobrevivencia
                               </h2>
                               <hr className="w-full h-0.5 flex-auto bg-gray-300" />
                             </div>
-                            <div className="col-span-12">
+                            <div className="md:col-span-12">
                               {!formData.pension_survivor_status ? (
                                 <p> No aplica</p>
                               ) : null}
@@ -1338,7 +1338,7 @@ export default function NominaPage() {
               </div>
             </div>
 
-            <div className="col-span-12">
+            <div className="md:col-span-12">
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="submit"
@@ -1389,7 +1389,17 @@ export default function NominaPage() {
               />
             </div>
 
-            <canvas ref={canvasRef} className="hidden" />
+            <div className="relative">
+              <button
+                type="button"
+                title="Rotar cámara"
+                onClick={() => setIsFrontCamera(!isFrontCamera)}
+                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute"
+              >
+                <Icon icon="f7:camera-rotate" className="w-5 h-5" />
+              </button>
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
 
             <div className="flex gap-4">
               <button
@@ -1400,6 +1410,7 @@ export default function NominaPage() {
                 <Icon icon="mdi:camera" className="w-5 h-5" />
                 Capturar Foto
               </button>
+
               <button
                 type="button"
                 onClick={stopCamera}
