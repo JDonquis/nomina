@@ -1411,7 +1411,7 @@ export default function NominaPage() {
                 type="button"
                 title="Rotar cámara"
                 onClick={() => setIsFrontCamera(!isFrontCamera)}
-                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute"
+                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute right-0 bottom-10"
               >
                 <Icon icon="f7:camera-rotate" className="w-5 h-5" />
               </button>
