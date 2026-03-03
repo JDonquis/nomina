@@ -349,7 +349,7 @@ export default function NominaPage() {
       label: "Ubicación administrativa",
       type: "select",
       options: administrativeLocations,
-      required: false,
+      required: true,
       className: "col-span-6",
     },
     {
