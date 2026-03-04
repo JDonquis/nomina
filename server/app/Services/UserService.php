@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ActivityEnum;
 use App\Models\PasswordGenerateToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,13 @@ class UserService
     public function get($params = null)
     {
         $query = User::query();
+
+        $query->withCount(['activities as censos_count' => function ($query) {
+        $query->whereIn('activity', [
+            ActivityEnum::CENSUS_CREATED->value,
+            ActivityEnum::CENSUS_UPDATED->value
+        ]);
+    }]);
 
         $query->when($params, function ($query, $params) {
 
