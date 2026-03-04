@@ -142,12 +142,14 @@ export default function NominaPage() {
   }, [showPhotoOptions]);
 
   // Open camera using MediaDevices API
-  const openCamera = async () => {
+  // `front` parameter allows overriding preferred facingMode when toggling
+  const openCamera = async (front = isFrontCamera) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: { facingMode: front ? "user" : "environment" },
         audio: false,
       });
+      
       setCameraStream(stream);
       setShowCameraModal(true);
       setShowPhotoOptions(false);
@@ -1406,12 +1408,21 @@ export default function NominaPage() {
               />
             </div>
 
-            <div className="relative">
+            <div className="relative w-full md:hidden">
               <button
                 type="button"
                 title="Rotar cámara"
-                onClick={() => setIsFrontCamera(!isFrontCamera)}
-                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute right-0 bottom-10"
+                onClick={async () => {
+                  // toggle state and restart the stream with the new facing mode
+                  const newMode = !isFrontCamera;
+                  setIsFrontCamera(newMode);
+                  if (cameraStream) {
+                    stopCamera();
+                    // reopen camera with updated mode
+                    await openCamera(newMode);
+                  }
+                }}
+                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute right-1 bottom-4"
               >
                 <Icon icon="f7:camera-rotate" className="w-5 h-5" />
               </button>

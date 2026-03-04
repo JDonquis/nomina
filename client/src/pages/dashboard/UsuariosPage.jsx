@@ -125,16 +125,26 @@ export default function UsuariosPage() {
       header: "Nombre",
       size: 310,
     },
+    {
+      accessorKey: "censos_count",
+      header: "Nro de censos",
+      size: 100,
+    },
 
     {
       accessorKey: "email",
       header: "Correo Electrónico",
       size: 200,
     },
+    {
+      accessorKey: "charge",
+      header: "Cargo",
+      size: 200,
+    },
 
     {
       accessorKey: "is_admin",
-      header: "Gestión de Usuarios",
+      header: "Administrador",
       size: 180,
       Cell: ({ cell }) =>
         cell.getValue() ? (
