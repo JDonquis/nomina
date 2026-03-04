@@ -1023,7 +1023,6 @@ export default function NominaPage() {
   const generateReport = async () => {
     try {
       const res = await payrollAPI.getReport();
-      console.log(res);
       setReportData(res);
       setIsReportModalOpen(true);
     } catch (error) {
