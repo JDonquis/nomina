@@ -25,7 +25,7 @@ const municipalitiesWithParishes = {
   "Carirubana": [
     { value: "Carirubana", label: "Carirubana" },
     { value: "Norte", label: "Norte" },
-    { value: "Punta Cardón", label: "Punta Cardón" },
+    { value: "Urbana Punta Cardón", label: "Urbana Punta Cardón" },
     { value: "Santa Ana (Carirubana)", label: "Santa Ana (Carirubana)" }
   ],
   "Colina": [
