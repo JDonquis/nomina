@@ -9,6 +9,26 @@ import FuturisticButton from "./FuturisticButton";
 const PrintableContent = forwardRef((props, ref) => {
   const { data, year } = props;
   const { asics, days } = data;
+
+  // compute some aggregates once so the render loops are cheap
+  const [filteredDays, dayTotals] = React.useMemo(() => {
+    const totals = {};
+    asics.forEach(asic => {
+      days.forEach(day => {
+        totals[day.id] = (totals[day.id] || 0) + (asic.censadosPorDia[day.id] || 0);
+      });
+    });
+    const filtered = days.filter(day => totals[day.id] > 0);
+    return [filtered, totals];
+  }, [asics, days]);
+
+  const asicTotals = React.useMemo(() => {
+    return asics.map(asic => ({
+      ...asic,
+      total: Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0),
+    }));
+  }, [asics]);
+
   return (
     <div
       ref={ref}
@@ -59,7 +79,7 @@ const PrintableContent = forwardRef((props, ref) => {
 
             <th
               className=" bg-gray-200 text-center px-2 p-1 "
-              colSpan={days.length}
+              colSpan={filteredDays.length}
             >
               DIA
             </th>
@@ -69,7 +89,7 @@ const PrintableContent = forwardRef((props, ref) => {
           </tr>
 
           <tr className="bg-gray-100 text-sm ">
-            {days.map((day) => (
+            {filteredDays.map((day) => (
               <th className="p-1 px-2 w-[37px] font-semibold" key={day.id}>
                 {day.label}
               </th>
@@ -78,11 +98,11 @@ const PrintableContent = forwardRef((props, ref) => {
         </thead>
 
         <tbody className="">
-          {asics.map((asic) => (
+          {asicTotals.map((asic) => (
             <tr key={asic.id} className="odd:bg-white even:bg-gray-50">
               <td className="p-1 px-2 border-r text-sm">{asic.name}</td>
 
-              {days.map((day) => (
+              {filteredDays.map((day) => (
                 <td
                   className="p-1 px-2 w-[37px] text-right border-r"
                   key={day.id}
@@ -90,33 +110,21 @@ const PrintableContent = forwardRef((props, ref) => {
                   {asic.censadosPorDia[day.id] ?? "-"}
                 </td>
               ))}
-              <td className="p-1 px-2 text-right">
-                {Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0)}
-              </td>
+              <td className="p-1 px-2 text-right">{asic.total}</td>
             </tr>
           ))}
           <tr className="bg-gray-100 text-sm text-right font-bold">
             <td className="p-1 px-2 border-r text-left text-sm ">TOTAL</td>
-            {days.map((day) => {
-              return (
-                <td
-                  className="p-1 px-2 w-[37px] text-right border-r"
-                  key={day.id}
-                >
-                  {asics.reduce((total, asic) => {
-                    return total + (asic.censadosPorDia[day.id] ?? 0);
-                  }, 0)}
-                </td>
-              );
-            })}
+            {filteredDays.map((day) => (
+              <td
+                className="p-1 px-2 w-[37px] text-right border-r"
+                key={day.id}
+              >
+                {dayTotals[day.id] || 0}
+              </td>
+            ))}
             <td className="p-1 px-2 text-right">
-              {asics.reduce((total, asic) => {
-                const asicTotal = Object.values(asic.censadosPorDia).reduce(
-                  (a, b) => a + b,
-                  0,
-                );
-                return total + asicTotal;
-              }, 0)}
+              {asicTotals.reduce((t, a) => t + a.total, 0)}
             </td>
           </tr>
         </tbody>
