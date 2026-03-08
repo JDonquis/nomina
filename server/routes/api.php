@@ -27,7 +27,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('type-pay-sheets', [TypePaySheetController::class, 'index']);
 
 
-    Route::resource('users', UserController::class)->except(['edit', 'create']);
+    Route::resource('users', UserController::class)->except(['edit', 'create'])
+    ->middleware('admin');
 
 
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);

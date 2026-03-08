@@ -26,6 +26,12 @@ class LoginController extends Controller
             ], 401);
         }
 
+        if($user->status == false){
+            return response()->json([
+            'message' => 'Su usuario se encuentra suspendido',
+        ],403);
+        }
+
         if ($user->is_admin)
             $token = $user->createToken('auth_token', ['admin'], now()->addDays(30))->plainTextToken;
         else

@@ -44,7 +44,8 @@ class UpdateUserRequest extends FormRequest
                 'min:4',
             ],
             'password_confirmation' => ['sometimes', 'nullable', 'min:4'],
-            'email_verified_status' => ['sometimes', 'boolean']
+            'email_verified_status' => ['sometimes', 'boolean'],
+            'status' => ['required','boolean']
 
         ];
     }
