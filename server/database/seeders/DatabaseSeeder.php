@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         AdministrativeLocation::create([
-                'name' => 'SECRETARIA DE SALUD'
+                'name' => 'EXTERIOR'
             ]);
     }
 }
