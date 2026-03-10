@@ -26,7 +26,7 @@ class LoginController extends Controller
             ], 401);
         }
 
-        if($user->status == false){
+        if($user->status == true){
             return response()->json([
             'message' => 'Su usuario se encuentra suspendido',
         ],403);

@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // UserSeeder::class,
-            // TypePaySheetSeeder::class,
-            // AdministrativeLocationSeeder::class
+            UserSeeder::class,
+            TypePaySheetSeeder::class,
+            AdministrativeLocationSeeder::class
         ]);
 
         AdministrativeLocation::create([
