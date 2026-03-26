@@ -1098,12 +1098,12 @@ export default function NominaPage() {
 
   return (
     <>
-      <title>Nómina - LabFalcón</title>
+      <title>Fe de vida - LabFalcón</title>
       <div style={{ height: 580, width: "100%" }}>
         <div className="md:flex fadeInUp justify-between items-center mb-4">
           <div>
             <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
-              Nómina
+              Fe de vida
             </h1>
           </div>
           <div className="flex gap-3 z-50 relative">
@@ -1129,6 +1129,10 @@ export default function NominaPage() {
 
             <FuturisticButton
               onClick={() => {
+                if (!user.is_admin) {
+                  showInfo("Solo los administradores pueden usar esta función")
+                  return
+                }
                 setIsModalOpen(true);
                 if (submitString === "Actualizar") {
                   setSubmitString("Registrar");
@@ -1668,7 +1672,7 @@ export default function NominaPage() {
                 width={24}
                 height={24}
               />
-              <span>Importar Nómina desde Excel</span>
+              <span>Importar Fe de vida desde Excel</span>
               <Icon
                 icon="vscode-icons:file-type-excel"
                 width={24}

@@ -257,6 +257,8 @@ export default function UsuariosPage() {
     fetchData();
   }, [fetchData]);
 
+    
+
   return (
     <>
       <title>Gestión de Usuarios - Nómina</title>
