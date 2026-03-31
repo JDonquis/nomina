@@ -14,6 +14,7 @@ import { useAuth } from './context/AuthContext';
 
 const NominaPage = lazy(() => import(/* webpackChunkName: "examenes" */ './pages/dashboard/NominaPage'));
 const MovimientosPage = lazy(() => import(/* webpackChunkName: "movimientos" */ './pages/dashboard/MovimientosPage'));
+const PersonalActivoPage = lazy(() => import(/* webpackChunkName: "movimientos" */ './pages/dashboard/PersonalActivoPage'));
 import UsuariosPage from './pages/dashboard/UsuariosPage';
 import ActivateAccountPage from './pages/ActivateAccountPage';
 
@@ -29,6 +30,8 @@ function AppContent() {
   useEffect(() => {
     setLogoutCallback(logout);
   }, [logout]);
+
+  
 
   return (
      <FeedbackProvider>
@@ -49,9 +52,15 @@ function AppContent() {
                 </ProtectedRoute>
               }
             >
-              <Route path="nomina" element={
+              <Route path="fe_de_vida" element={
                   <Suspense fallback={<PageLoader />}>
                     <NominaPage />
+                  </Suspense>
+                } 
+                />
+                <Route path="personal_activo" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <PersonalActivoPage />
                   </Suspense>
                 } 
                 />

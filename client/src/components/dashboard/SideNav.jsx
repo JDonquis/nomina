@@ -11,9 +11,15 @@ const links = [
 
   {
     permission: true,
-    name: "Nómina",
-    href: "/dashboard/nomina",
-    icon: "mdi:worker",
+    name: "Fe de vida",
+    href: "/dashboard/fe_de_vida",
+    icon: "fluent-emoji-high-contrast:old-man"
+  },
+  {
+    permission: true,
+    name: "Personal activo",
+    href: "/dashboard/personal_activo",
+    icon: "streamline-plump:office-worker-remix"
   },
   {
     permission: true,
@@ -25,7 +31,7 @@ const links = [
     permission: "admin",
     name: "Usuarios",
     href: "/dashboard/usuarios",
-    icon: "solar:user-linear",
+    icon: "meteor-icons:key"
   },
  
 ];
@@ -90,7 +96,7 @@ export default function SideNav(props) {
               >
                 <div className="grid grid-cols-12  items-center">
                     <Icon className={` col-span-3 z-10`} icon={eachLink.icon} width={24} height={24} />
-                    <span className={props.isSidebarOpen ? "hidden md:block opacity-100" : "hidden md:block  opacity-0" + " duration-200 z-0"}>
+                    <span className={props.isSidebarOpen ? "whitespace-nowrap hidden md:block opacity-100" : "hidden md:block whitespace-nowrap  opacity-0" + " duration-200 z-0"}>
                       {eachLink.name}
                     </span>
 
