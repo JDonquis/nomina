@@ -19,6 +19,7 @@ export default function UsuariosPage() {
     full_name: "",
     is_admin: false,
     charge: "",
+    status: false,
   };
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Crear");
@@ -56,6 +57,13 @@ export default function UsuariosPage() {
       helperText:
         "Gestiona otros usuarios, además de tener ciertos privilegios en nómina",
     },
+    {
+      name: "status",
+      label: "Usuario Suspendido",
+      type: "checkbox",
+      helperText: "Activa esta opción para que el usuario no pueda iniciar sesión, desactivala cuando quieras"
+
+    }
   ];
 
   const validationRules = {
@@ -168,8 +176,11 @@ export default function UsuariosPage() {
       accessorKey: "email_verified_status",
       header: "Estado",
       size: 180,
-      Cell: ({ cell }) =>
-        cell.getValue() ? (
+      Cell: ({ renderedCellValue, row }) => {
+        const { original } = row;
+        
+        let status = original.email_verified_status && original.status
+        return status ? (
           <Icon
             className="text-color2"
             icon="iconamoon:check-fill"
@@ -183,7 +194,11 @@ export default function UsuariosPage() {
             width={18}
             height={17}
           />
-        ),
+        )
+      
+      },
+
+
     },
     {
       header: "Acciones",
@@ -204,6 +219,8 @@ export default function UsuariosPage() {
           >
             <Icon icon="material-symbols:edit" width={20} height={20} />
           </button>
+
+          
 
           <button
             onClick={() => {
@@ -239,6 +256,8 @@ export default function UsuariosPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+    
 
   return (
     <>

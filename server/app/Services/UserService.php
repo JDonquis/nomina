@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Enums\ActivityEnum;
 use App\Models\PasswordGenerateToken;
 use App\Models\User;
+use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -69,7 +71,20 @@ class UserService
 
         $user->update($data);
 
+        if($user->status == false)
+            $this->suspendUser($user);
+
         return $user;
+    }
+
+    public function suspendUser($user){
+        if($user->id == Auth::id()){
+            throw new Exception('No puede suspender su mismo usuario');
+        }
+
+        $user->tokens()->delete();
+
+        return 0;
     }
 
     public function forgotPassword($data){

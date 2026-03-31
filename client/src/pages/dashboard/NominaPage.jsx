@@ -142,14 +142,12 @@ export default function NominaPage() {
   }, [showPhotoOptions]);
 
   // Open camera using MediaDevices API
-  // `front` parameter allows overriding preferred facingMode when toggling
-  const openCamera = async (front = isFrontCamera) => {
+  const openCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: front ? "user" : "environment" },
+        video: { facingMode: "user" },
         audio: false,
       });
-      
       setCameraStream(stream);
       setShowCameraModal(true);
       setShowPhotoOptions(false);
@@ -1023,6 +1021,7 @@ export default function NominaPage() {
   const generateReport = async () => {
     try {
       const res = await payrollAPI.getReport();
+      console.log(res);
       setReportData(res);
       setIsReportModalOpen(true);
     } catch (error) {
@@ -1099,12 +1098,12 @@ export default function NominaPage() {
 
   return (
     <>
-      <title>Nómina - LabFalcón</title>
+      <title>Fe de vida - LabFalcón</title>
       <div style={{ height: 580, width: "100%" }}>
         <div className="md:flex fadeInUp justify-between items-center mb-4">
           <div>
             <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-0">
-              Nómina
+              Fe de vida
             </h1>
           </div>
           <div className="flex gap-3 z-50 relative">
@@ -1130,6 +1129,10 @@ export default function NominaPage() {
 
             <FuturisticButton
               onClick={() => {
+                if (!user.is_admin) {
+                  showInfo("Solo los administradores pueden usar esta función")
+                  return
+                }
                 setIsModalOpen(true);
                 if (submitString === "Actualizar") {
                   setSubmitString("Registrar");
@@ -1407,21 +1410,12 @@ export default function NominaPage() {
               />
             </div>
 
-            <div className="relative w-full md:hidden">
+            <div className="relative">
               <button
                 type="button"
                 title="Rotar cámara"
-                onClick={async () => {
-                  // toggle state and restart the stream with the new facing mode
-                  const newMode = !isFrontCamera;
-                  setIsFrontCamera(newMode);
-                  if (cameraStream) {
-                    stopCamera();
-                    // reopen camera with updated mode
-                    await openCamera(newMode);
-                  }
-                }}
-                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute right-1 bottom-4"
+                onClick={() => setIsFrontCamera(!isFrontCamera)}
+                className="px-8 py-3 text-white bg-black/10 p-6 gap-2 absolute right-0 bottom-10"
               >
                 <Icon icon="f7:camera-rotate" className="w-5 h-5" />
               </button>
@@ -1678,7 +1672,7 @@ export default function NominaPage() {
                 width={24}
                 height={24}
               />
-              <span>Importar Nómina desde Excel</span>
+              <span>Importar Fe de vida desde Excel</span>
               <Icon
                 icon="vscode-icons:file-type-excel"
                 width={24}

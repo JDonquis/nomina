@@ -30,7 +30,7 @@ export default function LoginPage() {
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/dashboard/nomina", { replace: true });
+      navigate("/dashboard/fe_de_vida", { replace: true });
     }
   }, [user, authLoading, navigate]);
 
