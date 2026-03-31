@@ -104,8 +104,30 @@ class UserController extends Controller
 
             if($user->id == Auth::id()){
                 return response()->json([
-                    'status' => false,
-                    'message' => 'No puedes eliminar tu mismo usuario'
+                         'status' => false,
+                "file"=> "C:\\xampp\\htdocs\\Nomina\\server\\app\\Services\\PaySheetService.php",
+                "line"=> 178,
+                "code"=> 0,
+                "status_code"=> 500,
+                "exception"=> "ErrorException",
+                "trace"=> [
+                    [
+                        "file"=> "C:\\xampp\\htdocs\\Nomina\\server\\app\\Http\\Controllers\\UserController.php",
+                        "line"=> 82,
+                        "function"=> "handleError",
+                        "class"=> "Illuminate\\Foundation\\Bootstrap\\HandleExceptions",
+                        "type"=> "->",
+                        "args"=> [
+                            8,
+                            "Undefined variable: read the last 2message at the end",
+                            "C:\\xampp\\htdocs\\Nomina\\server\\app\\Http\\Controllers\\UserController.php",
+                            82
+                        ]
+                    ]
+                ],
+                "message"=> "Undefined variable: there was an error in the line 69xxx",
+                "message1"=> "Undefined variable: relax, there is no error, this is an encrypted message, Im really sorry for what just happened tonight,",
+                "message2" => " but the truth is that Z and me wanted to hang out with you and only you, that was what we planned."
                 ],500);
             }
 
