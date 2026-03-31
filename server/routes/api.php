@@ -9,6 +9,11 @@ use App\Http\Controllers\PaySheetController;
 use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\TypePaySheetController;
 use App\Http\Controllers\AdministrativeLocationController;
+use App\Http\Controllers\ASICController;
+use App\Http\Controllers\DependenceController;
+use App\Http\Controllers\AdministrativeUnityController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ServiceController;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken']);
@@ -28,20 +33,21 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     Route::resource('users', UserController::class)->except(['edit', 'create'])
-    ->middleware('admin');
+        ->middleware('admin');
 
 
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
     Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
     Route::post('pay-sheets/photo/{paySheet}', [PaySheetController::class, 'updatePhoto']);
-    Route::get('pay-sheets/generate/report',[PaySheetController::class,'report']);
+    Route::get('pay-sheets/generate/report', [PaySheetController::class, 'report']);
+
 
     // Census
     Route::get('censuses', [CensusController::class, 'index']);
     // Route::post('censuses', [CensusController::class, 'store']);
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
 
-    Route::get('activities',ActivityController::class);
+    Route::get('activities', ActivityController::class);
 
 
     Route::prefix('repositories')->group(function () {
@@ -68,4 +74,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::post('/import', [RepositoryController::class, 'storeImport']);
         Route::post('/import/preview', [RepositoryController::class, 'previewImport']);
     });
+
+    // Estructura organizacional
+    Route::resource('asics', ASICController::class)->except(['edit', 'create']);
+    Route::resource('dependences', DependenceController::class)->except(['edit', 'create']);
+    Route::resource('administrative-unities', AdministrativeUnityController::class)->except(['edit', 'create']);
+    Route::resource('departments', DepartmentController::class)->except(['edit', 'create']);
+    Route::resource('services', ServiceController::class)->except(['edit', 'create']);
 });

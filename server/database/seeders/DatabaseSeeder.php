@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\AdministrativeLocation;
@@ -19,11 +18,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             TypePaySheetSeeder::class,
-            AdministrativeLocationSeeder::class
+            AdministrativeLocationSeeder::class,
         ]);
 
         AdministrativeLocation::create([
-                'name' => 'EXTERIOR'
-            ]);
+            'name' => 'EXTERIOR'
+        ]);
     }
 }

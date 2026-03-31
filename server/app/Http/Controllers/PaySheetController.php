@@ -32,23 +32,23 @@ class PaySheetController extends Controller
         ]);
     }
 
-    public function report(){
+    public function report()
+    {
 
         $report = $this->paySheetService->report();
 
         return $report;
-
     }
 
-    public function show(PaySheet $paySheet){
+    public function show(PaySheet $paySheet)
+    {
 
-        $paySheet->load('typePaySheet', 'user', 'administrativeLocation','censuses');
+        $paySheet->load('typePaySheet', 'user', 'administrativeLocation', 'censuses');
 
         return response()->json([
             'message' => 'OK',
             'paySheet' => $paySheet
         ]);
-
     }
 
 
@@ -238,6 +238,4 @@ class PaySheetController extends Controller
             ], 500);
         }
     }
-
-
 }

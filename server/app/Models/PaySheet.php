@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\AdministrativeLocation;
 use App\Models\Census;
+use App\Models\Dependence;
 use App\Models\TypePaySheet;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +26,7 @@ class PaySheet extends Model
         'sex',
         'type_pay_sheet_id',
         'administrative_location_id',
+        'dependence_id',
         'photo',
         //Pension Data,
         'type_pension',
@@ -58,7 +60,7 @@ class PaySheet extends Model
 
     public function censuses()
     {
-        return $this->hasMany(Census::class, 'pay_sheet_id')->orderBy('id','desc');
+        return $this->hasMany(Census::class, 'pay_sheet_id')->orderBy('id', 'desc');
     }
 
     public function administrativeLocation()
@@ -69,5 +71,10 @@ class PaySheet extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function dependence()
+    {
+        return $this->belongsTo(Dependence::class);
     }
 }
