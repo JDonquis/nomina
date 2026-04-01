@@ -1,22 +1,41 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { FeedbackProvider } from './context/FeedbackContext';
-import ProtectedRoute from './components/auth/ProtectedRoute'
-import PermissionGate from './components/auth/PermissionGate';
-import DashboardLayout from './components/dashboard/DashboardLayout';
-import LoginPage from './pages/LoginPage';
-import { lazy, Suspense } from 'react';
-import { setLogoutCallback } from './services/api';
-import { useAuth } from './context/AuthContext';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { FeedbackProvider } from "./context/FeedbackContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import PermissionGate from "./components/auth/PermissionGate";
+import DashboardLayout from "./components/dashboard/DashboardLayout";
+import LoginPage from "./pages/LoginPage";
+import { lazy, Suspense } from "react";
+import { setLogoutCallback } from "./services/api";
+import { useAuth } from "./context/AuthContext";
 
 // Lazy load heavy components
 
-const NominaPage = lazy(() => import(/* webpackChunkName: "examenes" */ './pages/dashboard/NominaPage'));
-const MovimientosPage = lazy(() => import(/* webpackChunkName: "movimientos" */ './pages/dashboard/MovimientosPage'));
-const PersonalActivoPage = lazy(() => import(/* webpackChunkName: "movimientos" */ './pages/dashboard/PersonalActivoPage'));
-import UsuariosPage from './pages/dashboard/UsuariosPage';
-import ActivateAccountPage from './pages/ActivateAccountPage';
+const NominaPage = lazy(
+  () =>
+    import(/* webpackChunkName: "examenes" */ "./pages/dashboard/NominaPage"),
+);
+const MovimientosPage = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "movimientos" */ "./pages/dashboard/MovimientosPage"
+    ),
+);
+const PersonalActivoPage = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "movimientos" */ "./pages/dashboard/PersonalActivoPage"
+    ),
+);
+const ConfiguracionPage = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "configuracion" */ "./pages/dashboard/ConfiguracionPage"
+    ),
+);
+import UsuariosPage from "./pages/dashboard/UsuariosPage";
+import ActivateAccountPage from "./pages/ActivateAccountPage";
 
 const PageLoader = () => (
   <div className="flex justify-center items-center h-screen bg-white">
@@ -25,72 +44,83 @@ const PageLoader = () => (
 );
 
 function AppContent() {
-   const { logout } = useAuth();
-  
+  const { logout } = useAuth();
+
   useEffect(() => {
     setLogoutCallback(logout);
   }, [logout]);
 
-  
-
   return (
-     <FeedbackProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
-            <Route path="/olvide-contrasena" element={<ActivateAccountPage />} />
+    <FeedbackProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
+          <Route path="/olvide-contrasena" element={<ActivateAccountPage />} />
 
-
-            {/* Protected dashboard routes */}
-            <Route 
-              path="/dashboard" 
+          {/* Protected dashboard routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="fe_de_vida"
               element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
+                <Suspense fallback={<PageLoader />}>
+                  <NominaPage />
+                </Suspense>
               }
-            >
-              <Route path="fe_de_vida" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <NominaPage />
-                  </Suspense>
-                } 
-                />
-                <Route path="personal_activo" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <PersonalActivoPage />
-                  </Suspense>
-                } 
-                />
+            />
+            <Route
+              path="personal_activo"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <PersonalActivoPage />
+                </Suspense>
+              }
+            />
 
-                <Route path="movimientos" element={
+            <Route
+              path="movimientos"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <MovimientosPage />
+                </Suspense>
+              }
+            />
+            {/* Only show "usuarios" if user has permission */}
+            <Route
+              path="usuarios"
+              element={
+                <PermissionGate requiredPermission="is_admin">
+                  <UsuariosPage />
+                </PermissionGate>
+              }
+            />
+            <Route
+              path="configuracion"
+              element={
+                <PermissionGate requiredPermission="is_admin">
                   <Suspense fallback={<PageLoader />}>
-                    <MovimientosPage />
+                    <ConfiguracionPage />
                   </Suspense>
-                } 
-                />
-              {/* Only show "usuarios" if user has permission */}
-              <Route 
-                path="usuarios" 
-                element={
-                  <PermissionGate requiredPermission="is_admin">
-                    <UsuariosPage />
-                  </PermissionGate>
-                } 
-              />
+                </PermissionGate>
+              }
+            />
 
-              {/* Fallback route */}
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </FeedbackProvider>
+            {/* Fallback route */}
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </FeedbackProvider>
   );
 }
 function App() {
- 
-  
   return (
     <AuthProvider>
       <AppContent />

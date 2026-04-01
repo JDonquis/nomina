@@ -126,5 +126,42 @@ export const activitiesAPI = {
 export const typePaySheetsAPI = {
   getPaySheets: () => api.get("/admin/type-pay-sheets"),
 }
+
+export const ASICAPI = {
+  getASIC: () => api.get("/admin/asics"),
+  createASIC: (asicData) => api.post("/admin/asics", asicData),
+  getASICRelations: (id) => api.get(`/admin/asics/${id}`),
+  updateASIC: (id, asicData) => api.put(`/admin/asics/${id}`, asicData),
+  deleteASIC: (id) => api.delete(`/admin/asics/${id}`),
+}
+
+export const dependenciesAPI = {
+  getDependencies: (params) => api.get("/admin/dependences", { params }),
+  createDependency: (dependencyData) => api.post("/admin/dependences", dependencyData),
+  updateDependency: (id, dependencyData) => api.put(`/admin/dependences/${id}`, dependencyData),
+  deleteDependency: (id) => api.delete(`/admin/dependences/${id}`),
+}
+
+export const administrativeUnitsAPI = {
+  getUnits: (params) => api.get("/admin/administrative-units", { params }),
+  createUnit: (unitData) => api.post("/admin/administrative-units", unitData),
+  updateUnit: (id, unitData) => api.put(`/admin/administrative-units/${id}`, unitData),
+  deleteUnit: (id) => api.delete(`/admin/administrative-units/${id}`),
+}
+
+export const departmentAPI = {
+  getDepartments: (params) => api.get("/admin/departments", { params }),
+  createDepartment: (departmentData) => api.post("/admin/departments", departmentData),
+  updateDepartment: (id, departmentData) => api.put(`/admin/departments/${id}`, departmentData),
+  deleteDepartment: (id) => api.delete(`/admin/departments/${id}`),
+}
+
+export const servicesAPI = {
+  getServices: (params) => api.get("/admin/services", { params }),
+  createService: (serviceData) => api.post("/admin/services", serviceData),
+  updateService: (id, serviceData) => api.put(`/admin/services/${id}`, serviceData),
+  deleteService: (id) => api.delete(`/admin/services/${id}`),
+}
+
 // Export the api instance for direct use if needed
 export default api;

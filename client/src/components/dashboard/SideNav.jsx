@@ -33,6 +33,12 @@ const links = [
     href: "/dashboard/usuarios",
     icon: "meteor-icons:key"
   },
+  {
+    permission: "admin",
+    name: "Configuración",
+    href: "/dashboard/configuracion",
+    icon: "mdi:cog-outline"
+  }
  
 ];
 

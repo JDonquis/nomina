@@ -1,6 +1,6 @@
-export default function FuturisticButton({ children, onClick }) {
+export default function FuturisticButton({ children, onClick, classess, type = "button" }) {
   return (
-    <button type="button" className="button " onClick={onClick}>
+    <button type={type} className={`button ${classess}`} onClick={onClick}>
       {children}
     </button>
   );

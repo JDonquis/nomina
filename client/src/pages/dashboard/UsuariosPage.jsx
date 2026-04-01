@@ -61,9 +61,9 @@ export default function UsuariosPage() {
       name: "status",
       label: "Usuario Suspendido",
       type: "checkbox",
-      helperText: "Activa esta opción para que el usuario no pueda iniciar sesión, desactivala cuando quieras"
-
-    }
+      helperText:
+        "Activa esta opción para que el usuario no pueda iniciar sesión, desactivala cuando quieras",
+    },
   ];
 
   const validationRules = {
@@ -178,8 +178,8 @@ export default function UsuariosPage() {
       size: 180,
       Cell: ({ renderedCellValue, row }) => {
         const { original } = row;
-        
-        let status = original.email_verified_status && original.status
+
+        let status = original.email_verified_status && original.status;
         return status ? (
           <Icon
             className="text-color2"
@@ -194,11 +194,8 @@ export default function UsuariosPage() {
             width={18}
             height={17}
           />
-        )
-      
+        );
       },
-
-
     },
     {
       header: "Acciones",
@@ -219,8 +216,6 @@ export default function UsuariosPage() {
           >
             <Icon icon="material-symbols:edit" width={20} height={20} />
           </button>
-
-          
 
           <button
             onClick={() => {
@@ -257,8 +252,6 @@ export default function UsuariosPage() {
     fetchData();
   }, [fetchData]);
 
-    
-
   return (
     <>
       <title>Gestión de Usuarios - Nómina</title>
@@ -286,6 +279,7 @@ export default function UsuariosPage() {
           }}
           title="Crear Nuevo Usuario"
           size="md"
+          aria-labelledby="modal-title"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ReusableForm
