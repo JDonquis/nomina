@@ -10,8 +10,8 @@ use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\TypePaySheetController;
 use App\Http\Controllers\AdministrativeLocationController;
 use App\Http\Controllers\ASICController;
-use App\Http\Controllers\DependenceController;
-use App\Http\Controllers\AdministrativeUnityController;
+use App\Http\Controllers\DependencyController;
+use App\Http\Controllers\AdministrativeUnitController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ServiceController;
 
@@ -77,8 +77,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Estructura organizacional
     Route::resource('asics', ASICController::class)->except(['edit', 'create']);
-    Route::resource('dependences', DependenceController::class)->except(['edit', 'create']);
-    Route::resource('administrative-unities', AdministrativeUnityController::class)->except(['edit', 'create']);
+    Route::resource('dependencies', DependencyController::class)->except(['edit', 'create']);
+    Route::resource('administrative-units', AdministrativeUnitController::class)->except(['edit', 'create']);
     Route::resource('departments', DepartmentController::class)->except(['edit', 'create']);
     Route::resource('services', ServiceController::class)->except(['edit', 'create']);
 });

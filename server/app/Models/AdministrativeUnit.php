@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class AdministrativeUnity extends Model
+class AdministrativeUnit extends Model
 {
-    protected $fillable = ['name', 'dependence_id'];
+    protected $fillable = ['name', 'dependency_id'];
 
-    public function dependence(): BelongsTo
+    public function dependency(): BelongsTo
     {
-        return $this->belongsTo(Dependence::class);
+        return $this->belongsTo(Dependency::class);
     }
 
     public function departments(): HasMany

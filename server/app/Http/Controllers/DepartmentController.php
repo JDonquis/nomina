@@ -20,7 +20,7 @@ class DepartmentController extends Controller
             $query->where('administrative_unity_id', $request->administrative_unity_id);
         }
 
-        $departments = $query->with('administrativeUnity:id,name,dependence_id', 'services:id,name,department_id')->get();
+        $departments = $query->with('administrativeUnit:id,name,dependency_id', 'services:id,name,department_id')->get();
 
         return response()->json($departments);
     }
@@ -29,17 +29,18 @@ class DepartmentController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'administrative_unity_id' => 'required|exists:administrative_unities,id',
+            'administrative_unit_id' => 'required|exists:administrative_units,id',
         ]);
 
         $department = Department::create($validated);
+        $department->load('administrativeUnit:id,name,dependency_id', 'services:id,name,department_id');
 
         return response()->json($department, 201);
     }
 
     public function show(Department $department): JsonResponse
     {
-        $department->load('administrativeUnity', 'services');
+        $department->load('administrativeUnit', 'services');
 
         return response()->json($department);
     }
@@ -48,10 +49,11 @@ class DepartmentController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'administrative_unity_id' => 'required|exists:administrative_unities,id',
+            'administrative_unit_id' => 'required|exists:administrative_units,id',
         ]);
 
         $department->update($validated);
+        $department->load('administrativeUnit:id,name,dependency_id', 'services:id,name,department_id');
 
         return response()->json($department);
     }

@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Department extends Model
 {
-    protected $fillable = ['name', 'administrative_unity_id'];
+    protected $fillable = ['name', 'administrative_unit_id'];
 
-    public function administrativeUnity(): BelongsTo
+    public function administrativeUnit(): BelongsTo
     {
-        return $this->belongsTo(AdministrativeUnity::class);
+        return $this->belongsTo(AdministrativeUnit::class);
     }
 
     public function services(): HasMany
