@@ -8,8 +8,11 @@ import {
   administrativeUnitsAPI,
   servicesAPI,
 } from "../../services/api";
+
+import debounce from "lodash.debounce";
 import FuturisticButton from "../../components/FuturisticButton";
-import { Modal } from "@mui/material";
+import Modal from "../../components/Modal";
+
 import { Icon } from "@iconify/react";
 
 import { useFeedback } from "../../context/FeedbackContext";
@@ -32,6 +35,8 @@ export default function ConfiguracionPage() {
     departments: [],
     services: [],
   });
+
+  const [isLoadingForm, setIsLoadingForm] = useState(false);
 
   const getASIC = useCallback(async () => {
     try {
@@ -63,7 +68,6 @@ export default function ConfiguracionPage() {
     getASIC();
   }, [getASIC]);
 
-  const [isLoadingForm, setIsLoadingForm] = React.useState(false);
   const createASIC = async (e) => {
     e.preventDefault();
     setIsLoadingForm(true);
@@ -84,29 +88,48 @@ export default function ConfiguracionPage() {
     setIsLoadingForm(false);
   };
 
+  const focusCreateDependenceInput = () => {
+    setTimeout(() => {
+      const input = document.querySelector('input[name="newDependenceName"]');
+      if (input) input.focus();
+    }, 100);
+  };
+
   const addNewDependency = () => {
-    if (!formData.newDependenceName) return;
+    setIsLoadingForm(true);
+    if (!formData.newDependenceName) {
+      setIsLoadingForm(false);
+      return;
+    }
+
     const newDependence = {
       name: formData.newDependenceName,
       asic_id: formData.id,
     };
-    try {
-      dependenciesAPI.createDependency(newDependence).then((response) => {
+
+    dependenciesAPI
+      .createDependency(newDependence)
+      .then((response) => {
         showSuccess("Dependencia creada exitosamente");
         setFormData({
           ...formData,
           dependences: [...formData.dependences, response],
           newDependenceName: "",
         });
+        // focus in the new dependence input
+        focusCreateDependenceInput();
+      })
+      .catch((error) => {
+        console.error("Error creating dependency:", error);
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Error en el sistema principal";
+        showError(errorMessage);
+      })
+      .finally(() => {
+        setIsLoadingForm(false);
       });
-    } catch (error) {
-      console.error("Error creating dependency:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Error en el sistema principal";
-      showError(errorMessage);
-    }
   };
 
   const deleteDependency = (id) => {
@@ -128,26 +151,108 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const updateDependency = (id, updatedData) => {
-    try {
-      dependenciesAPI.updateDependency(id, updatedData).then((response) => {
+  const updateDependency = useCallback((id, updatedData) => {
+    dependenciesAPI.updateDependency(id, updatedData)
+      .then((response) => {
         showSuccess("Dependencia actualizada exitosamente");
+      })
+      .catch((error) => {
+        console.error("Error updating dependency:", error);
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Error en el sistema principal";
+        showError(errorMessage);
+      });
+  }, [showSuccess, showError]);
+
+  // Debounced version of updateDependency
+  const debouncedUpdateDependency = useCallback(
+    debounce((id, updatedData) => {
+      updateDependency(id, updatedData);
+    }, 500),
+    [updateDependency]
+  );
+
+  const createAdministrativeUnit = (dependenceId, unitName) => {
+    if (!unitName) return;
+    const newUnit = {
+      name: unitName,
+      dependence_id: dependenceId,
+    };
+    try {
+      administrativeUnitsAPI.createUnit(newUnit).then((response) => {
+        showSuccess("Unidad administrativa creada exitosamente");
         setFormData({
           ...formData,
+          newUnitName: null,
           dependences: formData.dependences.map((d) =>
-            d.id === id ? response : d
+            d.id === dependenceId
+              ? {
+                  ...d,
+                  administrativeUnits: [...d.administrativeUnits, response],
+                }
+              : d,
           ),
         });
       });
     } catch (error) {
-      console.error("Error updating dependency:", error);
-      const errorMessage =  
-      error.response?.data?.message ||
+      console.error("Error creating administrative unit:", error);
+      const errorMessage =
+        error.response?.data?.message ||
         error.message ||
         "Error en el sistema principal";
       showError(errorMessage);
     }
+    // Aquí iría la lógica para crear la unidad administrativa
   };
+
+  const deleteAdministrativeUnit = (id) => {
+    administrativeUnitsAPI.deleteUnit(id)
+      .then(() => {
+        showSuccess("Unidad administrativa eliminada exitosamente");
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          dependences: prevFormData.dependences.map((d) => ({
+            ...d,
+            administrative_unities: d.administrative_unities?.filter(
+              (u) => u.id !== id,
+            ) || [],
+          })),
+        }));
+      })
+      .catch((error) => {
+        console.error("Error deleting administrative unit:", error);
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Error en el sistema principal";
+        showError(errorMessage);
+      });
+  };
+
+  const updateAdministrativeUnit = useCallback((id, updatedData) => {
+    administrativeUnitsAPI.updateUnit(id, updatedData)
+      .then(() => {
+        showSuccess("Unidad administrativa actualizada exitosamente");
+      })
+      .catch((error) => {
+        console.error("Error updating administrative unit:", error);
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Error en el sistema principal";
+        showError(errorMessage);
+      });
+  }, [showSuccess, showError]);
+
+  // Debounced version of updateAdministrativeUnit
+  const debouncedUpdateUnit = useCallback(
+    debounce((id, updatedData) => {
+      updateAdministrativeUnit(id, updatedData);
+    }, 500),
+    [updateAdministrativeUnit]
+  );
 
   return (
     <>
@@ -160,7 +265,7 @@ export default function ConfiguracionPage() {
 
         <div>
           <h2 className="text-xl font-semibold mt-6 mb-2">Administrar ASIC</h2>
-          <ul>
+          <ul className="text-sm">
             {asicData?.map((asic) => (
               <li
                 className="hover:bg-gray-100 py-2 px-2 cursor-pointer"
@@ -174,85 +279,252 @@ export default function ConfiguracionPage() {
         </div>
       </div>
       <Modal
-        open={isModalOpen}
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        aria-labelledby="modal-title"
-        size="lg"
+        size="full"
+        title={
+          isLoadingForm && (
+            <>
+              <Icon
+                icon="line-md:loading-loop"
+                width={24}
+                height={24}
+                className="animate-spin"
+              />
+            </>
+          )
+        }
       >
-        <form
-          onSubmit={createASIC}
-          className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-auto mt-20"
-        >
+        <form>
           <FormField
             label="Nombre del ASIC"
             name="asicName"
             type="text"
+            className={"w-fit mx-auto "}
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          <h3 className="my-2">Dependencias</h3>
-
-          <div className="flex">
-            <FormField
-              label="Agregar nueva Dependencia"
-              name="dependenceName"
-              type="text"
-              value={formData.newDependenceName || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, newDependenceName: e.target.value })
-              }
-            />
-            <button
-              type="button"
-              disabled={!formData.newDependenceName}
-              className={`${formData.newDependenceName ? "bg-color1" : "bg-grayBlue "} ml-2 p-2 hover:brightness-125 text-white rounded`}
-              onClick={addNewDependency}
-            >
-              Agregar
-            </button>
+          <div className="grid grid-cols-12 gap-5 mt-10 mb-3">
+            <h3 className=" font-bold text-lg mr-6 col-span-3 ">
+              Dependencias{" "}
+              <button
+                className="px-2 text-center text-color3 ml-2 hover:bg-slate-200 rounded-md h-min inline-block bg-gray-100"
+                type="button"
+                onClick={focusCreateDependenceInput}
+              >
+                +
+              </button>{" "}
+            </h3>
+            <p className="font-semibold mr-4 col-span-3">
+              Unidades administrativas:
+              {/* <button
+                className="px-2 text-center text-color3 ml-2 hover:bg-slate-200 rounded-md h-min inline-block bg-gray-100"
+                type="button"
+                // onClick={focusCreateDependenceInput}
+              >
+                +
+              </button>{" "} */}
+            </p>
+            <p className="font-semibold mr-4 col-span-3">Departamentos:</p>
           </div>
-          {formData.dependences?.map((dependence) => (
-            <div key={"dependence" + dependence.id}>
-              <div className="flex items-center">
-                <FormField
-                  name="dependenceName"
-                  type="text"
-                  value={dependence.name}
-                />
 
+          {formData.dependences?.map((dependence, index) => (
+            <div
+              className=" duration-300 transition-all h-fit  group/dependence grid mb-1 grid-cols-12 gap-5 items-start"
+              key={"dependence" + dependence.id}
+            >
+              <div className="flex items-center col-span-3 group">
+                <div className="group-hover:hidden mr-2 w-4 text-gray-500">
+                  {index + 1}.
+                </div>
                 <button
                   type="button"
-                  className="ml-2 text-red-300 p-1 rounded hover:bg-red-100 hover:text-red-500"
+                  className="hidden group-hover:block text-red-300 h-10 p-1 rounded rounded-r-none hover:bg-red-100 hover:text-red-500"
                   onClick={() => deleteDependency(dependence.id)}
                 >
                   <Icon icon="material-symbols:close-rounded"></Icon>
                 </button>
+                <FormField
+                  name="dependenceName"
+                  type="text"
+                  value={dependence.name}
+                  className="group-hover/dependence:bg-gray-100 group-hover/dependence:text-dark rounded"
+                  style={{ border: "none" }}
+                  disableOutline
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    // Update UI immediately
+                    setFormData({
+                      ...formData,
+                      dependences: formData.dependences.map((d) =>
+                        d.id === dependence.id
+                          ? { ...d, name: newValue }
+                          : d,
+                      ),
+                    });
+                    // Debounced API call
+                    debouncedUpdateDependency(dependence.id, {
+                      name: newValue,
+                      asic_id: formData.id,
+                    });
+                  }}
+                />
               </div>
 
-              <div className="body">
-                <p>Unidades administrativas relacionadas:</p>
-                <FormField
-                  label="Agregar nueva Unidad Administrativa"
-                  name="unitName"
-                  type="text"
-                  value={formData.newUnitName || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, newUnitName: e.target.value })
-                  }
-                />
-
-                <ul>
-                  {dependence.administrative_units?.map((unit) => (
-                    <li key={"unit" + unit.id}>{unit.name}</li>
+              <div className="body mt-3 col-span-3">
+                <ul className="">
+                  {dependence.administrative_unities?.map((unit, Uindex) => (
+                    <li className="flex group  " key={"unit" + unit.id}>
+                      <div className="group-hover:hidden w-4 mr-1.5 text-gray-500 text-md relative -bottom-1.5">
+                        {Uindex + 1}.
+                      </div>
+                      <button
+                        type="button"
+                        className="hidden  group-hover:block text-red-300 text-sm h-10 p-1 rounded rounded-r-none hover:bg-red-100 hover:text-red-500"
+                        onClick={() => deleteAdministrativeUnit(unit.id)}
+                      >
+                        <Icon icon="material-symbols:close-rounded"></Icon>
+                      </button>
+                      <FormField
+                        disableOutline
+                        name={"unitName_" + unit.id}
+                        type="text"
+                        value={unit.name}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          // Update UI immediately
+                          setFormData({
+                            ...formData,
+                            dependences: formData.dependences.map((d) =>
+                              d.id === dependence.id
+                                ? {
+                                    ...d,
+                                    administrative_unities:
+                                      d.administrative_unities.map((u) =>
+                                        u.id === unit.id
+                                          ? { ...u, name: newValue }
+                                          : u,
+                                      ),
+                                  }
+                                : d,
+                            ),
+                          });
+                          // Debounced API call
+                          debouncedUpdateUnit(unit.id, {
+                            name: newValue,
+                            dependence_id: dependence.id,
+                          });
+                        }}
+                      />
+                    </li>
                   ))}
                 </ul>
+
+
+                <div className="opacity-0 group-hover/dependence:opacity-100  duration-300 mt-1 flex ">
+                  <div className="w-4 mr-2 text-gray-500">
+                    {dependence.administrative_unities?.length + 1}.
+                  </div>
+                  <FormField
+                    label="Agregar nueva Unidad Administrativa"
+                    name={"newUnitName_" + dependence.id}
+                    key={"newUnitName_" + dependence.id}
+                    type="text"
+                    // value={formData.newUnitName || ""}
+                    value={formData["newUnitName_" + dependence.id] || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        ["newUnitName_" + dependence.id]: e.target.value,
+                      })
+                    }
+                  />
+                  <button
+                    type="button"
+                    disabled={!formData["newUnitName_" + dependence.id]}
+                    className={`${formData["newUnitName_" + dependence.id] ? "bg-color1 hover:brightness-125" : "bg-gray-50 "} ml-1 p-2 text-xs  text-white rounded`}
+                    onClick={() => {
+                      if (
+                        createAdministrativeUnit(
+                          dependence.id,
+                          formData["newUnitName_" + dependence.id],
+                        )
+                      ) {
+                      }
+
+                      // Aquí iría la lógica para agregar una nueva unidad administrativa a esta dependencia
+                    }}
+                  >
+                    {isLoadingForm ? (
+                      <>
+                        <Icon
+                          icon="line-md:loading-loop"
+                          width={24}
+                          height={24}
+                          className="animate-spin"
+                        />
+                      </>
+                    ) : (
+                      "Añadir"
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
-          <FuturisticButton type="submit" classess={"w-full mt-5"}>
-            <span>{isLoadingForm ? "Cargando..." : "Crear"} </span>
-          </FuturisticButton>
+
+          <div className="grid grid-cols-12">
+            <div
+              className={`col-span-3 flex ${formData.newDependenceName ? "" : "opacity-75"}`}
+            >
+              <div className="mr-2 w-3 text-gray-500">
+                {formData.dependences?.length + 1}.
+              </div>
+
+              <FormField
+                label="Agregar nueva Dependencia"
+                name="newDependenceName"
+                type="text"
+                value={formData.newDependenceName || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    newDependenceName: e.target.value,
+                  })
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && formData.newDependenceName) {
+                    e.preventDefault();
+                    addNewDependency();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={!formData.newDependenceName || isLoadingForm}
+                className={`${formData.newDependenceName && !isLoadingForm ? "bg-color1 hover:brightness-125" : "bg-gray-50 "} ml-1 p-2 text-xs  text-white rounded`}
+                onClick={addNewDependency}
+              >
+                {isLoadingForm ? (
+                  <>
+                    <Icon
+                      icon="line-md:loading-loop"
+                      width={24}
+                      height={24}
+                      className="animate-spin"
+                    />
+                  </>
+                ) : (
+                  "Añadir"
+                )}
+              </button>
+            </div>
+          </div>
+          {/* <span>{isLoadingForm ? "Cargando..." : "Crear"} </span> */}
+
+          {/* <FuturisticButton type="submit" classess={"w-full mt-5"}>
+          </FuturisticButton> */}
         </form>
       </Modal>
     </>

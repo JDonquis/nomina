@@ -13,10 +13,10 @@ import React from "react";
 // Phone formatter function
 const formatPhoneNumber = (value) => {
   if (!value) return value;
-  
+
   // Remove all non-digits
   const phoneNumber = value.replace(/[^\d]/g, "");
-  
+
   // Format based on length
   if (phoneNumber.length < 4) return phoneNumber;
   if (phoneNumber.length < 7) {
@@ -43,9 +43,23 @@ const FormField = React.memo(function FormField({
   multiline = false,
   options,
   labels,
+  disableOutline = false, // Nueva prop
   ...props
 }) {
-  
+  // Configurar sx para eliminar el outline
+  const textFieldSx = disableOutline
+    ? {
+        "& .MuiOutlinedInput-notchedOutline": {
+          border: "none",
+        },
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          border: "none",
+        },
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          border: "none",
+        },
+      }
+    : {};
   // Handle phone number formatting
   const handlePhoneChange = (e) => {
     const formattedValue = formatPhoneNumber(e.target.value);
@@ -77,14 +91,20 @@ const FormField = React.memo(function FormField({
           {...props}
         />
         <div className="flex flex-col">
-          <label htmlFor={checkboxId} className="text-sm font-medium text-gray-700 cursor-pointer">
+          <label
+            htmlFor={checkboxId}
+            className="text-sm font-medium text-gray-700 cursor-pointer"
+          >
             {label || name}
           </label>
-          {helperText && !error && helperText !== false && helperText !== "" && (
-            <FormHelperText className="mt-0 text-xs text-gray-500">
-              {helperText}
-            </FormHelperText>
-          )}
+          {helperText &&
+            !error &&
+            helperText !== false &&
+            helperText !== "" && (
+              <FormHelperText className="mt-0 text-xs text-gray-500">
+                {helperText}
+              </FormHelperText>
+            )}
           {error && (
             <FormHelperText error className="mt-0">
               {error}
@@ -135,12 +155,14 @@ const FormField = React.memo(function FormField({
           size="small"
           variant={variant}
           InputProps={{
-            endAdornment: unit && <InputAdornment position="end">{unit}</InputAdornment>,
+            endAdornment: unit && (
+              <InputAdornment position="end">{unit}</InputAdornment>
+            ),
           }}
           inputProps={{
             maxLength: 12, // XXX-XXX-XXXX = 12 characters
             pattern: "[0-9-]*",
-            ...props.inputProps
+            ...props.inputProps,
           }}
           {...props}
         />
@@ -170,17 +192,17 @@ const FormField = React.memo(function FormField({
         size="small"
         variant={variant}
         multiline={multiline}
+        sx={textFieldSx} // Aplicar estilos
         InputLabelProps={type === "date" ? { shrink: true } : undefined}
         InputProps={{
-          onWheel:
-            type === "number"
-              ? (e) => e.target.blur()
-              : undefined,
-          endAdornment: unit && <InputAdornment position="end">{unit}</InputAdornment>,
+          onWheel: type === "number" ? (e) => e.target.blur() : undefined,
+          endAdornment: unit && (
+            <InputAdornment position="end">{unit}</InputAdornment>
+          ),
         }}
         inputProps={{
           list: type === "list" ? name : undefined,
-          ...props.inputProps
+          ...props.inputProps,
         }}
         {...props}
       />
