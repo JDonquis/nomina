@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Dependence;
+use App\Models\Dependency;
 use Illuminate\Database\Eloquent\Model;
 
 class AdministrativeLocation extends Model
@@ -11,8 +11,8 @@ class AdministrativeLocation extends Model
         'name'
     ];
 
-    public function dependences()
+    public function dependencies()
     {
-        return $this->hasMany(Dependence::class);
+        return $this->hasMany(Dependency::class);
     }
 }

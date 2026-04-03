@@ -16,7 +16,7 @@ class ASICController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $asics = $query->with('dependences:id,name,asic_id')->get();
+        $asics = $query->with('dependencies:id,name,asic_id')->get();
 
         return response()->json($asics);
     }
@@ -28,13 +28,14 @@ class ASICController extends Controller
         ]);
 
         $asic = ASIC::create($validated);
+        $asic->load('dependencies:id,name,asic_id');
 
         return response()->json($asic, 201);
     }
 
     public function show(ASIC $asic): JsonResponse
     {
-        $asic->load('dependences.administrativeUnities.departments.services');
+        $asic->load('dependencies.administrativeUnits.departments.services');
 
         return response()->json($asic);
     }
@@ -46,6 +47,7 @@ class ASICController extends Controller
         ]);
 
         $asic->update($validated);
+        $asic->load('dependencies:id,name,asic_id');
 
         return response()->json($asic);
     }

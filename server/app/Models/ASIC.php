@@ -10,8 +10,8 @@ class ASIC extends Model
     protected $table = 'asics';
     protected $fillable = ['name'];
 
-    public function dependences(): HasMany
+    public function dependencies(): HasMany
     {
-        return $this->hasMany(Dependence::class, 'asic_id');
+        return $this->hasMany(Dependency::class, 'asic_id');
     }
 }

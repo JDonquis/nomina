@@ -20,7 +20,7 @@ class ServiceController extends Controller
             $query->where('department_id', $request->department_id);
         }
 
-        $services = $query->with('department:id,name,administrative_unity_id')->get();
+        $services = $query->with('department:id,name,administrative_unit_id')->get();
 
         return response()->json($services);
     }
@@ -33,6 +33,7 @@ class ServiceController extends Controller
         ]);
 
         $service = Service::create($validated);
+        $service->load('department:id,name,administrative_unit_id');
 
         return response()->json($service, 201);
     }
@@ -52,6 +53,7 @@ class ServiceController extends Controller
         ]);
 
         $service->update($validated);
+        $service->load('department:id,name,administrative_unit_id');
 
         return response()->json($service);
     }

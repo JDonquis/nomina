@@ -4,14 +4,12 @@ namespace App\Models;
 
 use App\Models\AdministrativeLocation;
 use App\Models\Census;
-use App\Models\Dependence;
 use App\Models\TypePaySheet;
 use Illuminate\Database\Eloquent\Model;
 
 class PaySheet extends Model
 {
     protected $fillable = [
-        // Personal Data
         'nac',
         'ci',
         'email',
@@ -26,9 +24,7 @@ class PaySheet extends Model
         'sex',
         'type_pay_sheet_id',
         'administrative_location_id',
-        'dependence_id',
         'photo',
-        //Pension Data,
         'type_pension',
         'last_charge',
         'civil_status',
@@ -37,7 +33,6 @@ class PaySheet extends Model
         'receive_pension_from_another_organization_status',
         'another_organization_name',
         'has_authorizations',
-        // Pension Survivor
         'pension_survivor_status',
         'fullname_causative',
         'age_causative',
@@ -49,9 +44,7 @@ class PaySheet extends Model
         'last_payment',
         'status',
         'user_id'
-
     ];
-
 
     public function typePaySheet()
     {
@@ -71,10 +64,5 @@ class PaySheet extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function dependence()
-    {
-        return $this->belongsTo(Dependence::class);
     }
 }

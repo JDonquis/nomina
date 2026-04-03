@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('administrative_unities', function (Blueprint $table) {
+        Schema::create('administrative_units', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('dependence_id')->constrained('dependences')->onDelete('cascade');
+            $table->foreignId('dependency_id')->constrained('dependencies')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('administrative_unities');
+        Schema::dropIfExists('administrative_units');
     }
 };
