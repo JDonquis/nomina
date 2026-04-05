@@ -23,7 +23,7 @@ class PaySheetService
 
     public function get($params = [])
     {
-        $query = PaySheet::query()->with('typePaySheet', 'user', 'administrativeLocation', 'dependence');
+        $query = PaySheet::query()->with('typePaySheet', 'user', 'administrativeLocation');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
@@ -92,13 +92,6 @@ class PaySheetService
                 $filter = $filters['pay_sheet.type_pension'];
                 $query->whereHas('typePaySheet', function ($subQuery) use ($filter) {
                     $subQuery->where('id', $filter);
-                });
-            }
-
-            if (isset($filters['administrative_location.dependence.name'])) {
-                $filter = $filters['administrative_location.dependence.name'];
-                $query->whereHas('dependence', function ($subQuery) use ($filter) {
-                    $subQuery->where('name', $filter);
                 });
             }
         }

@@ -19,9 +19,4 @@ class Dependency extends Model
     {
         return $this->hasMany(AdministrativeUnit::class);
     }
-
-    public function administrativeLocation()
-    {
-        return $this->belongsTo(AdministrativeLocation::class);
-    }
 }

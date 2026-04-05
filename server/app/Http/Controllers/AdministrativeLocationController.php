@@ -9,6 +9,6 @@ class AdministrativeLocationController extends Controller
 {
     public function index()
     {
-        return AdministrativeLocation::with('dependencies')->get();
+        return AdministrativeLocation::all();
     }
 }
