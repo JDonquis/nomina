@@ -136,10 +136,10 @@ export const ASICAPI = {
 }
 
 export const dependenciesAPI = {
-  getDependencies: (params) => api.get("/admin/dependences", { params }),
-  createDependency: (dependencyData) => api.post("/admin/dependences", dependencyData),
-  updateDependency: (id, dependencyData) => api.put(`/admin/dependences/${id}`, dependencyData),
-  deleteDependency: (id) => api.delete(`/admin/dependences/${id}`),
+  getDependencies: (params) => api.get("/admin/dependencies", { params }),
+  createDependency: (dependencyData) => api.post("/admin/dependencies", dependencyData),
+  updateDependency: (id, dependencyData) => api.put(`/admin/dependencies/${id}`, dependencyData),
+  deleteDependency: (id) => api.delete(`/admin/dependencies/${id}`),
 }
 
 export const administrativeUnitsAPI = {
