@@ -497,9 +497,9 @@ export default function ConfiguracionPage() {
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4">Configuración</h1>
 
-        <FuturisticButton onClick={() => setIsModalOpen(true)}>
+        {/* <FuturisticButton onClick={() => setIsModalOpen(true)}>
           Crear ASIC
-        </FuturisticButton>
+        </FuturisticButton> */}
 
         <div>
           <h2 className="text-xl font-semibold mt-6 mb-2">Administrar ASIC</h2>
