@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivePersonnelController;
 use App\Http\Controllers\ActivityController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -37,6 +38,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
+    Route::resource('active-personnel', ActivePersonnelController::class)->except(['edit', 'create']);
     Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
     Route::post('pay-sheets/photo/{paySheet}', [PaySheetController::class, 'updatePhoto']);
     Route::get('pay-sheets/generate/report', [PaySheetController::class, 'report']);
@@ -44,7 +46,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Census
     Route::get('censuses', [CensusController::class, 'index']);
-    // Route::post('censuses', [CensusController::class, 'store']);
+    Route::post('censuses', [CensusController::class, 'store']);
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
 
     Route::get('activities', ActivityController::class);

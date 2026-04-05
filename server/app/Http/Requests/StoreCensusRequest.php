@@ -22,7 +22,9 @@ class StoreCensusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pay_sheet_id' => ['required', 'exists:pay_sheets,id']
+            'pay_sheet_id' => ['required_without:active_personnel_id', 'nullable', 'exists:pay_sheets,id'],
+            'active_personnel_id' => ['required_without:pay_sheet_id', 'nullable', 'exists:active_personnels,id'],
+            'data' => ['required', 'array']
         ];
     }
 }
