@@ -13,24 +13,24 @@ import {
   asicAPI,
   censusAPI,
   typePaySheetsAPI,
-} from "../../services/api";
-import externalApi from "../../services/saludfalcon.api";
+} from "../../services/api.js";
+import externalApi from "../../services/saludfalcon.api.js";
 import { Icon } from "@iconify/react";
-import Modal from "../../components/Modal";
-import FuturisticButton from "../../components/FuturisticButton";
-import FormField from "../../components/forms/FormField";
+import Modal from "../../components/Modal.jsx";
+import FuturisticButton from "../../components/FuturisticButton.jsx";
+import FormField from "../../components/forms/FormField.jsx";
 import { CircularProgress } from "@mui/material";
-import { useFeedback } from "../../context/FeedbackContext";
+import { useFeedback } from "../../context/FeedbackContext.jsx";
 import { MaterialReactTable } from "material-react-table";
-import Planilla from "../../components/planilla";
+import Planilla from "../../components/planilla.jsx";
 import debounce from "lodash.debounce";
 import axios from "axios";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
-import { cities } from "../../constants/cities";
-import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes";
-import typePensions from "../../constants/type_pensions";
-import PrintPage from "../../components/report";
+import { cities } from "../../constants/cities.js";
+import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes.js";
+import typePensions from "../../constants/type_pensions.js";
+import PrintPage from "../../components/report.jsx";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true
@@ -68,7 +68,7 @@ const MemoizedTestField = React.memo(
   },
 );
 
-export default function NominaPage() {
+export default function FeDeVidaPage() {
   const [loading, setLoading] = useState(false);
   const { showError, showSuccess, showInfo } = useFeedback();
   const [isModalOpen, setIsModalOpen] = useState(false);

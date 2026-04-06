@@ -12,9 +12,9 @@ import { useAuth } from "./context/AuthContext";
 
 // Lazy load heavy components
 
-const NominaPage = lazy(
+const FeDeVidaPage = lazy(
   () =>
-    import(/* webpackChunkName: "examenes" */ "./pages/dashboard/NominaPage"),
+    import(/* webpackChunkName: "examenes" */ "./pages/dashboard/FeDeVidaPage"),
 );
 const MovimientosPage = lazy(
   () =>
@@ -72,7 +72,7 @@ function AppContent() {
               path="fe_de_vida"
               element={
                 <Suspense fallback={<PageLoader />}>
-                  <NominaPage />
+                  <FeDeVidaPage />
                 </Suspense>
               }
             />

@@ -163,5 +163,13 @@ export const servicesAPI = {
   deleteService: (id) => api.delete(`/admin/services/${id}`),
 }
 
+export const activePersonnelAPI = {
+  getPersonnel: (params) => api.get("/admin/active-personnel", { params }),
+  getPersonnelById: (id) => api.get(`/admin/active-personnel/${id}`),
+  createPersonnel: (personnelData) => api.post("/admin/active-personnel", personnelData, { headers: { "Content-Type": "multipart/form-data" } }),
+  updatePersonnel: (id, personnelData) => api.put(`/admin/active-personnel/${id}`, personnelData, { headers: { "Content-Type": "multipart/form-data" } }),
+  deletePersonnel: (id) => api.delete(`/admin/active-personnel/${id}`),
+};
+
 // Export the api instance for direct use if needed
 export default api;
