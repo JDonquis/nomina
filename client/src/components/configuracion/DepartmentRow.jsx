@@ -54,7 +54,7 @@ export default function DepartmentRow({
 
   return (
     <div className="md:ml-6 border-l-2 border-gray-200  my-1">
-      <div className="flex bg-color4/45 items-center gap-1 group">
+      <div className="flex bg-color4/45 items-center  group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -135,7 +135,7 @@ export default function DepartmentRow({
             />
           ))}
           
-          <div className="flex items-center gap-2 ml-10 mt-2 group/service">
+          <div className="flex items-center  ml-10 mt-2 group/service">
             <span className="text-xs text-gray-400 w-5">
               {department.services?.length + 1 || 1}.
             </span>

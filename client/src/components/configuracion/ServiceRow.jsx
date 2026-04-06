@@ -10,7 +10,7 @@ export default function ServiceRow({
   setFormData,
 }) {
   return (
-    <div className="flex ml-6 bg-purple-100/60 items-center gap-2 py-0.5 pl-4 group hover:bg-purple-200/60 rounded">
+    <div className="flex ml-6 bg-purple-100/60 items-center  py-0.5 pl-4 group hover:bg-purple-200/60 rounded">
       <span className="text-xs text-gray-400 w-5">{index + 1}.</span>
       <div className="flex-1">
         <FormField
