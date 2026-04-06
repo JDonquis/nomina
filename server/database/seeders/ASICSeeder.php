@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\ASIC;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ASICSeeder extends Seeder
@@ -11,28 +10,28 @@ class ASICSeeder extends Seeder
     public function run(): void
     {
         $asics = [
-            'ASIC Adolfo Martinez Guzman',
-            'ASIC Alberto Beto Zamora',
-            'ASIC Ali Primera',
-            'ASIC Alirio Navarro Aleman',
             'ASIC Carlina Luchon',
-            'ASIC Doña Ines De Zavala De Reyes',
-            'ASIC Dr Adalberto Redondo',
-            'ASIC Dr Jesus Higuera',
+            'ASIC Secundino Urbina',
             'ASIC Ernesto Che Guevara',
+            'ASIC Luis Alexis Zamarripa',
+            'ASIC Pedro De Armas',
+            'ASIC Marino Colina',
+            'ASIC Luis Manuel Piña',
             'ASIC Generalisimo Francisco De Miranda',
             'ASIC Heroina Josefa Camejo',
-            'ASIC Ignacio Bravo Petit',
-            'ASIC Luis Alexis Zamarripa',
-            'ASIC Luis Manuel Piña',
-            'ASIC Marino Colina',
-            'ASIC Modesto Hackel',
-            'ASIC Pedro de Armas',
-            'ASIC Pedro Medina Figuet',
-            'ASIC Presbitero Fabian Chelala',
-            'ASIC Ramon Jatem Reyes',
+            'ASIC Adolfo Martinez Guzman',
             'ASIC Raul Gonzalez Castro',
-            'ASIC Secundino Urbina',
+            'ASIC Ramon Jatem Reyes',
+            'ASIC Doña Ines De Zavala De Reyes',
+            'ASIC Alirio Navarro Aleman',
+            'ASIC Dr Adalberto Redondo',
+            'ASIC Presbitero Fabian Chelala',
+            'ASIC Modesto Hackel',
+            'ASIC Dr Jesus Higuera',
+            'ASIC Pedro Medina Figuet',
+            'ASIC Ali Primera',
+            'ASIC Alberto Beto Zamora',
+            'ASIC Ignacio Bravo Petit',
         ];
 
         foreach ($asics as $name) {
