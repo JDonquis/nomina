@@ -193,19 +193,6 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             </div>
           </div>
         </div>
-
-        <div className="flex flex-col items-center">
-          <div className="text-xs font-medium text-gray-600 mb-1 bg-gray-100 px-2 py-0.5 rounded">
-            Foto Cédula
-          </div>
-          <img
-            src={data.id_card_photo ? API_URL + "/storage/" + data.id_card_photo : withoutPhoto}
-            alt="Foto Cédula"
-            style={{ width: 90, height: 56, objectFit: "cover", borderRadius: "4px" }}
-            loading="lazy"
-            onError={(e) => { e.target.src = withoutPhoto; }}
-          />
-        </div>
       </div>
 
       <div className="mt-3">
@@ -288,12 +275,20 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
               <p className="font-semibold">{data.entry_date?.replaceAll("-", "/") || "N/A"}</p>
             </div>
           </div>
-          <div className="col-span-2 bg-white">
+          <div className="col-span-1 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">¿Residente?</p>
             </div>
             <div className="px-2 py-1">
               <p className="font-semibold">{data.is_resident ? "Sí" : "No"}</p>
+            </div>
+          </div>
+          <div className="col-span-2 bg-white">
+            <div className="px-2 py-0.5 bg-gray-100">
+              <p className="font-medium text-gray-600">Tipo Residencia</p>
+            </div>
+            <div className="px-2 py-1">
+              <p className="font-semibold">{data.residency_type || "N/A"}</p>
             </div>
           </div>
         </div>

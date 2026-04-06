@@ -40,6 +40,18 @@ export default function DepartmentRow({
     }));
   };
 
+  const handleOnFocus = (e) => {
+    if (department.services?.length === 0) {
+      setFormData((prev) => ({
+        ...prev,
+        [newServiceKey]: department.name,
+      }));
+    }
+    setTimeout(() => {
+      e.target.select();
+    }, 100);
+  };
+
   return (
     <div className="ml-6 border-l-2 border-gray-200  my-1">
       <div className="flex bg-color4/45 items-center gap-1 group">
@@ -134,6 +146,7 @@ export default function DepartmentRow({
                 value={newServiceName}
                 onChange={handleNewServiceChange}
                 onKeyDown={handleKeyDown}
+                onFocus={handleOnFocus}
                 disableOutline
                 className="!bg-transparent"
               />

@@ -46,6 +46,18 @@ export default function DependencyRow({
     }));
   };
 
+  const handleOnFocus = (e) => {
+    if (dependency.administrative_units?.length === 0) {
+      setFormData((prev) => ({
+        ...prev,
+        [newUnitKey]: dependency.name,
+      }));
+    }
+    setTimeout(() => {
+      e.target.select();
+    }, 100);
+  };
+
   return (
     <div className="bg-color2/10  rounded-lg mb-3 overflow-hidden">
       <div className="flex  items-center gap-0 pr-3 pl-0 group">

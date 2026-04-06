@@ -46,7 +46,6 @@ const defaultFormData = {
   pant_size: "",
   shoe_size: "",
   photo: "",
-  id_card_photo: "",
   payroll_dependency: "",
   asic_id: "",
   dependency_id: "",
@@ -70,9 +69,28 @@ const defaultFormData = {
   labor_relationship: "",
   grade: "",
   ivss_number: "",
+  residency_type: "",
   fotoChanged: false,
-  idCardFotoChanged: false,
 };
+
+const residencyTypeOptions = [
+  { value: "Universitario", label: "Universitario" },
+  { value: "RAPCE", label: "RAPCE" },
+  { value: "Asistencial", label: "Asistencial" },
+];
+
+const universityOptionsList = [
+  { value: "UNEFM", label: "UNEFM" },
+  { value: "UCS", label: "UCS" },
+];
+
+const levelOptionsRAPCE = [
+  { value: "R1", label: "R1" },
+  { value: "R2", label: "R2" },
+  { value: "R3", label: "R3" },
+  { value: "R4", label: "R4" },
+  { value: "R5", label: "R5" },
+];
 
 const defaultFamilyMember = {
   ci: "",
@@ -114,19 +132,12 @@ export default function PersonalActivoPage() {
   const [PDFdata, setPDFdata] = useState({});
   const { user } = useAuth();
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
-  const [showIdCardPhotoOptions, setShowIdCardPhotoOptions] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
-  const [showIdCardCameraModal, setShowIdCardCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-  const [idCardCameraStream, setIdCardCameraStream] = useState(null);
   const photoOptionsRef = useRef(null);
-  const idCardPhotoOptionsRef = useRef(null);
   const videoRef = useRef(null);
-  const idCardVideoRef = useRef(null);
   const canvasRef = useRef(null);
-  const idCardCanvasRef = useRef(null);
   const photoInputRef = useRef(null);
-  const idCardPhotoInputRef = useRef(null);
 
   const [asicOptions, setAsicOptions] = useState([]);
   const [asicRelations, setAsicRelations] = useState(null);
@@ -352,38 +363,26 @@ export default function PersonalActivoPage() {
       ) {
         setShowPhotoOptions(false);
       }
-      if (
-        idCardPhotoOptionsRef.current &&
-        !idCardPhotoOptionsRef.current.contains(event.target)
-      ) {
-        setShowIdCardPhotoOptions(false);
-      }
     };
 
-    if (showPhotoOptions || showIdCardPhotoOptions) {
+    if (showPhotoOptions) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showPhotoOptions, showIdCardPhotoOptions]);
+  }, [showPhotoOptions]);
 
   const openCamera = (forField) => {
-    const videoEl = forField === "photo" ? videoRef : idCardVideoRef;
+    const videoEl = videoRef;
 
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "user" }, audio: false })
       .then((stream) => {
-        if (forField === "photo") {
-          setCameraStream(stream);
-          setShowCameraModal(true);
-          setShowPhotoOptions(false);
-        } else {
-          setIdCardCameraStream(stream);
-          setShowIdCardCameraModal(true);
-          setShowIdCardPhotoOptions(false);
-        }
+        setCameraStream(stream);
+        setShowCameraModal(true);
+        setShowPhotoOptions(false);
         setTimeout(() => {
           if (videoEl.current) videoEl.current.srcObject = stream;
         }, 100);
@@ -395,24 +394,17 @@ export default function PersonalActivoPage() {
   };
 
   const stopCamera = (forField) => {
-    const stream = forField === "photo" ? cameraStream : idCardCameraStream;
+    const stream = cameraStream;
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
-    if (forField === "photo") {
-      setCameraStream(null);
-      setShowCameraModal(false);
-    } else {
-      setIdCardCameraStream(null);
-      setShowIdCardCameraModal(false);
-    }
+    setCameraStream(null);
+    setShowCameraModal(false);
   };
 
   const capturePhoto = (forField) => {
-    const videoEl =
-      forField === "photo" ? videoRef.current : idCardVideoRef.current;
-    const canvasEl =
-      forField === "photo" ? canvasRef.current : idCardCanvasRef.current;
+    const videoEl = videoRef.current;
+    const canvasEl = canvasRef.current;
 
     if (videoEl && canvasEl) {
       canvasEl.width = videoEl.videoWidth;
@@ -428,7 +420,7 @@ export default function PersonalActivoPage() {
           setFormData((prev) => ({
             ...prev,
             [forField]: file,
-            [forField === "photo" ? "fotoChanged" : "idCardFotoChanged"]: true,
+            fotoChanged: true,
           }));
           stopCamera(forField);
         },
@@ -442,10 +434,8 @@ export default function PersonalActivoPage() {
     return () => {
       if (cameraStream)
         cameraStream.getTracks().forEach((track) => track.stop());
-      if (idCardCameraStream)
-        idCardCameraStream.getTracks().forEach((track) => track.stop());
     };
-  }, [cameraStream, idCardCameraStream]);
+  }, [cameraStream]);
 
   const handleFullNameBlur = useCallback((e) => {
     const value = e.target.value;
@@ -459,13 +449,6 @@ export default function PersonalActivoPage() {
       {
         name: "photo",
         label: "Foto",
-        type: "file",
-        required: false,
-        className: "col-span-12 md:col-span-4",
-      },
-      {
-        name: "id_card_photo",
-        label: "Foto de Cédula",
         type: "file",
         required: false,
         className: "col-span-12 md:col-span-4",
@@ -652,8 +635,7 @@ export default function PersonalActivoPage() {
       {
         name: "payroll_name",
         label: "Nombre de Nómina",
-        type: "select",
-        options: typePaySheets,
+        type: "text",
         required: false,
         className: "col-span-12 md:col-span-6",
       },
@@ -679,18 +661,40 @@ export default function PersonalActivoPage() {
         className: "col-span-12 md:col-span-3",
       },
       {
-        name: "level",
-        label: "Nivel",
-        type: "text",
-        required: false,
-        className: "col-span-12 md:col-span-3",
+        name: "residency_type",
+        label: "Tipo de Residencia",
+        type: "select",
+        options: residencyTypeOptions,
+        required: formData.is_resident,
+        className: `col-span-12 md:col-span-3 ${!formData.is_resident ? "hidden" : ""}`,
+        onChangeCustom: (val) => {
+          setFormData((prev) => ({
+            ...prev,
+            residency_type: val,
+            university: val === "Universitario" ? prev.university : "",
+            level: val === "Universitario" || val === "RAPCE" ? prev.level : "",
+          }));
+        },
       },
       {
         name: "university",
         label: "Universidad",
-        type: "text",
-        required: false,
-        className: "col-span-12 md:col-span-6",
+        type: "select",
+        options: universityOptionsList,
+        required:
+          formData.is_resident && formData.residency_type === "Universitario",
+        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && formData.residency_type === "Universitario") ? "hidden" : ""}`,
+      },
+      {
+        name: "level",
+        label: "Nivel",
+        type: "select",
+        options: levelOptionsRAPCE,
+        required:
+          formData.is_resident &&
+          (formData.residency_type === "Universitario" ||
+            formData.residency_type === "RAPCE"),
+        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && (formData.residency_type === "Universitario" || formData.residency_type === "RAPCE")) ? "hidden" : ""}`,
       },
       {
         name: "position_code",
@@ -773,6 +777,8 @@ export default function PersonalActivoPage() {
       handleDependencyChange,
       handleUnitChange,
       handleDepartmentChange,
+      formData.is_resident,
+      formData.residency_type,
     ],
   );
 
@@ -795,7 +801,16 @@ export default function PersonalActivoPage() {
     } else {
       const { name, value } = e.target;
       if (e.target.type === "checkbox") {
-        setFormData((prev) => ({ ...prev, [name]: e.target.checked }));
+        const isChecked = e.target.checked;
+        setFormData((prev) => {
+          const updated = { ...prev, [name]: isChecked };
+          if (name === "is_resident" && !isChecked) {
+            updated.residency_type = "";
+            updated.university = "";
+            updated.level = "";
+          }
+          return updated;
+        });
       } else {
         setFormData((prev) => ({ ...prev, [name]: value }));
       }
@@ -820,7 +835,6 @@ export default function PersonalActivoPage() {
         "created_at",
         "updated_at",
         "fotoChanged",
-        "idCardFotoChanged",
         "latest_census_id",
       ];
 
@@ -833,12 +847,6 @@ export default function PersonalActivoPage() {
           key === "photo" &&
           submitString === "Actualizar" &&
           !formData.fotoChanged
-        )
-          return;
-        if (
-          key === "id_card_photo" &&
-          submitString === "Actualizar" &&
-          !formData.idCardFotoChanged
         )
           return;
 
@@ -993,6 +1001,15 @@ export default function PersonalActivoPage() {
         Cell: ({ cell }) => `${cell.row.original.nac}-${cell.getValue()}`,
       },
       {
+        accessorKey: "residency_type",
+        header: "Tipo Residencia",
+        size: 120,
+        filterVariant: "select",
+        enableColumnFilter: true,
+        enableSorting: true,
+        Cell: ({ cell }) => cell.getValue() || "N/A",
+      },
+      {
         accessorKey: "job_title",
         header: "Cargo",
         filterFn: "includesString",
@@ -1062,7 +1079,6 @@ export default function PersonalActivoPage() {
                   ...defaultFormData,
                   ...row,
                   fotoChanged: false,
-                  idCardFotoChanged: false,
                 });
                 setFamilyMembers(row.family_members || []);
                 setEditingId(row.id);
@@ -1229,8 +1245,7 @@ export default function PersonalActivoPage() {
             setFormData((prev) => ({
               ...prev,
               [fieldName]: e.target.files[0],
-              [fieldName === "photo" ? "fotoChanged" : "idCardFotoChanged"]:
-                true,
+              fotoChanged: true,
             }));
           }
         }}
@@ -1340,17 +1355,9 @@ export default function PersonalActivoPage() {
                 setShowPhotoOptions,
                 photoInputRef,
               )}
-              {renderPhotoField(
-                "id_card_photo",
-                "Foto Cédula",
-                idCardPhotoOptionsRef,
-                showIdCardPhotoOptions,
-                setShowIdCardPhotoOptions,
-                idCardPhotoInputRef,
-              )}
 
               {formFields
-                .filter((f) => f.name !== "photo" && f.name !== "id_card_photo")
+                .filter((f) => f.name !== "photo")
                 .map((field) => (
                   <FormField
                     key={field.name}
@@ -1541,14 +1548,6 @@ export default function PersonalActivoPage() {
           videoRef={videoRef}
           canvasRef={canvasRef}
           title="Tomar Foto"
-        />
-        <CameraModal
-          isOpen={showIdCardCameraModal}
-          onClose={() => stopCamera("id_card_photo")}
-          onCapture={() => capturePhoto("id_card_photo")}
-          videoRef={idCardVideoRef}
-          canvasRef={idCardCanvasRef}
-          title="Tomar Foto de Cédula"
         />
 
         {!isModalOpen && (

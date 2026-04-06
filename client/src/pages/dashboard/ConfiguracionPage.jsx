@@ -11,6 +11,8 @@ import debounce from "lodash.debounce";
 import { produce } from "immer";
 import { Icon } from "@iconify/react";
 
+const capitalize = (s) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+
 import { useFeedback } from "../../context/FeedbackContext";
 import { FormField } from "../../components/forms";
 import {
@@ -71,7 +73,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     try {
-      await ASICAPI.createASIC({ name: newAsicName.trim() });
+      await ASICAPI.createASIC({ name: capitalize(newAsicName.trim()) });
       showSuccess("ASIC creado exitosamente");
       getASIC();
       setNewAsicName("");
@@ -91,7 +93,7 @@ export default function ConfiguracionPage() {
     if (!selectedAsicId || !name.trim()) return;
 
     try {
-      await ASICAPI.updateASIC(selectedAsicId, { name });
+      await ASICAPI.updateASIC(selectedAsicId, { name: capitalize(name.trim()) });
       getASIC();
     } catch (error) {
       console.error("Error updating ASIC:", error);
@@ -133,7 +135,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newDependence = {
-      name: depName,
+      name: capitalize(depName),
       asic_id: selectedAsicId,
     };
 
@@ -187,7 +189,7 @@ export default function ConfiguracionPage() {
   const updateDependency = useCallback(
     async (id, updatedData) => {
       try {
-        await dependenciesAPI.updateDependency(id, updatedData);
+        await dependenciesAPI.updateDependency(id, { ...updatedData, name: capitalize(updatedData.name) });
       } catch (error) {
         console.error("Error updating dependency:", error);
         const errorMessage =
@@ -212,7 +214,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newUnit = {
-      name: unitName,
+      name: capitalize(unitName),
       dependency_id: dependenceId,
     };
 
@@ -275,7 +277,7 @@ export default function ConfiguracionPage() {
   const updateAdministrativeUnit = useCallback(
     async (id, updatedData) => {
       try {
-        await administrativeUnitsAPI.updateUnit(id, updatedData);
+        await administrativeUnitsAPI.updateUnit(id, { ...updatedData, name: capitalize(updatedData.name) });
       } catch (error) {
         console.error("Error updating administrative unit:", error);
         const errorMessage =
@@ -300,7 +302,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newDepartment = {
-      name: departmentName,
+      name: capitalize(departmentName),
       administrative_unit_id: unitId,
     };
     try {
@@ -309,7 +311,7 @@ export default function ConfiguracionPage() {
       if (repeat) {
         try {
           const serviceResponse = await servicesAPI.createService({
-            name: departmentName,
+            name: capitalize(departmentName),
             department_id: response.id,
           });
 
@@ -370,7 +372,7 @@ export default function ConfiguracionPage() {
   const updateDepartment = useCallback(
     async (id, updatedData) => {
       try {
-        await departmentAPI.updateDepartment(id, updatedData);
+        await departmentAPI.updateDepartment(id, { ...updatedData, name: capitalize(updatedData.name) });
       } catch (error) {
         console.error("Error updating department:", error);
         const errorMessage =
@@ -425,7 +427,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newService = {
-      name: serviceName,
+      name: capitalize(serviceName),
       department_id: departmentId,
     };
     try {
@@ -455,7 +457,7 @@ export default function ConfiguracionPage() {
   const updateService = useCallback(
     async (id, updatedData) => {
       try {
-        await servicesAPI.updateService(id, updatedData);
+        await servicesAPI.updateService(id, { ...updatedData, name: capitalize(updatedData.name) });
       } catch (error) {
         console.error("Error updating service:", error);
         const errorMessage =

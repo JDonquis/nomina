@@ -44,6 +44,7 @@ class ActivePersonnel extends Model
         'entry_date',
         'job_title',
         'is_resident',
+        'residency_type',
         'level',
         'university',
         'position_code',
