@@ -95,6 +95,44 @@ class ActivePersonnelController extends Controller
         }
     }
 
+    public function updatePhotos(Request $request, ActivePersonnel $activePersonnel)
+    {
+        try {
+            $request->validate([
+                'photo' => 'nullable|image|max:2048',
+                'id_card_photo' => 'nullable|image|max:2048',
+            ]);
+
+            $photo = $request->file('photo');
+            $idCardPhoto = $request->file('id_card_photo');
+
+            if (!$photo && !$idCardPhoto) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No se enviaron imágenes para actualizar'
+                ], 400);
+            }
+
+            $personnel = $this->activePersonnelService->updatePhotos($activePersonnel, $photo, $idCardPhoto);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Fotos actualizadas exitosamente',
+                'personnel' => $personnel
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error al actualizar fotos del personal activo: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al actualizar las fotos'
+            ], 500);
+        }
+    }
+
     public function destroy(ActivePersonnel $activePersonnel)
     {
         try {

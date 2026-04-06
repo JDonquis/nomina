@@ -110,6 +110,29 @@ class ActivePersonnelService
         });
     }
 
+    public function updatePhotos(ActivePersonnel $personnel, $photo = null, $idCardPhoto = null)
+    {
+        return DB::transaction(function () use ($personnel, $photo, $idCardPhoto) {
+            if ($photo) {
+                if ($personnel->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($personnel->photo)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($personnel->photo);
+                }
+                $personnel->photo = $photo->store('photos', 'public');
+            }
+
+            if ($idCardPhoto) {
+                if ($personnel->id_card_photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($personnel->id_card_photo)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($personnel->id_card_photo);
+                }
+                $personnel->id_card_photo = $idCardPhoto->store('id_cards', 'public');
+            }
+
+            $personnel->save();
+
+            return $personnel;
+        });
+    }
+
     public function destroy(ActivePersonnel $personnel)
     {
         return $personnel->delete();
