@@ -36,6 +36,7 @@ const ConfiguracionPage = lazy(
 );
 import UsuariosPage from "./pages/dashboard/UsuariosPage";
 import ActivateAccountPage from "./pages/ActivateAccountPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const PageLoader = () => (
   <div className="flex justify-center items-center h-screen bg-white">
@@ -115,6 +116,9 @@ function AppContent() {
 
             {/* Fallback route */}
           </Route>
+
+          {/* Catch-all 404 route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </FeedbackProvider>

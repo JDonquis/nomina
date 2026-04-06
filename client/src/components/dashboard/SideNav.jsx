@@ -61,8 +61,8 @@ export default function SideNav(props) {
   return (
     <nav
       className="flex w-full bg-color1 h-full flex-col px-3 pr-1 py-1 md:py-4 md:px-4"
-      onMouseEnter={() => props.handleSidebarToggle()}
-      onMouseLeave={() => props.handleSidebarToggle()}
+      onMouseEnter={() => props.onMouseEnter()}
+      onMouseLeave={() => props.onMouseLeave()}
     >
 
       <Link
@@ -117,14 +117,14 @@ export default function SideNav(props) {
           <button
             onClick={handleLogout}
             title="Cerrar sesión"
-            className=" flex text-white text-opacity-50 h-[48px] grow items-center justify-center gap-2 rounded-md  text-sm font-medium hover:bg-sky-100 hover:text-color3 md:flex-none md:justify-start md:p-2 md:px-1"
+            className=" flex text-white bg-gra text-opacity-50 h-[48px] grow items-center justify-center gap-2 rounded-md  text-sm font-medium hover:bg-sky-100 hover:text-color3 md:flex-none md:justify-start md:p-2 md:px-1"
           >
             <Icon icon="tabler:logout" width="24" height="24" />
             {props.isSidebarOpen ? (
               <span className="sr-only">Cerrar sesión</span>
             ) : null}
           </button>
-          <p className="text-xs text-left text-opacity-55 capitalize  text-white ">
+          <p className="hidden md:block text-xs text-left text-opacity-55 capitalize  text-white ">
             {props.isSidebarOpen ? user?.full_name : null}
           </p>
         </div>
