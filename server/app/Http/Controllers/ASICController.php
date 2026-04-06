@@ -16,7 +16,7 @@ class ASICController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $asics = $query->with('dependencies:id,name,asic_id')->get();
+        $asics = $query->with('dependencies:id,name,asic_id')->orderBy('name', 'asc')->get();
 
         return response()->json($asics);
     }
