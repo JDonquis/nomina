@@ -64,7 +64,7 @@ export default function DependencyRow({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-3  flex gap-1  hover:bg-color2/10 text-color2 rounded"
+          className="md:p-3  flex gap-1  hover:bg-color2/10 text-color2 rounded"
         >
           <Icon
             icon={isExpanded ? "mdi:chevron-down" : "mdi:chevron-right"}
@@ -79,7 +79,7 @@ export default function DependencyRow({
             name={`dependenceName_${dependency.id}`}
             value={dependency.name}
             disableOutline
-            className="!bg-transparent"
+            
             onChange={(e) => {
               const newValue = e.target.value;
               setFormData((prev) => {
@@ -99,7 +99,7 @@ export default function DependencyRow({
           />
         </div>
         
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
           <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded">
             {dependency.administrative_units?.length || 0} unidades
           </span>
@@ -137,7 +137,7 @@ export default function DependencyRow({
             />
           ))}
           
-          <div className="flex ml-14   items-center  mt-3  border-t border-gray-100 group/unit">
+          <div className="flex ml-3 md:ml-14   items-center  mt-3  border-t border-gray-100 group/unit">
             <span className="text-sm text-gray-400 w-6">
               {dependency.administrative_units?.length + 1 || 1}.
             </span>

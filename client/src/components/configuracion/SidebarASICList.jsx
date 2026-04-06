@@ -18,7 +18,7 @@ export default function SidebarASICList({
   };
 
   return (
-    <div className="w-72   bg-white border-r border-gray-200 h-full flex flex-col">
+    <div className="w-72   bg-white border-r border-gray-200 h-96 md:h-full flex flex-col">
       <div className="p-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800">ASICs</h2>
       </div>
@@ -35,12 +35,7 @@ export default function SidebarASICList({
             }`}
           >
             <div className="flex items-center gap-2">
-              <Icon
-                icon="mdi:database"
-                className={`text-lg ${
-                  selectedAsicId === asic.id ? "text-color1" : "text-gray-400"
-                }`}
-              />
+             
               <span
                 className={`text-sm font-medium ${
                   selectedAsicId === asic.id ? "text-color1" : "text-gray-700"

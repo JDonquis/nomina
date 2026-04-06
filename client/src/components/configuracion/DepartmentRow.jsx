@@ -53,12 +53,12 @@ export default function DepartmentRow({
   };
 
   return (
-    <div className="ml-6 border-l-2 border-gray-200  my-1">
+    <div className="md:ml-6 border-l-2 border-gray-200  my-1">
       <div className="flex bg-color4/45 items-center gap-1 group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-3 flex gap-1 hover:bg-color4/20 rounded"
+          className="md:p-3 flex gap-1 hover:bg-color4/20 rounded"
         >
           <Icon
             icon={isExpanded ? "mdi:chevron-down" : "mdi:chevron-right"}
@@ -123,7 +123,7 @@ export default function DepartmentRow({
       </div>
 
       {isExpanded && (
-        <div className="ml-6 mt-1">
+        <div className="md:ml-6 mt-1">
           {department.services?.map((service, sIndex) => (
             <ServiceRow
               key={service.id}

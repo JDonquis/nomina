@@ -81,7 +81,7 @@ export default function ASICDetailPanel({
 
 
   return (
-    <div className="flex-1 bg-white overflow-y-auto p-6">
+    <div className="flex-1 bg-white overflow-y-auto md:p-6 ">
       <div className=" mx-auto">
         <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between">

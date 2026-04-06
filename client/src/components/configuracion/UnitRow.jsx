@@ -57,12 +57,12 @@ export default function UnitRow({
   };
 
   return (
-    <div className="ml-6  border-l-2 border-gray-300  my-2">
+    <div className="md:ml-6  border-l-2 border-gray-300  my-2">
       <div className="flex bg-color3/15 rounded items-center  group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className=" p-3 flex gap-1 hover:bg-color3/20 rounded"
+          className=" md:p-3 flex gap-1 hover:bg-color3/20 rounded"
         >
           <Icon
             icon={isExpanded ? "mdi:chevron-down" : "mdi:chevron-right"}
@@ -137,7 +137,7 @@ export default function UnitRow({
             />
           ))}
           
-          <div className="flex ml-12 items-center  mt-2 group/dept">
+          <div className="flex md:ml-12 items-center  mt-2 group/dept">
             <span className="text-xs text-gray-400 w-5">
               {unit.departments?.length + 1 || 1}.
             </span>

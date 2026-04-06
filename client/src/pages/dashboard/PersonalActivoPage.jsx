@@ -792,7 +792,7 @@ export default function PersonalActivoPage() {
   }, []);
 
   const capitalizeWords = (str) => {
-    return str.replace(/\b\w/g, (char) => char.toUpperCase());
+    return str.replace(/(?:^|\s|-)[a-záéíóúñü]/gi, (match) => match.toUpperCase());
   };
 
   const handleFieldChange = useCallback((e, field) => {

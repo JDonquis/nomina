@@ -11,7 +11,9 @@ import debounce from "lodash.debounce";
 import { produce } from "immer";
 import { Icon } from "@iconify/react";
 
-const capitalize = (s) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+const toUpperCaseWords = (s) => {
+  return s.replace(/(?:^|\s|-)[a-záéíóúñü]/gi, (match) => match.toUpperCase());
+};
 
 import { useFeedback } from "../../context/FeedbackContext";
 import { FormField } from "../../components/forms";
@@ -73,7 +75,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     try {
-      await ASICAPI.createASIC({ name: capitalize(newAsicName.trim()) });
+      await ASICAPI.createASIC({ name: toUpperCaseWords(newAsicName.trim()) });
       showSuccess("ASIC creado exitosamente");
       getASIC();
       setNewAsicName("");
@@ -93,7 +95,7 @@ export default function ConfiguracionPage() {
     if (!selectedAsicId || !name.trim()) return;
 
     try {
-      await ASICAPI.updateASIC(selectedAsicId, { name: capitalize(name.trim()) });
+      await ASICAPI.updateASIC(selectedAsicId, { name: toUpperCaseWords(name.trim()) });
       getASIC();
     } catch (error) {
       console.error("Error updating ASIC:", error);
@@ -135,7 +137,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newDependence = {
-      name: capitalize(depName),
+      name: toUpperCaseWords(depName),
       asic_id: selectedAsicId,
     };
 
@@ -189,7 +191,7 @@ export default function ConfiguracionPage() {
   const updateDependency = useCallback(
     async (id, updatedData) => {
       try {
-        await dependenciesAPI.updateDependency(id, { ...updatedData, name: capitalize(updatedData.name) });
+        await dependenciesAPI.updateDependency(id, { ...updatedData, name: toUpperCaseWords(updatedData.name) });
       } catch (error) {
         console.error("Error updating dependency:", error);
         const errorMessage =
@@ -214,7 +216,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newUnit = {
-      name: capitalize(unitName),
+      name: toUpperCaseWords(unitName),
       dependency_id: dependenceId,
     };
 
@@ -277,7 +279,7 @@ export default function ConfiguracionPage() {
   const updateAdministrativeUnit = useCallback(
     async (id, updatedData) => {
       try {
-        await administrativeUnitsAPI.updateUnit(id, { ...updatedData, name: capitalize(updatedData.name) });
+        await administrativeUnitsAPI.updateUnit(id, { ...updatedData, name: toUpperCaseWords(updatedData.name) });
       } catch (error) {
         console.error("Error updating administrative unit:", error);
         const errorMessage =
@@ -302,7 +304,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newDepartment = {
-      name: capitalize(departmentName),
+      name: toUpperCaseWords(departmentName),
       administrative_unit_id: unitId,
     };
     try {
@@ -311,7 +313,7 @@ export default function ConfiguracionPage() {
       if (repeat) {
         try {
           const serviceResponse = await servicesAPI.createService({
-            name: capitalize(departmentName),
+            name: toUpperCaseWords(departmentName),
             department_id: response.id,
           });
 
@@ -372,7 +374,7 @@ export default function ConfiguracionPage() {
   const updateDepartment = useCallback(
     async (id, updatedData) => {
       try {
-        await departmentAPI.updateDepartment(id, { ...updatedData, name: capitalize(updatedData.name) });
+        await departmentAPI.updateDepartment(id, { ...updatedData, name: toUpperCaseWords(updatedData.name) });
       } catch (error) {
         console.error("Error updating department:", error);
         const errorMessage =
@@ -427,7 +429,7 @@ export default function ConfiguracionPage() {
 
     setIsLoadingForm(true);
     const newService = {
-      name: capitalize(serviceName),
+      name: toUpperCaseWords(serviceName),
       department_id: departmentId,
     };
     try {
@@ -457,7 +459,7 @@ export default function ConfiguracionPage() {
   const updateService = useCallback(
     async (id, updatedData) => {
       try {
-        await servicesAPI.updateService(id, { ...updatedData, name: capitalize(updatedData.name) });
+        await servicesAPI.updateService(id, { ...updatedData, name: toUpperCaseWords(updatedData.name) });
       } catch (error) {
         console.error("Error updating service:", error);
         const errorMessage =
@@ -527,7 +529,7 @@ export default function ConfiguracionPage() {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="md:flex h-full">
       <SidebarASICList
         asics={asicData}
         selectedAsicId={selectedAsicId}
