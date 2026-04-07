@@ -22,7 +22,7 @@ import Modal from "../../components/Modal.jsx";
 import FuturisticButton from "../../components/FuturisticButton.jsx";
 import FormField from "../../components/forms/FormField.jsx";
 import PlanillaPersonalActivo from "../../components/PlanillaPersonalActivo.jsx";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Switch } from "@mui/material";
 import { useFeedback } from "../../context/FeedbackContext.jsx";
 import { MaterialReactTable } from "material-react-table";
 import debounce from "lodash.debounce";
@@ -46,6 +46,7 @@ const defaultFormData = {
   pant_size: "",
   shoe_size: "",
   photo: "",
+  status: false,
   payroll_dependency: "",
   asic_id: "",
   dependency_id: "",
@@ -59,7 +60,6 @@ const defaultFormData = {
   is_resident: false,
   level: "",
   university: "",
-  position_code: "",
   shift: "",
   bank_account_number: "",
   job_code: "",
@@ -68,13 +68,12 @@ const defaultFormData = {
   budget: "",
   labor_relationship: "",
   grade: "",
-  ivss_number: "",
   residency_type: "",
   fotoChanged: false,
 };
 
 const residencyTypeOptions = [
-  { value: "Universitario", label: "Universitario" },
+  { value: "Postgrado Universitario", label: "Postgrado Universitario" },
   { value: "RAPCE", label: "RAPCE" },
   { value: "Asistencial", label: "Asistencial" },
 ];
@@ -90,6 +89,31 @@ const levelOptionsRAPCE = [
   { value: "R3", label: "R3" },
   { value: "R4", label: "R4" },
   { value: "R5", label: "R5" },
+];
+
+const shiftOptions = [
+  {value: "7/1" , label: "7/1"},
+  {value: "1/7" , label: "1/7"},
+  {value: "7/7" , label: "7/7"},
+];
+
+const typePersonnelOptions = [
+  { value: "Médico", label: "Médico" },
+  { value: "Enfermero", label: "Enfermero" },
+  { value: "Administrativo", label: "Administrativo" },
+  { value: "Obrero", label: "Obrero" },
+];
+
+const budgetOptions = [
+  { value: "MPPS - Falcón", label: "MPPS - Falcón" },
+  { value: "MPPS - Cc", label: "MPPS - Cc" },
+  { value: "Gobernación", label: "Gobernación" },
+];
+
+
+const laborRelationshipOptions = [
+  { value: "Fijo", label: "Fijo" },
+  { value: "Contratado", label: "Contratado" },
 ];
 
 const defaultFamilyMember = {
@@ -144,6 +168,7 @@ export default function PersonalActivoPage() {
   const [dependencyOptions, setDependencyOptions] = useState([]);
   const [unitOptions, setUnitOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [censusStatus, setCensusStatus] = useState(true);
   const [serviceOptions, setServiceOptions] = useState([]);
   const [typePaySheets, setTypePaySheets] = useState([]);
 
@@ -451,7 +476,7 @@ export default function PersonalActivoPage() {
         label: "Foto",
         type: "file",
         required: false,
-        className: "col-span-12 md:col-span-4",
+        className: "col-span-12 row-span-2 md:col-span-3",
       },
       {
         name: "nac",
@@ -475,7 +500,7 @@ export default function PersonalActivoPage() {
         label: "Nombre Completo",
         type: "text",
         required: true,
-        className: "col-span-12",
+        className: "col-span-6",
         onBlur: handleFullNameBlur,
       },
       {
@@ -483,7 +508,7 @@ export default function PersonalActivoPage() {
         label: "Fecha de Nacimiento",
         type: "date",
         required: true,
-        className: "col-span-12 md:col-span-4",
+        className: "col-span-12 md:col-span-3",
       },
       {
         name: "sex",
@@ -493,7 +518,7 @@ export default function PersonalActivoPage() {
           { value: "M", label: "Masculino" },
           { value: "F", label: "Femenino" },
         ],
-        className: "col-span-6 md:col-span-4",
+        className: "col-span-6 md:col-span-3",
       },
       {
         name: "civil_status",
@@ -505,21 +530,21 @@ export default function PersonalActivoPage() {
           { value: "V", label: "Viudo" },
           { value: "D", label: "Divorciado" },
         ],
-        className: "col-span-6 md:col-span-4",
+        className: "col-span-6 md:col-span-3",
       },
       {
         name: "degree_obtained",
         label: "Grado Obtenido",
         type: "text",
         required: false,
-        className: "col-span-12 md:col-span-6",
+        className: "col-span-12 md:col-span-4",
       },
       {
         name: "postgraduate_degree",
         label: "Postgrado",
         type: "text",
         required: false,
-        className: "col-span-12 md:col-span-6",
+        className: "col-span-12 md:col-span-5",
       },
       {
         name: "home_address",
@@ -551,21 +576,21 @@ export default function PersonalActivoPage() {
       },
       {
         name: "shirt_size",
-        label: "Talla de Camisa",
+        label: "Camisa",
         type: "text",
         required: false,
         className: "col-span-12 md:col-span-2",
       },
       {
         name: "pant_size",
-        label: "Talla de Pantalón",
+        label: "Pantalón",
         type: "text",
         required: false,
         className: "col-span-12 md:col-span-2",
       },
       {
         name: "shoe_size",
-        label: "Talla de Zapatos",
+        label: "Zapatos",
         type: "text",
         required: false,
         className: "col-span-12 md:col-span-2",
@@ -671,8 +696,8 @@ export default function PersonalActivoPage() {
           setFormData((prev) => ({
             ...prev,
             residency_type: val,
-            university: val === "Universitario" ? prev.university : "",
-            level: val === "Universitario" || val === "RAPCE" ? prev.level : "",
+            university: val === "Postgrado Universitario" ? prev.university : "",
+            level: val === "Postgrado Universitario" || val === "RAPCE" ? prev.level : "",
           }));
         },
       },
@@ -682,8 +707,8 @@ export default function PersonalActivoPage() {
         type: "select",
         options: universityOptionsList,
         required:
-          formData.is_resident && formData.residency_type === "Universitario",
-        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && formData.residency_type === "Universitario") ? "hidden" : ""}`,
+          formData.is_resident && formData.residency_type === "Postgrado Universitario",
+        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && formData.residency_type === "Postgrado Universitario") ? "hidden" : ""}`,
       },
       {
         name: "level",
@@ -692,17 +717,11 @@ export default function PersonalActivoPage() {
         options: levelOptionsRAPCE,
         required:
           formData.is_resident &&
-          (formData.residency_type === "Universitario" ||
+          (formData.residency_type === "Postgrado Universitario" ||
             formData.residency_type === "RAPCE"),
-        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && (formData.residency_type === "Universitario" || formData.residency_type === "RAPCE")) ? "hidden" : ""}`,
+        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && (formData.residency_type === "Postgrado Universitario" || formData.residency_type === "RAPCE")) ? "hidden" : ""}`,
       },
-      {
-        name: "position_code",
-        label: "Código de Posición",
-        type: "text",
-        required: false,
-        className: "col-span-12 md:col-span-4",
-      },
+   
       {
         name: "job_code",
         label: "Código del Cargo",
@@ -713,7 +732,8 @@ export default function PersonalActivoPage() {
       {
         name: "shift",
         label: "Turno",
-        type: "text",
+        type: "select",
+        options: shiftOptions,
         required: false,
         className: "col-span-12 md:col-span-4",
       },
@@ -727,21 +747,25 @@ export default function PersonalActivoPage() {
       {
         name: "personnel_type",
         label: "Tipo de Personal",
-        type: "text",
+        type: "select",
+        options: typePersonnelOptions,
+
         required: false,
         className: "col-span-12 md:col-span-6",
       },
       {
         name: "budget",
         label: "Presupuesto",
-        type: "text",
+        type: "select",
+        options: budgetOptions,
         required: false,
         className: "col-span-12 md:col-span-4",
       },
       {
         name: "labor_relationship",
         label: "Relación Laboral",
-        type: "text",
+        type: "select",
+        options: laborRelationshipOptions,
         required: false,
         className: "col-span-12 md:col-span-4",
       },
@@ -752,13 +776,7 @@ export default function PersonalActivoPage() {
         required: false,
         className: "col-span-12 md:col-span-4",
       },
-      {
-        name: "ivss_number",
-        label: "Número IVSS",
-        type: "text",
-        required: false,
-        className: "col-span-12 md:col-span-6",
-      },
+   
       {
         name: "observation",
         label: "Observaciones",
@@ -822,77 +840,33 @@ export default function PersonalActivoPage() {
     setLoading(true);
 
     try {
-      const submitData = new FormData();
-      const fieldsToSkip = [
-        "asic",
-        "dependency",
-        "administrativeUnit",
-        "department",
-        "service",
-        "familyMembers",
-        "censuses",
-        "user",
-        "created_at",
-        "updated_at",
-        "fotoChanged",
-        "latest_census_id",
-      ];
+      const submitData = {
+        ...formData,
+        family_members: familyMembers,
+        to_census: censusStatus,
+      };
 
-      Object.keys(formData).forEach((key) => {
-        const value = formData[key];
+      // Upload photo separately if changed
+      if (formData.fotoChanged && formData.photo instanceof File) {
+        const photoData = new FormData();
+        photoData.append("photo", formData.photo);
 
-        if (fieldsToSkip.includes(key)) return;
-
-        if (
-          key === "photo" &&
-          submitString === "Actualizar" &&
-          !formData.fotoChanged
-        )
-          return;
-
-        if (value instanceof File) {
-          submitData.append(key, value);
-        } else if (typeof value === "boolean") {
-          submitData.append(key, value ? "1" : "0");
-        } else if (
-          value !== null &&
-          value !== undefined &&
-          value !== "" &&
-          typeof value !== "object"
-        ) {
-          submitData.append(key, value);
+        if (submitString === "Actualizar") {
+          await activePersonnelAPI.updatePersonnelPhoto(editingId, photoData);
         }
-      });
-
-      familyMembers.forEach((member, index) => {
-        submitData.append(`family_members[${index}][ci]`, member.ci);
-        submitData.append(
-          `family_members[${index}][full_name]`,
-          member.full_name,
-        );
-        submitData.append(
-          `family_members[${index}][date_birth]`,
-          member.date_birth,
-        );
-        submitData.append(`family_members[${index}][sex]`, member.sex);
-        submitData.append(
-          `family_members[${index}][relationship]`,
-          member.relationship,
-        );
-        submitData.append(
-          `family_members[${index}][study_level]`,
-          member.study_level,
-        );
-        submitData.append(
-          `family_members[${index}][current_grade]`,
-          member.current_grade,
-        );
-      });
+      }
 
       if (submitString === "Actualizar") {
         await activePersonnelAPI.updatePersonnel(editingId, submitData);
       } else {
-        await activePersonnelAPI.createPersonnel(submitData);
+        // createPersonnel uses multipart/form-data (for photo),
+        // so booleans must be sent as "1"/"0"
+        await activePersonnelAPI.createPersonnel({
+          ...submitData,
+          to_census: censusStatus ? "1" : "0",
+          is_resident: formData.is_resident ? "1" : "0",
+          status: formData.status ? "1" : "0",
+        });
       }
 
       showSuccess(
@@ -1188,7 +1162,7 @@ export default function PersonalActivoPage() {
     setShowOptions,
     inputRef,
   ) => (
-    <div className="col-span-12 md:col-span-4 flex flex-col items-center">
+    <div className="col-span-12 md:col-span-3 flex flex-col items-center">
       <label className="text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div ref={optionsRef} className="relative">
         <div
@@ -1321,6 +1295,7 @@ export default function PersonalActivoPage() {
                 setDepartmentOptions([]);
                 setServiceOptions([]);
                 setFamilyMembers([]);
+                setCensusStatus(true);
                 setIsModalOpen(true);
               }}
             >
@@ -1335,6 +1310,7 @@ export default function PersonalActivoPage() {
             setIsModalOpen(false);
             setFormData(structuredClone(defaultFormData));
             setFamilyMembers([]);
+            setCensusStatus(true);
             setSubmitString("Registrar");
             setEditingId(null);
           }}
@@ -1346,7 +1322,12 @@ export default function PersonalActivoPage() {
           size="xl"
         >
           <form className="px-3 md:px-6 space-y-4" onSubmit={onSubmit}>
-            <div className="md:grid space-y-3 md:grid-cols-12 gap-4">
+            <div className="section-datos-personales md:grid space-y-3 md:grid-cols-12 gap-4">
+              <div className="col-span-12">
+                <div className="text-sm font-bold text-gray-700 pb-1 border-b border-gray-300">
+                  Datos personales
+                </div>
+              </div>
               {renderPhotoField(
                 "photo",
                 "Foto",
@@ -1357,7 +1338,32 @@ export default function PersonalActivoPage() {
               )}
 
               {formFields
-                .filter((f) => f.name !== "photo")
+                .filter(
+                  (f) =>
+                    f.name !== "photo" &&
+                    f.name !== "asic_id" &&
+                    f.name !== "dependency_id" &&
+                    f.name !== "administrative_unit_id" &&
+                    f.name !== "department_id" &&
+                    f.name !== "service_id" &&
+                    f.name !== "payroll_dependency" &&
+                    f.name !== "payroll_code" &&
+                    f.name !== "payroll_name" &&
+                    f.name !== "entry_date" &&
+                    f.name !== "job_title" &&
+                    f.name !== "is_resident" &&
+                    f.name !== "residency_type" &&
+                    f.name !== "university" &&
+                    f.name !== "level" &&
+                    f.name !== "job_code" &&
+                    f.name !== "shift" &&
+                    f.name !== "bank_account_number" &&
+                    f.name !== "personnel_type" &&
+                    f.name !== "budget" &&
+                    f.name !== "labor_relationship" &&
+                    f.name !== "grade" &&
+                    f.name !== "observation",
+                )
                 .map((field) => (
                   <FormField
                     key={field.name}
@@ -1368,49 +1374,123 @@ export default function PersonalActivoPage() {
                 ))}
             </div>
 
-            <div className="border-t pt-4 mt-4">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-semibold text-gray-700">Familiares</h3>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFamilyMembers([
-                      ...familyMembers,
-                      { ...defaultFamilyMember },
-                    ])
-                  }
-                  className="px-3 py-1.5 bg-color2 text-white text-sm rounded-md hover:bg-color3 flex items-center gap-1"
-                >
-                  <Icon icon="tabler:plus" width={16} height={16} />
-                  Agregar Familiar
-                </button>
-              </div>
+            <>
+              <div className="border-t pt-3 mt-2">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="text-sm font-bold text-gray-700 pb-1 border-b border-gray-300">
+                    Datos administrativos
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text text-gray-600">Censar al guardar</span>
+                    <Switch
+                      checked={censusStatus}
+                      onChange={(e) => setCensusStatus(e.target.checked)}
+                      size="small"
+                    />
+                  </div>
+                </div>
 
-              {familyMembers.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-4 bg-gray-50 rounded-md">
-                  No hay familiares agregados
-                </p>
-              ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {familyMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-50 p-3 rounded-md border"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-sm text-gray-600">
-                          Familiar #{index + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFamilyMembers(
-                              familyMembers.filter((_, i) => i !== index),
-                            )
-                          }
-                          className="text-red-500 hover:text-red-700 p-1"
-                          title="Eliminar"
-                        >
+                {censusStatus && (
+                  <div className="space-y-4">
+                    <div className="md:grid space-y-3 md:grid-cols-12 gap-4">
+                    {formFields
+                      .filter(
+                        (f) =>
+                          f.name === "asic_id" ||
+                          f.name === "dependency_id" ||
+                          f.name === "administrative_unit_id" ||
+                          f.name === "department_id" ||
+                          f.name === "service_id",
+                      )
+                      .map((field) => (
+                        <FormField
+                          key={field.name}
+                          {...field}
+                          value={formData[field.name] ?? ""}
+                          onChange={(e) => handleFieldChange(e, field)}
+                        />
+                      ))}
+                  </div>
+
+                  <div className="md:grid space-y-3 md:grid-cols-12 gap-4 mt-4">
+                    {formFields
+                      .filter(
+                        (f) =>
+                          f.name === "payroll_dependency" ||
+                          f.name === "payroll_code" ||
+                          f.name === "payroll_name" ||
+                          f.name === "entry_date" ||
+                          f.name === "job_title" ||
+                          f.name === "is_resident" ||
+                          f.name === "residency_type" ||
+                          f.name === "university" ||
+                          f.name === "level" ||
+                          f.name === "job_code" ||
+                          f.name === "shift" ||
+                          f.name === "bank_account_number" ||
+                          f.name === "personnel_type" ||
+                          f.name === "budget" ||
+                          f.name === "labor_relationship" ||
+                          f.name === "grade" ||
+                          f.name === "observation",
+                      )
+                      .map((field) => (
+                        <FormField
+                          key={field.name}
+                          {...field}
+                          value={formData[field.name] ?? ""}
+                          onChange={(e) => handleFieldChange(e, field)}
+                        />
+                      ))}
+                  </div>
+
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-semibold text-gray-700">
+                        Carga Familiar
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFamilyMembers([
+                            ...familyMembers,
+                            { ...defaultFamilyMember },
+                          ])
+                        }
+                        className="px-3 py-1.5 bg-color2 text-white text-sm rounded-md hover:bg-color3 flex items-center gap-1"
+                      >
+                        <Icon icon="tabler:plus" width={16} height={16} />
+                        Agregar Familiar
+                      </button>
+                    </div>
+
+                    {familyMembers.length === 0 ? (
+                      <p className="text-gray-500 text-sm text-center py-4 bg-gray-50 rounded-md">
+                        No hay familiares agregados
+                      </p>
+                    ) : (
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {familyMembers.map((member, index) => (
+                          <div
+                            key={index}
+                            className="bg-gray-50 p-3 rounded-md border"
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium text-sm text-gray-600">
+                                Familiar #{index + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setFamilyMembers(
+                                    familyMembers.filter(
+                                      (_, i) => i !== index,
+                                    ),
+                                  )
+                                }
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Eliminar"
+                              >
                           <Icon icon="tabler:trash" width={18} height={18} />
                         </button>
                       </div>
@@ -1508,8 +1588,7 @@ export default function PersonalActivoPage() {
                           value={member.current_grade}
                           onChange={(e) => {
                             const updated = [...familyMembers];
-                            updated[index].current_grade =
-                              e.target.value.toUpperCase();
+                            updated[index].current_grade = e.target.value.toUpperCase();
                             setFamilyMembers(updated);
                           }}
                           placeholder="Ej: 4TO GRADO"
@@ -1519,25 +1598,29 @@ export default function PersonalActivoPage() {
                       </div>
                     </div>
                   ))}
+                  </div>
+                )}
                 </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
 
-            <div className="flex justify-end pt-4 border-t mt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className={`px-12 py-3 rounded-md font-semibold ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                } ${
-                  submitString === "Actualizar"
-                    ? "bg-color4 text-color1 hover:bg-color3"
-                    : "bg-color1 text-color4 hover:bg-color3"
-                }`}
-              >
-                {loading ? <CircularProgress size={20} /> : submitString}
-              </button>
-            </div>
+              <div className="flex justify-end pt-4 border-t mt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`px-12 py-3 rounded-md font-semibold ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  } ${
+                    submitString === "Actualizar"
+                      ? "bg-color4 text-color1 hover:bg-color3"
+                      : "bg-color1 text-color4 hover:bg-color3"
+                  }`}
+                >
+                  {loading ? <CircularProgress size={20} /> : submitString}
+                </button>
+              </div>
+            </>
           </form>
         </Modal>
 

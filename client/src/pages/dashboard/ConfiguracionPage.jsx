@@ -509,7 +509,7 @@ export default function ConfiguracionPage() {
 
   const selectedAsic = asicData.find((a) => a.id === selectedAsicId);
 
-  const handlers = {
+  const handlers = React.useMemo(() => ({
     asicId: selectedAsicId,
     asicName: formData.asicName,
     onUpdateAsic: updateAsic,
@@ -526,7 +526,24 @@ export default function ConfiguracionPage() {
     onCreateService: createService,
     onUpdateService: debouncedUpdateService,
     onDeleteService: deleteService,
-  };
+  }), [
+    selectedAsicId,
+    formData.asicName,
+    updateAsic,
+    deleteAsic,
+    addNewDependency,
+    debouncedUpdateDependency,
+    deleteDependency,
+    createAdministrativeUnit,
+    debouncedUpdateUnit,
+    deleteAdministrativeUnit,
+    createDepartment,
+    debouncedUpdateDepartment,
+    deleteDepartment,
+    createService,
+    debouncedUpdateService,
+    deleteService,
+  ]);
 
   return (
     <div className="md:flex h-full">

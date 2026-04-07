@@ -574,89 +574,36 @@ export default function FeDeVidaPage() {
     setLoading(true);
 
     try {
-      // Crear FormData para enviar archivos
-      const submitData = new FormData();
+      // Upload photo separately if changed
+      if (formData.fotoChanged && formData.photo instanceof File) {
+        const photoData = new FormData();
+        photoData.append("photo", formData.photo);
 
-      // Lista de campos que NO deben enviarse (son relaciones o campos internos)
-      const fieldsToSkip = [
-        "type_pay_sheet", // Relación, ya tienes type_pay_sheet_id
-        "administrative_location", // Relación, ya tienes administrative_location_id
-        "latestCensus", // Relación
-        "created_at", // Timestamp automático
-        "updated_at", // Timestamp automático
-        "fotoChanged", // Campo interno de React
-      ];
-
-      // Agregar todos los campos del formulario
-      Object.keys(formData).forEach((key) => {
-        const value = formData[key];
-
-        // Skip campos innecesarios
-        if (fieldsToSkip.includes(key)) {
-          return;
+        if (submitString === "Actualizar") {
+          await payrollAPI.updatePhoto(formData.id, photoData);
         }
-
-        // No enviar photo si no cambió
-        if (
-          key === "photo" &&
-          submitString === "Actualizar" &&
-          !formData.fotoChanged
-        ) {
-          return; // Skip this field
-        }
-
-        // Solo agregar archivos
-        if (value instanceof File) {
-          submitData.append(key, value);
-        }
-        // Para booleanos, convertir a 0 o 1
-        else if (typeof value === "boolean") {
-          submitData.append(key, value ? "1" : "0");
-        }
-        // NO enviar objetos ni arrays (solo valores primitivos)
-        else if (
-          value !== null &&
-          value !== undefined &&
-          value !== "" &&
-          typeof value !== "object" // Esto excluye objetos y arrays
-        ) {
-          submitData.append(key, value);
-        }
-        // DEBUG: Ver qué se está saltando
-      });
-
-      if (
-        formData.photo &&
-        submitString === "Actualizar" &&
-        formData.fotoChanged
-      ) {
-        await payrollAPI.updatePhoto(formData.id, submitData);
-
-        // Eliminar el campo photo para evitar confusión en la siguiente petición
-        submitData.delete("photo");
       }
-      // Prepare both requestsF
-      const internalRequest =
-        submitString === "Actualizar"
-          ? payrollAPI.updateWorker(formData.id, submitData)
-          : payrollAPI.createWorker(submitData);
 
-      await internalRequest;
-
-      // Handle success
       if (submitString === "Actualizar") {
+        await payrollAPI.updateWorker(formData.id, formData);
         setSubmitString("Registrar");
+      } else {
+        // createWorker uses multipart/form-data (for photo on create),
+        // so booleans must be sent as "1"/"0"
+        await payrollAPI.createWorker({
+          ...formData,
+          to_census: formData.to_census ? "1" : "0",
+        });
       }
 
       showSuccess("Operación completada con éxito");
       setFormData(structuredClone(defaultFormData));
       setIsModalOpen(false);
-      setIsFormInitialized(false); // ← Desactivar guardado
+      setIsFormInitialized(false);
       fetchData();
-      localStorage.removeItem("formData"); // ← Limpiar
+      localStorage.removeItem("formData");
       localStorage.removeItem("submitString");
     } catch (error) {
-      // This will only catch errors from the internal API
       const errorMessage =
         error.response?.data?.message ||
         error.message ||

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { FormField } from "../../components/forms";
 import UnitRow from "./UnitRow";
+import debounce from "lodash.debounce";
 
-export default function DependencyRow({
+const DependencyRow = React.memo(function DependencyRow({
   dependency,
   index,
   asicId,
@@ -23,8 +24,28 @@ export default function DependencyRow({
   isLoading,
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [localName, setLocalName] = useState(dependency.name);
   const newUnitKey = `newUnitName_${dependency.id}`;
   const newUnitName = formData[newUnitKey] || "";
+
+  useEffect(() => {
+    setLocalName(dependency.name);
+  }, [dependency.name]);
+
+  const debouncedSetFormData = useCallback(
+    debounce((newValue) => {
+      setFormData((prev) => {
+        const updated = { ...prev };
+        const depIndex = updated.dependencies?.findIndex((d) => d.id === dependency.id);
+        if (depIndex !== -1 && updated.dependencies) {
+          updated.dependencies = [...updated.dependencies];
+          updated.dependencies[depIndex] = { ...updated.dependencies[depIndex], name: newValue };
+        }
+        return updated;
+      });
+    }, 500),
+    [dependency.id, setFormData]
+  );
 
   const handleCreateUnit = () => {
     if (newUnitName.trim()) {
@@ -44,6 +65,16 @@ export default function DependencyRow({
       ...prev,
       [newUnitKey]: e.target.value,
     }));
+  };
+
+  const handleNameChange = (e) => {
+    const newValue = e.target.value;
+    setLocalName(newValue);
+    debouncedSetFormData(newValue);
+    onUpdateDependency(dependency.id, {
+      name: newValue,
+      asic_id: asicId,
+    });
   };
 
   const handleOnFocus = (e) => {
@@ -77,25 +108,9 @@ export default function DependencyRow({
         <div className="flex-1 ">
           <FormField
             name={`dependenceName_${dependency.id}`}
-            value={dependency.name}
+            value={localName}
             disableOutline
-            
-            onChange={(e) => {
-              const newValue = e.target.value;
-              setFormData((prev) => {
-                const updated = { ...prev };
-                const depIndex = updated.dependencies?.findIndex((d) => d.id === dependency.id);
-                if (depIndex !== -1 && updated.dependencies) {
-                  updated.dependencies = [...updated.dependencies];
-                  updated.dependencies[depIndex] = { ...updated.dependencies[depIndex], name: newValue };
-                }
-                return updated;
-              });
-              onUpdateDependency(dependency.id, {
-                name: newValue,
-                asic_id: asicId,
-              });
-            }}
+            onChange={handleNameChange}
           />
         </div>
         
@@ -168,4 +183,6 @@ export default function DependencyRow({
       )}
     </div>
   );
-}
+});
+
+export default DependencyRow;
