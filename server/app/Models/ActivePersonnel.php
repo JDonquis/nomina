@@ -56,7 +56,6 @@ class ActivePersonnel extends Model
         'budget',
         'labor_relationship',
         'grade',
-        'ivss_number',
         'user_id',
         'latest_census_id',
         'status'
