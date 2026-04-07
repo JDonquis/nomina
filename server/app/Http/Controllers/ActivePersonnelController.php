@@ -18,6 +18,46 @@ class ActivePersonnelController extends Controller
         $this->activePersonnelService = new ActivePersonnelService;
     }
 
+    public function downloadTemplate()
+    {
+        return $this->activePersonnelService->downloadTemplate();
+    }
+
+    public function importExcel(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $result = $this->activePersonnelService->importExcel($request);
+
+            DB::commit();
+
+            $response = [
+                'message' => 'Personal importado exitosamente',
+                'inserted_count' => $result['inserted']
+            ];
+
+            if (!empty($result['errors'])) {
+                $response['errors'] = $result['errors'];
+                $response['error_count'] = count($result['errors']);
+                $response['message'] = 'Importación completada con algunos errores';
+            }
+
+            return response()->json($response);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error al importar personal activo: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al importar el personal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function index(Request $request)
     {
         $personnels = $this->activePersonnelService->get($request->all());
@@ -72,6 +112,11 @@ class ActivePersonnelController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            Log::info('Iniciando actualización de personal activo', [
+                'active_personnel_id' => $activePersonnel->id,
+                'request_data' => $request->all()
+            ]);
 
             $register = $this->activePersonnelService->update($request->all(), $activePersonnel);
 

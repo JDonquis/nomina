@@ -38,8 +38,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
-    Route::resource('active-personnel', ActivePersonnelController::class)->except(['edit', 'create']);
+    
+    // Rutas específicas antes del recurso para evitar conflictos con IDs
+    Route::get('active-personnel/download-template', [ActivePersonnelController::class, 'downloadTemplate']);
+    Route::post('active-personnel/import-excel', [ActivePersonnelController::class, 'importExcel']);
     Route::post('active-personnel/photos/{activePersonnel}', [ActivePersonnelController::class, 'updatePhotos']);
+    
+    Route::resource('active-personnel', ActivePersonnelController::class)->except(['edit', 'create']);
+
     Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
     Route::post('pay-sheets/photo/{paySheet}', [PaySheetController::class, 'updatePhoto']);
     Route::get('pay-sheets/generate/report', [PaySheetController::class, 'report']);
