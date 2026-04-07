@@ -208,7 +208,7 @@ class ActivePersonnelService
         }
 
         $perPage = $params['per_page'] ?? 15;
-        return $query->paginate($perPage);
+        return $query->orderBy('id', 'desc')->paginate($perPage);
     }
 
     public function store($data, $photo = null, $idCardPhoto = null)
