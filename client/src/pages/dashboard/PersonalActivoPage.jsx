@@ -476,11 +476,11 @@ export default function PersonalActivoPage() {
         label: "Foto",
         type: "file",
         required: false,
-        className: "col-span-12 row-span-2 md:col-span-3",
+        className: "col-span-12 row-span-2 md:col-span-2",
       },
       {
         name: "nac",
-        label: "Nacionalidad",
+        label: "Nac",
         type: "select",
         options: [
           { value: "V", label: "V" },
@@ -493,14 +493,14 @@ export default function PersonalActivoPage() {
         label: "Cédula de Identidad",
         type: "number",
         required: true,
-        className: "col-span-6 md:col-span-4",
+        className: "col-span-4 md:col-span-3",
       },
       {
         name: "full_name",
         label: "Nombre Completo",
         type: "text",
         required: true,
-        className: "col-span-6",
+        className: "col-span-5",
         onBlur: handleFullNameBlur,
       },
       {
@@ -1162,8 +1162,7 @@ export default function PersonalActivoPage() {
     setShowOptions,
     inputRef,
   ) => (
-    <div className="col-span-12 md:col-span-3 flex flex-col items-center">
-      <label className="text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="col-span-12 md:col-span-2 md:row-span-2 flex flex-col items-center">
       <div ref={optionsRef} className="relative">
         <div
           onClick={() => setShowOptions(!showOptions)}
@@ -1322,9 +1321,9 @@ export default function PersonalActivoPage() {
           size="xl"
         >
           <form className="px-3 md:px-6 space-y-4" onSubmit={onSubmit}>
-            <div className="section-datos-personales md:grid space-y-3 md:grid-cols-12 gap-4">
+            <div className="section-datos-personales md:grid space-y-3 md:grid-cols-12 gap-4 mb-10">
               <div className="col-span-12">
-                <div className="text-sm font-bold text-gray-700 pb-1 border-b border-gray-300">
+                <div className="text-sm font-bold text-gray-700 pb-1">
                   Datos personales
                 </div>
               </div>
@@ -1375,9 +1374,9 @@ export default function PersonalActivoPage() {
             </div>
 
             <>
-              <div className="border-t pt-3 mt-2">
+              <div className="border-t pt-3 mt-5">
                 <div className="flex justify-between items-center mb-3">
-                  <div className="text-sm font-bold text-gray-700 pb-1 border-b border-gray-300">
+                  <div className="text-sm font-bold text-gray-700 pb-1">
                     Datos administrativos
                   </div>
                   <div className="flex items-center gap-2">
@@ -1518,7 +1517,7 @@ export default function PersonalActivoPage() {
                             updated[index].full_name = e.target.value;
                             setFamilyMembers(updated);
                           }}
-                          className="col-span-5"
+                          className="col-span-4"
                           sx={{ "& input": { textTransform: "uppercase" } }}
                         />
                         <FormField
