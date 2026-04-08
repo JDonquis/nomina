@@ -123,6 +123,8 @@ export const censusAPI = {
   getCensus: (params) => api.get("/admin/censuses", { params }),
   createCensus: (censusData) => api.post("/admin/censuses", censusData),
   deleteCensus: (id) => api.delete(`/admin/censuses/${id}`),
+  exportCensus: () => api.get("/admin/censuses/export"),
+  importCensus: (data) => api.post("/admin/censuses/import", data),
 };
 
 export const activitiesAPI = {

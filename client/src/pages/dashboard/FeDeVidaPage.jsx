@@ -646,6 +646,54 @@ export default function FeDeVidaPage() {
     }
   };
 
+  const exportData = async () => {
+    try {
+      setLoading(true);
+      const data = await censusAPI.exportCensus();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `censos_export_${new Date().toISOString().split("T")[0]}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      showSuccess("Datos exportados exitosamente");
+    } catch (error) {
+      showError("Error al exportar datos: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const importData = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        setLoading(true);
+        const jsonData = JSON.parse(e.target.result);
+        const response = await censusAPI.importCensus(jsonData);
+        showSuccess(
+          `Importación exitosa: ${response.result.censuses_imported} censos y ${response.result.users_imported} usuarios procesados.`,
+        );
+        fetchData();
+        setIsOptionsModalOpen(false);
+      } catch (error) {
+        showError("Error al importar datos: " + (error.response?.data?.message || error.message));
+      } finally {
+        setLoading(false);
+        // Clear input
+        event.target.value = "";
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const getHistory = async (id) => {
     try {
       const res = await payrollAPI.getHistory(id);
@@ -1596,12 +1644,18 @@ export default function FeDeVidaPage() {
               <span>Generar Reporte de Censados por ASIC </span>
               <Icon icon="tabler:pdf" width={24} height={24} />
             </button>
-            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={exportData}
+            >
               <Icon icon="material-symbols:download" width={24} height={24} />
               <span>Exportar Datos</span>
               <Icon icon="tabler:json" width={24} height={24} />
             </button>
-            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+            <label
+              htmlFor="importJSON"
+              className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            >
               <Icon
                 icon="streamline-ultimate:common-file-text-add-bold"
                 width={24}
@@ -1609,7 +1663,15 @@ export default function FeDeVidaPage() {
               />
               <span>Importar Datos</span>
               <Icon icon="tabler:json" width={24} height={24} />
-            </button>
+              <input
+                type="file"
+                name="importJSON"
+                id="importJSON"
+                className="hidden"
+                accept=".json"
+                onChange={importData}
+              />
+            </label>
             <label
               htmlFor="importExcel"
               className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
