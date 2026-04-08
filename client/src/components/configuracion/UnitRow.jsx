@@ -20,7 +20,7 @@ const UnitRow = React.memo(function UnitRow({
   setFormData,
   isLoading,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(unit.name);
   const newDeptKey = `newDepartmentName_${unit.id}`;
   const newDeptName = formData[newDeptKey] || "";
@@ -100,7 +100,7 @@ const UnitRow = React.memo(function UnitRow({
 
   return (
     <div className="md:ml-6  border-l-2 border-gray-300  my-2">
-      <div className="flex bg-color3/15 rounded items-center  group">
+      <div className="flex bg-color3/20 rounded items-center  group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}

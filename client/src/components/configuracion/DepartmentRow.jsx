@@ -17,7 +17,7 @@ const DepartmentRow = React.memo(function DepartmentRow({
   setFormData,
   isLoading,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(department.name);
   const newServiceKey = `newServiceName_${department.id}`;
   const newServiceName = formData[newServiceKey] || "";

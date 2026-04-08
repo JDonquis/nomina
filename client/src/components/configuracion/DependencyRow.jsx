@@ -23,7 +23,7 @@ const DependencyRow = React.memo(function DependencyRow({
   setFormData,
   isLoading,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(dependency.name);
   const newUnitKey = `newUnitName_${dependency.id}`;
   const newUnitName = formData[newUnitKey] || "";
@@ -36,15 +36,20 @@ const DependencyRow = React.memo(function DependencyRow({
     debounce((newValue) => {
       setFormData((prev) => {
         const updated = { ...prev };
-        const depIndex = updated.dependencies?.findIndex((d) => d.id === dependency.id);
+        const depIndex = updated.dependencies?.findIndex(
+          (d) => d.id === dependency.id,
+        );
         if (depIndex !== -1 && updated.dependencies) {
           updated.dependencies = [...updated.dependencies];
-          updated.dependencies[depIndex] = { ...updated.dependencies[depIndex], name: newValue };
+          updated.dependencies[depIndex] = {
+            ...updated.dependencies[depIndex],
+            name: newValue,
+          };
         }
         return updated;
       });
     }, 500),
-    [dependency.id, setFormData]
+    [dependency.id, setFormData],
   );
 
   const handleCreateUnit = () => {
@@ -91,7 +96,7 @@ const DependencyRow = React.memo(function DependencyRow({
 
   return (
     <div className="bg-color2/10  rounded-lg mb-3 overflow-hidden">
-      <div className="flex  items-center gap-0 pr-3 pl-0 group">
+      <div className="flex sticky top-0 z-10 bg-color2/10 items-center gap-0 pr-3 pl-0 group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -101,10 +106,10 @@ const DependencyRow = React.memo(function DependencyRow({
             icon={isExpanded ? "mdi:chevron-down" : "mdi:chevron-right"}
             className=""
           />
-        
-        <span className="text-sm  font-medium">{index + 1}.</span>
+
+          <span className="text-sm  font-medium">{index + 1}.</span>
         </button>
-        
+
         <div className="flex-1 ">
           <FormField
             name={`dependenceName_${dependency.id}`}
@@ -113,13 +118,13 @@ const DependencyRow = React.memo(function DependencyRow({
             onChange={handleNameChange}
           />
         </div>
-        
+
         <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
           <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded">
             {dependency.administrative_units?.length || 0} unidades
           </span>
         </div>
-        
+
         <button
           type="button"
           onClick={() => onDeleteDependency(dependency.id)}
@@ -151,7 +156,7 @@ const DependencyRow = React.memo(function DependencyRow({
               isLoading={isLoading}
             />
           ))}
-          
+
           <div className="flex ml-3 md:ml-14   items-center  mt-3  border-t border-gray-100 group/unit">
             <span className="text-sm text-gray-400 w-6">
               {dependency.administrative_units?.length + 1 || 1}.
