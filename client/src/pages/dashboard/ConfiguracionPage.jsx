@@ -209,6 +209,18 @@ export default function ConfiguracionPage() {
     [updateDependency],
   );
 
+    const objPosiblesNames = {
+      "Médicos": "Servicios Generales",
+      "Servicios Generales": "Electromedicina",
+      "Electromedicina": "Sala de parto",
+      "Sala de parto": "Odontología",
+      "Odontología": "Laboratorio",
+      "Laboratorio": "Enfermeras",
+      "Enfermeras": "Promoción Social",
+      "Promoción Social": "Seguridad y Vigilancia"
+    }
+  
+
   const createAdministrativeUnit = async (dependenceId, unitName) => {
     if (!unitName || !dependenceId) return;
 
@@ -229,9 +241,12 @@ export default function ConfiguracionPage() {
               departments: [],
             });
           }
-          draft[`newUnitName_${dependenceId}`] = "";
+          draft[`newUnitName_${dependenceId}`] = objPosiblesNames[unitName] || "";
         }),
       );
+      setTimeout(() => {
+        document.querySelector(`#newUnitName_${dependenceId}`)?.select();
+      }, 150);
     } catch (error) {
       console.error("Error creating administrative unit:", error);
       const errorMessage =
@@ -556,6 +571,7 @@ export default function ConfiguracionPage() {
       />
       <ASICDetailPanel
         asic={selectedAsic}
+        objPosiblesNames={objPosiblesNames}
         formData={formData}
         setFormData={setFormData}
         handlers={handlers}

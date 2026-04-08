@@ -18,13 +18,13 @@ export default function SidebarASICList({
   };
 
   return (
-    <div className="w-72   bg-white border-r border-gray-200 h-96 md:h-full flex flex-col">
+    <div className="w-80   bg-white border-r border-gray-200 h-96 md:h-full flex flex-col">
       <div className="p-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800">ASICs</h2>
       </div>
       
       <div className="flex-1 overflow-y-auto">
-        {asics?.map((asic) => (
+        {asics?.map((asic, index) => (
           <div
             key={asic.id}
             onClick={() => onSelectAsic(asic.id)}
@@ -35,13 +35,15 @@ export default function SidebarASICList({
             }`}
           >
             <div className="flex items-center gap-2">
-             
+              <div className="text-sm text-gray-400">
+                {index + 1}.
+              </div>
               <span
                 className={`text-sm font-medium ${
                   selectedAsicId === asic.id ? "text-color1" : "text-gray-700"
                 }`}
               >
-                {asic.name}
+                {asic.name.replace("ASIC", "")}
               </span>
             </div>
           </div>

@@ -34,16 +34,26 @@ const UnitRow = React.memo(function UnitRow({
       setFormData((prev) => {
         const updated = { ...prev };
         for (const dep of updated.dependencies || []) {
-          const unitIndex = dep.administrative_units?.findIndex((u) => u.id === unit.id);
+          const unitIndex = dep.administrative_units?.findIndex(
+            (u) => u.id === unit.id,
+          );
           if (unitIndex !== -1) {
             updated.dependencies = [...updated.dependencies];
-            const depIndex = updated.dependencies.findIndex((d) => d.id === dep.id);
+            const depIndex = updated.dependencies.findIndex(
+              (d) => d.id === dep.id,
+            );
             if (depIndex !== -1) {
-              updated.dependencies[depIndex] = { ...updated.dependencies[depIndex] };
-              updated.dependencies[depIndex].administrative_units = [...(updated.dependencies[depIndex].administrative_units || [])];
+              updated.dependencies[depIndex] = {
+                ...updated.dependencies[depIndex],
+              };
+              updated.dependencies[depIndex].administrative_units = [
+                ...(updated.dependencies[depIndex].administrative_units || []),
+              ];
               updated.dependencies[depIndex].administrative_units[unitIndex] = {
-                ...updated.dependencies[depIndex].administrative_units[unitIndex],
-                name: newValue
+                ...updated.dependencies[depIndex].administrative_units[
+                  unitIndex
+                ],
+                name: newValue,
               };
             }
             break;
@@ -52,7 +62,7 @@ const UnitRow = React.memo(function UnitRow({
         return updated;
       });
     }, 500),
-    [unit.id, setFormData]
+    [unit.id, setFormData],
   );
 
   const handleCreateDepartment = () => {
@@ -83,8 +93,7 @@ const UnitRow = React.memo(function UnitRow({
       }));
     }
     setTimeout(() => {
-      e.target.select()
-      
+      e.target.select();
     }, 100);
   };
 
@@ -108,12 +117,11 @@ const UnitRow = React.memo(function UnitRow({
         >
           <Icon
             icon={isExpanded ? "mdi:chevron-down" : "mdi:chevron-right"}
-            className={`${isExpanded ? 'text-color1 font-bold' : 'text-gray-500'}`}
+            className={`${isExpanded ? "text-color1 font-bold" : "text-gray-500"}`}
           />
-        <span className="text-xs text-gray-400">{index + 1}.</span>
+          <span className="text-xs text-gray-400">{index + 1}.</span>
         </button>
-        
-        
+
         <div className="flex-1 ">
           <FormField
             name={`unitName_${unit.id}`}
@@ -123,7 +131,15 @@ const UnitRow = React.memo(function UnitRow({
             onChange={handleNameChange}
           />
         </div>
-        
+
+        <div className="hidden md:flex items-center gap-2 text-xs ">
+          <span
+            className={`${unit.departments.length < 1 ? "text-red-500" : "text-gray-500"} bg-gray-200 px-2 mr-2 py-0.5 rounded`}
+          >
+            {unit.departments?.length || 0} dep.
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={() => onDeleteUnit(unit.id)}
@@ -152,7 +168,7 @@ const UnitRow = React.memo(function UnitRow({
               isLoading={isLoading}
             />
           ))}
-          
+
           <div className="flex md:ml-12 items-center  mt-2 group/dept">
             <span className="text-xs text-gray-400 w-5">
               {unit.departments?.length + 1 || 1}.

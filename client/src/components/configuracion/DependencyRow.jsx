@@ -22,6 +22,7 @@ const DependencyRow = React.memo(function DependencyRow({
   formData,
   setFormData,
   isLoading,
+  objPosiblesNames,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(dependency.name);
@@ -83,12 +84,10 @@ const DependencyRow = React.memo(function DependencyRow({
   };
 
   const handleOnFocus = (e) => {
-    if (dependency.administrative_units?.length === 0) {
       setFormData((prev) => ({
         ...prev,
-        [newUnitKey]: dependency.name,
+        [newUnitKey]: objPosiblesNames[dependency.administrative_units[dependency.administrative_units.length - 1]?.name] || "",
       }));
-    }
     setTimeout(() => {
       e.target.select();
     }, 100);
@@ -121,7 +120,7 @@ const DependencyRow = React.memo(function DependencyRow({
 
         <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
           <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded">
-            {dependency.administrative_units?.length || 0} unidades
+            {dependency.administrative_units?.length || 0} unid.
           </span>
         </div>
 
@@ -168,6 +167,8 @@ const DependencyRow = React.memo(function DependencyRow({
                 value={newUnitName}
                 onChange={handleNewUnitChange}
                 onKeyDown={handleKeyDown}
+                onFocus={handleOnFocus}
+                id={`newUnitName_${dependency.id}`}
                 disableOutline
                 className="!bg-transparent"
               />
