@@ -54,4 +54,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Activity::class, 'user_id');
     }
+
+    public function auditLogs()
+    {
+        return $this->morphMany(AuditLog::class, 'auditable');
+    }
+
+    public function auditLogsAsUser()
+    {
+        return $this->hasMany(AuditLog::class, 'user_id');
+    }
 }
