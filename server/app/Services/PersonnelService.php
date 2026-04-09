@@ -30,6 +30,7 @@ class PersonnelService
         'pension_survivor_status',
         'suspend_payment_status',
         'type_personnel_id',
+        'status',
         'additional_data' => [
             'type_pension',
             'type_pay_sheet',
