@@ -53,6 +53,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     // Census
+    Route::get('censuses/export', [CensusController::class, 'export']);
+    Route::post('censuses/import', [CensusController::class, 'import']);
     Route::get('censuses', [CensusController::class, 'index']);
     Route::post('censuses', [CensusController::class, 'store']);
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);

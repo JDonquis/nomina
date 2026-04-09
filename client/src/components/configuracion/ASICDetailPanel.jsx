@@ -9,6 +9,7 @@ export default function ASICDetailPanel({
   setFormData,
   handlers,
   isLoading,
+  objPosiblesNames,
 }) {
   if (!asic) {
     return (
@@ -38,6 +39,7 @@ export default function ASICDetailPanel({
     onCreateService,
     onUpdateService,
     onDeleteService,
+
   } = handlers;
 
   const handleUpdateDependency = (id, data) => {
@@ -117,7 +119,7 @@ export default function ASICDetailPanel({
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 overflow-y-auto ">
           <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
             <Icon icon="mdi:folder-outline" />
             Dependencias
@@ -155,6 +157,7 @@ export default function ASICDetailPanel({
             formData={formData}
             setFormData={setFormData}
             isLoading={isLoading}
+            objPosiblesNames={objPosiblesNames}
           />
         ))}
 

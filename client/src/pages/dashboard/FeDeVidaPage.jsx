@@ -574,89 +574,36 @@ export default function FeDeVidaPage() {
     setLoading(true);
 
     try {
-      // Crear FormData para enviar archivos
-      const submitData = new FormData();
+      // Upload photo separately if changed
+      if (formData.fotoChanged && formData.photo instanceof File) {
+        const photoData = new FormData();
+        photoData.append("photo", formData.photo);
 
-      // Lista de campos que NO deben enviarse (son relaciones o campos internos)
-      const fieldsToSkip = [
-        "type_pay_sheet", // Relación, ya tienes type_pay_sheet_id
-        "administrative_location", // Relación, ya tienes administrative_location_id
-        "latestCensus", // Relación
-        "created_at", // Timestamp automático
-        "updated_at", // Timestamp automático
-        "fotoChanged", // Campo interno de React
-      ];
-
-      // Agregar todos los campos del formulario
-      Object.keys(formData).forEach((key) => {
-        const value = formData[key];
-
-        // Skip campos innecesarios
-        if (fieldsToSkip.includes(key)) {
-          return;
+        if (submitString === "Actualizar") {
+          await payrollAPI.updatePhoto(formData.id, photoData);
         }
-
-        // No enviar photo si no cambió
-        if (
-          key === "photo" &&
-          submitString === "Actualizar" &&
-          !formData.fotoChanged
-        ) {
-          return; // Skip this field
-        }
-
-        // Solo agregar archivos
-        if (value instanceof File) {
-          submitData.append(key, value);
-        }
-        // Para booleanos, convertir a 0 o 1
-        else if (typeof value === "boolean") {
-          submitData.append(key, value ? "1" : "0");
-        }
-        // NO enviar objetos ni arrays (solo valores primitivos)
-        else if (
-          value !== null &&
-          value !== undefined &&
-          value !== "" &&
-          typeof value !== "object" // Esto excluye objetos y arrays
-        ) {
-          submitData.append(key, value);
-        }
-        // DEBUG: Ver qué se está saltando
-      });
-
-      if (
-        formData.photo &&
-        submitString === "Actualizar" &&
-        formData.fotoChanged
-      ) {
-        await payrollAPI.updatePhoto(formData.id, submitData);
-
-        // Eliminar el campo photo para evitar confusión en la siguiente petición
-        submitData.delete("photo");
       }
-      // Prepare both requestsF
-      const internalRequest =
-        submitString === "Actualizar"
-          ? payrollAPI.updateWorker(formData.id, submitData)
-          : payrollAPI.createWorker(submitData);
 
-      await internalRequest;
-
-      // Handle success
       if (submitString === "Actualizar") {
+        await payrollAPI.updateWorker(formData.id, formData);
         setSubmitString("Registrar");
+      } else {
+        // createWorker uses multipart/form-data (for photo on create),
+        // so booleans must be sent as "1"/"0"
+        await payrollAPI.createWorker({
+          ...formData,
+          to_census: formData.to_census ? "1" : "0",
+        });
       }
 
       showSuccess("Operación completada con éxito");
       setFormData(structuredClone(defaultFormData));
       setIsModalOpen(false);
-      setIsFormInitialized(false); // ← Desactivar guardado
+      setIsFormInitialized(false);
       fetchData();
-      localStorage.removeItem("formData"); // ← Limpiar
+      localStorage.removeItem("formData");
       localStorage.removeItem("submitString");
     } catch (error) {
-      // This will only catch errors from the internal API
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -697,6 +644,54 @@ export default function FeDeVidaPage() {
         error.response?.data?.message || error.message || "An error occurred";
       showError(errorMessage);
     }
+  };
+
+  const exportData = async () => {
+    try {
+      setLoading(true);
+      const data = await censusAPI.exportCensus();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `censos_export_${new Date().toISOString().split("T")[0]}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      showSuccess("Datos exportados exitosamente");
+    } catch (error) {
+      showError("Error al exportar datos: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const importData = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        setLoading(true);
+        const jsonData = JSON.parse(e.target.result);
+        const response = await censusAPI.importCensus(jsonData);
+        showSuccess(
+          `Importación exitosa: ${response.result.censuses_imported} censos y ${response.result.users_imported} usuarios procesados.`,
+        );
+        fetchData();
+        setIsOptionsModalOpen(false);
+      } catch (error) {
+        showError("Error al importar datos: " + (error.response?.data?.message || error.message));
+      } finally {
+        setLoading(false);
+        // Clear input
+        event.target.value = "";
+      }
+    };
+    reader.readAsText(file);
   };
 
   const getHistory = async (id) => {
@@ -1649,12 +1644,18 @@ export default function FeDeVidaPage() {
               <span>Generar Reporte de Censados por ASIC </span>
               <Icon icon="tabler:pdf" width={24} height={24} />
             </button>
-            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={exportData}
+            >
               <Icon icon="material-symbols:download" width={24} height={24} />
               <span>Exportar Datos</span>
               <Icon icon="tabler:json" width={24} height={24} />
             </button>
-            <button className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md">
+            <label
+              htmlFor="importJSON"
+              className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            >
               <Icon
                 icon="streamline-ultimate:common-file-text-add-bold"
                 width={24}
@@ -1662,7 +1663,15 @@ export default function FeDeVidaPage() {
               />
               <span>Importar Datos</span>
               <Icon icon="tabler:json" width={24} height={24} />
-            </button>
+              <input
+                type="file"
+                name="importJSON"
+                id="importJSON"
+                className="hidden"
+                accept=".json"
+                onChange={importData}
+              />
+            </label>
             <label
               htmlFor="importExcel"
               className="cursor-pointer items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"

@@ -11,6 +11,7 @@ class Census extends Model
     protected $fillable = [
         'pay_sheet_id',
         'active_personnel_id',
+        'user_id',
         'status',
         'expiration_date',
         'data',
@@ -29,6 +30,11 @@ class Census extends Model
     public function activePersonnel()
     {
         return $this->belongsTo(ActivePersonnel::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
 

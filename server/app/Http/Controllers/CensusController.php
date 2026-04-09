@@ -88,4 +88,34 @@ class CensusController extends Controller
             ], 500);
         }
     }
+
+    public function export()
+    {
+        $data = $this->censusService->exportJson();
+        return response()->json($data);
+    }
+
+    public function import(Request $request)
+    {
+        try {
+            $data = $request->json()->all();
+            $result = $this->censusService->importJson($data);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Importación completada',
+                'result' => $result
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error al importar censo: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Error al importar datos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

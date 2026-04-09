@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { FormField } from "../../components/forms";
 import UnitRow from "./UnitRow";
+import debounce from "lodash.debounce";
 
-export default function DependencyRow({
+const DependencyRow = React.memo(function DependencyRow({
   dependency,
   index,
   asicId,
@@ -21,10 +22,36 @@ export default function DependencyRow({
   formData,
   setFormData,
   isLoading,
+  objPosiblesNames,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [localName, setLocalName] = useState(dependency.name);
   const newUnitKey = `newUnitName_${dependency.id}`;
   const newUnitName = formData[newUnitKey] || "";
+
+  useEffect(() => {
+    setLocalName(dependency.name);
+  }, [dependency.name]);
+
+  const debouncedSetFormData = useCallback(
+    debounce((newValue) => {
+      setFormData((prev) => {
+        const updated = { ...prev };
+        const depIndex = updated.dependencies?.findIndex(
+          (d) => d.id === dependency.id,
+        );
+        if (depIndex !== -1 && updated.dependencies) {
+          updated.dependencies = [...updated.dependencies];
+          updated.dependencies[depIndex] = {
+            ...updated.dependencies[depIndex],
+            name: newValue,
+          };
+        }
+        return updated;
+      });
+    }, 500),
+    [dependency.id, setFormData],
+  );
 
   const handleCreateUnit = () => {
     if (newUnitName.trim()) {
@@ -46,13 +73,21 @@ export default function DependencyRow({
     }));
   };
 
+  const handleNameChange = (e) => {
+    const newValue = e.target.value;
+    setLocalName(newValue);
+    debouncedSetFormData(newValue);
+    onUpdateDependency(dependency.id, {
+      name: newValue,
+      asic_id: asicId,
+    });
+  };
+
   const handleOnFocus = (e) => {
-    if (dependency.administrative_units?.length === 0) {
       setFormData((prev) => ({
         ...prev,
-        [newUnitKey]: dependency.name,
+        [newUnitKey]: objPosiblesNames[dependency.administrative_units[dependency.administrative_units.length - 1]?.name] || "",
       }));
-    }
     setTimeout(() => {
       e.target.select();
     }, 100);
@@ -60,7 +95,7 @@ export default function DependencyRow({
 
   return (
     <div className="bg-color2/10  rounded-lg mb-3 overflow-hidden">
-      <div className="flex  items-center gap-0 pr-3 pl-0 group">
+      <div className="flex sticky top-0 z-10 bg-color2/10 items-center gap-0 pr-3 pl-0 group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -70,41 +105,25 @@ export default function DependencyRow({
             icon={isExpanded ? "mdi:chevron-down" : "mdi:chevron-right"}
             className=""
           />
-        
-        <span className="text-sm  font-medium">{index + 1}.</span>
+
+          <span className="text-sm  font-medium">{index + 1}.</span>
         </button>
-        
+
         <div className="flex-1 ">
           <FormField
             name={`dependenceName_${dependency.id}`}
-            value={dependency.name}
+            value={localName}
             disableOutline
-            
-            onChange={(e) => {
-              const newValue = e.target.value;
-              setFormData((prev) => {
-                const updated = { ...prev };
-                const depIndex = updated.dependencies?.findIndex((d) => d.id === dependency.id);
-                if (depIndex !== -1 && updated.dependencies) {
-                  updated.dependencies = [...updated.dependencies];
-                  updated.dependencies[depIndex] = { ...updated.dependencies[depIndex], name: newValue };
-                }
-                return updated;
-              });
-              onUpdateDependency(dependency.id, {
-                name: newValue,
-                asic_id: asicId,
-              });
-            }}
+            onChange={handleNameChange}
           />
         </div>
-        
+
         <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
           <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded">
-            {dependency.administrative_units?.length || 0} unidades
+            {dependency.administrative_units?.length || 0} unid.
           </span>
         </div>
-        
+
         <button
           type="button"
           onClick={() => onDeleteDependency(dependency.id)}
@@ -136,7 +155,7 @@ export default function DependencyRow({
               isLoading={isLoading}
             />
           ))}
-          
+
           <div className="flex ml-3 md:ml-14   items-center  mt-3  border-t border-gray-100 group/unit">
             <span className="text-sm text-gray-400 w-6">
               {dependency.administrative_units?.length + 1 || 1}.
@@ -148,6 +167,8 @@ export default function DependencyRow({
                 value={newUnitName}
                 onChange={handleNewUnitChange}
                 onKeyDown={handleKeyDown}
+                onFocus={handleOnFocus}
+                id={`newUnitName_${dependency.id}`}
                 disableOutline
                 className="!bg-transparent"
               />
@@ -168,4 +189,6 @@ export default function DependencyRow({
       )}
     </div>
   );
-}
+});
+
+export default DependencyRow;

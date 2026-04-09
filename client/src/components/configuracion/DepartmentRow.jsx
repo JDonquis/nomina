@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { FormField } from "../../components/forms";
 import ServiceRow from "./ServiceRow";
+import debounce from "lodash.debounce";
 
-export default function DepartmentRow({
+const DepartmentRow = React.memo(function DepartmentRow({
   department,
   index,
   unitId,
@@ -16,9 +17,79 @@ export default function DepartmentRow({
   setFormData,
   isLoading,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [localName, setLocalName] = useState(department.name);
   const newServiceKey = `newServiceName_${department.id}`;
   const newServiceName = formData[newServiceKey] || "";
+
+  useEffect(() => {
+    setLocalName(department.name);
+  }, [department.name]);
+
+  const debouncedSetFormData = useCallback(
+    debounce((newValue) => {
+      setFormData((prev) => {
+        const updated = { ...prev };
+        for (const dep of updated.dependencies || []) {
+          for (const unit of dep.administrative_units || []) {
+            const deptIndex = unit.departments?.findIndex(
+              (d) => d.id === department.id,
+            );
+            if (deptIndex !== -1) {
+              updated.dependencies = [...updated.dependencies];
+              const depIndex = updated.dependencies.findIndex(
+                (d) => d.id === dep.id,
+              );
+              if (depIndex !== -1) {
+                updated.dependencies[depIndex] = {
+                  ...updated.dependencies[depIndex],
+                  administrative_units: [
+                    ...(updated.dependencies[depIndex].administrative_units ||
+                      []),
+                  ],
+                };
+                const unitIndex = updated.dependencies[
+                  depIndex
+                ].administrative_units.findIndex((u) => u.id === unit.id);
+                if (unitIndex !== -1) {
+                  updated.dependencies[depIndex].administrative_units[
+                    unitIndex
+                  ] = {
+                    ...updated.dependencies[depIndex].administrative_units[
+                      unitIndex
+                    ],
+                    departments: [
+                      ...(updated.dependencies[depIndex].administrative_units[
+                        unitIndex
+                      ].departments || []),
+                    ],
+                  };
+                  const dIndex = updated.dependencies[
+                    depIndex
+                  ].administrative_units[unitIndex].departments.findIndex(
+                    (d) => d.id === department.id,
+                  );
+                  if (dIndex !== -1) {
+                    updated.dependencies[depIndex].administrative_units[
+                      unitIndex
+                    ].departments[dIndex] = {
+                      ...updated.dependencies[depIndex].administrative_units[
+                        unitIndex
+                      ].departments[dIndex],
+                      name: newValue,
+                    };
+                  }
+                }
+              }
+              break;
+            }
+          }
+        }
+        return updated;
+      });
+    }, 500),
+    [department.id, setFormData],
+  );
 
   const handleCreateService = () => {
     if (newServiceName.trim()) {
@@ -52,9 +123,19 @@ export default function DepartmentRow({
     }, 100);
   };
 
+  const handleNameChange = (e) => {
+    const newValue = e.target.value;
+    setLocalName(newValue);
+    debouncedSetFormData(newValue);
+    onUpdateDepartment(department.id, {
+      name: newValue,
+      administrative_unit_id: unitId,
+    });
+  };
+
   return (
     <div className="md:ml-6 border-l-2 border-gray-200  my-1">
-      <div className="flex bg-color4/45 items-center gap-1 group">
+      <div className="flex bg-color4/45 items-center  group">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -66,52 +147,23 @@ export default function DepartmentRow({
           />
           <span className="text-xs text-gray-400">{index + 1}.</span>
         </button>
-        
-        
+
         <div className="flex-1">
           <FormField
             name={`departmentName_${department.id}`}
-            value={department.name}
+            value={localName}
             disableOutline
             className="!bg-transparent"
-            onChange={(e) => {
-              const newValue = e.target.value;
-              setFormData((prev) => {
-                const updated = { ...prev };
-                for (const dep of updated.dependencies || []) {
-                  for (const unit of dep.administrative_units || []) {
-                    const deptIndex = unit.departments?.findIndex((d) => d.id === department.id);
-                    if (deptIndex !== -1) {
-                      updated.dependencies = [...updated.dependencies];
-                      const depIndex = updated.dependencies.findIndex((d) => d.id === dep.id);
-                      if (depIndex !== -1) {
-                        updated.dependencies[depIndex] = { ...updated.dependencies[depIndex], administrative_units: [...(updated.dependencies[depIndex].administrative_units || [])] };
-                        const unitIndex = updated.dependencies[depIndex].administrative_units.findIndex((u) => u.id === unit.id);
-                        if (unitIndex !== -1) {
-                          updated.dependencies[depIndex].administrative_units[unitIndex] = { ...updated.dependencies[depIndex].administrative_units[unitIndex], departments: [...(updated.dependencies[depIndex].administrative_units[unitIndex].departments || [])] };
-                          const dIndex = updated.dependencies[depIndex].administrative_units[unitIndex].departments.findIndex((d) => d.id === department.id);
-                          if (dIndex !== -1) {
-                            updated.dependencies[depIndex].administrative_units[unitIndex].departments[dIndex] = {
-                              ...updated.dependencies[depIndex].administrative_units[unitIndex].departments[dIndex],
-                              name: newValue
-                            };
-                          }
-                        }
-                      }
-                      break;
-                    }
-                  }
-                }
-                return updated;
-              });
-              onUpdateDepartment(department.id, {
-                name: newValue,
-                administrative_unit_id: unitId,
-              });
-            }}
+            onChange={handleNameChange}
           />
         </div>
-        
+
+        <div className="hidden md:flex items-center gap-2 text-xs ">
+          <span className={`${department.services.length  < 1 ? "text-red-500" : "text-gray-500"} bg-gray-200 px-2 mr-2 py-0.5 rounded`}>
+            {department.services?.length || 0} ser.
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={() => onDeleteDepartment(department.id, unitId)}
@@ -130,12 +182,14 @@ export default function DepartmentRow({
               service={service}
               index={sIndex}
               onUpdateService={onUpdateService}
-              onDeleteService={(serviceId) => onDeleteService(serviceId, unitId, department.id)}
+              onDeleteService={(serviceId) =>
+                onDeleteService(serviceId, unitId, department.id)
+              }
               setFormData={setFormData}
             />
           ))}
-          
-          <div className="flex items-center gap-2 ml-10 mt-2 group/service">
+
+          <div className="flex items-center  ml-10 mt-2 group/service">
             <span className="text-xs text-gray-400 w-5">
               {department.services?.length + 1 || 1}.
             </span>
@@ -167,4 +221,6 @@ export default function DepartmentRow({
       )}
     </div>
   );
-}
+});
+
+export default DepartmentRow;
