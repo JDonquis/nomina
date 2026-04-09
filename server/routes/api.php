@@ -15,6 +15,7 @@ use App\Http\Controllers\DependencyController;
 use App\Http\Controllers\AdministrativeUnitController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\PersonnelController;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken']);
@@ -55,6 +56,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('censuses', [CensusController::class, 'index']);
     Route::post('censuses', [CensusController::class, 'store']);
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
+
+    // Personnel (Fe de Vida)
+    Route::resource('personnels', PersonnelController::class)->except(['edit', 'create']);
+    Route::post('personnels/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
+    Route::post('personnels/{personnel}/census', [PersonnelController::class, 'census']);
+    Route::delete('personnels/{personnel}/uncensus', [PersonnelController::class, 'uncensus']);
 
     Route::get('activities', ActivityController::class);
 

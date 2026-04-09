@@ -2,64 +2,199 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePersonnelRequest;
+use App\Http\Requests\UpdatePersonnelRequest;
+use App\Http\Requests\UpdatePhotoPersonnelRequest;
+use App\Services\PersonnelService;
+use Exception;
 use App\Models\Personnel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PersonnelController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $personnelService;
+
+    public function __construct()
     {
-        //
+        $this->personnelService = new PersonnelService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(Request $request)
     {
-        //
+        $personnels = $this->personnelService->get($request->all());
+
+        return response()->json([
+            'message' => 'OK',
+            'personnels' => $personnels
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Personnel $personnel)
     {
-        //
+        $personnel = $this->personnelService->show($personnel);
+
+        return response()->json([
+            'message' => 'OK',
+            'personnel' => $personnel
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Personnel $personnel)
+    public function store(StorePersonnelRequest $request)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            $validatedData = $request->validated();
+            $photo = $request->hasFile('photo') ? $request->file('photo') : null;
+
+            $register = $this->personnelService->store($validatedData, $photo);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Personal registrado exitosamente',
+                'register' => $register
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al crear personal: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al crear personal'
+            ], 500);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Personnel $personnel)
+    public function update(UpdatePersonnelRequest $request, Personnel $personnel)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            $validatedData = $request->validated();
+            $photo = $request->hasFile('photo') ? $request->file('photo') : null;
+
+            $register = $this->personnelService->update($validatedData, $personnel, $photo);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Personal actualizado exitosamente',
+                'register' => $register
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al actualizar personal: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al actualizar personal'
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Personnel $personnel)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            $this->personnelService->destroy($personnel);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Personal eliminado exitosamente',
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al eliminar personal: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al eliminar personal'
+            ], 500);
+        }
+    }
+
+    public function updatePhoto(UpdatePhotoPersonnelRequest $request, Personnel $personnel)
+    {
+        try {
+            $photo = $request->file('photo');
+
+            $this->personnelService->updatePhoto($photo, $personnel);
+
+            return response()->json([
+                'message' => 'Foto actualizada exitosamente',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error al actualizar foto: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al actualizar la foto'
+            ], 500);
+        }
+    }
+
+    public function census(Personnel $personnel)
+    {
+        try {
+            $personnel = $this->personnelService->census($personnel);
+
+            return response()->json([
+                'message' => 'Censo realizado exitosamente',
+                'personnel' => $personnel
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error al censar: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al censar'
+            ], 500);
+        }
+    }
+
+    public function uncensus(Personnel $personnel)
+    {
+        try {
+            $personnel = $this->personnelService->uncensus($personnel);
+
+            return response()->json([
+                'message' => 'Censo anulado exitosamente',
+                'personnel' => $personnel
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error al anular censo: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al anular el censo'
+            ], 500);
+        }
     }
 }
