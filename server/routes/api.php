@@ -60,8 +60,16 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
 
     // Personnel (Fe de Vida)
-    Route::resource('personnels', PersonnelController::class)->except(['edit', 'create']);
-    Route::post('personnels/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
+    Route::get('personnels/life_proof', [PersonnelController::class, 'lifeProof']);
+    Route::post('personnels/life_proof', [PersonnelController::class, 'store']);
+    Route::update('personnels/life_proof/{personnel}', [PersonnelController::class, 'update']);
+    Route::post('personnels/life_proof/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
+
+    // Personnel Active
+    Route::get('personnels/active', [PersonnelController::class, 'active']);
+    Route::post('personnels/active', [PersonnelController::class, 'store']);
+    Route::update('personnels/active/{personnel}', [PersonnelController::class, 'update']);
+    Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
 
     Route::get('activities', ActivityController::class);
 

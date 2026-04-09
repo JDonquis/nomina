@@ -21,7 +21,17 @@ class PersonnelController extends Controller
         $this->personnelService = new PersonnelService;
     }
 
-    public function index(Request $request)
+    public function lifeProof(Request $request)
+    {
+        $personnels = $this->personnelService->get($request->all());
+
+        return response()->json([
+            'message' => 'OK',
+            'personnels' => $personnels
+        ]);
+    }
+
+    public function active(Request $request)
     {
         $personnels = $this->personnelService->get($request->all());
 
