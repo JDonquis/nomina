@@ -29,6 +29,7 @@ class PersonnelService
         'has_authorizations',
         'pension_survivor_status',
         'suspend_payment_status',
+        'type_personnel_id',
         'additional_data' => [
             'type_pension',
             'type_pay_sheet',
