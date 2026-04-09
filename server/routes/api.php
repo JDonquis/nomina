@@ -15,6 +15,7 @@ use App\Http\Controllers\DependencyController;
 use App\Http\Controllers\AdministrativeUnitController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\TypePersonnelController;
 use App\Http\Controllers\PersonnelController;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
@@ -32,6 +33,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::get('administrative-locations', [AdministrativeLocationController::class, 'index']);
     Route::get('type-pay-sheets', [TypePaySheetController::class, 'index']);
+    Route::get('type-personnels', [TypePersonnelController::class, 'index']);
 
 
     Route::resource('users', UserController::class)->except(['edit', 'create'])
