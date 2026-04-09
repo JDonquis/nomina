@@ -62,13 +62,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Personnel (Fe de Vida)
     Route::get('personnels/life_proof', [PersonnelController::class, 'lifeProof']);
     Route::post('personnels/life_proof', [PersonnelController::class, 'store']);
-    Route::update('personnels/life_proof/{personnel}', [PersonnelController::class, 'update']);
+    Route::put('personnels/life_proof/{personnel}', [PersonnelController::class, 'update']);
     Route::post('personnels/life_proof/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
 
     // Personnel Active
     Route::get('personnels/active', [PersonnelController::class, 'active']);
     Route::post('personnels/active', [PersonnelController::class, 'store']);
-    Route::update('personnels/active/{personnel}', [PersonnelController::class, 'update']);
+    Route::put('personnels/active/{personnel}', [PersonnelController::class, 'update']);
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
 
     Route::get('activities', ActivityController::class);
