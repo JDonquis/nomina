@@ -153,48 +153,4 @@ class PersonnelController extends Controller
             ], 500);
         }
     }
-
-    public function census(Personnel $personnel)
-    {
-        try {
-            $personnel = $this->personnelService->census($personnel);
-
-            return response()->json([
-                'message' => 'Censo realizado exitosamente',
-                'personnel' => $personnel
-            ]);
-        } catch (Exception $e) {
-            Log::error('Error al censar: ', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine()
-            ]);
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Ha ocurrido un error al censar'
-            ], 500);
-        }
-    }
-
-    public function uncensus(Personnel $personnel)
-    {
-        try {
-            $personnel = $this->personnelService->uncensus($personnel);
-
-            return response()->json([
-                'message' => 'Censo anulado exitosamente',
-                'personnel' => $personnel
-            ]);
-        } catch (Exception $e) {
-            Log::error('Error al anular censo: ', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine()
-            ]);
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Ha ocurrido un error al anular el censo'
-            ], 500);
-        }
-    }
 }

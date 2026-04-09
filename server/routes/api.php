@@ -39,12 +39,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
-    
+
     // Rutas específicas antes del recurso para evitar conflictos con IDs
     Route::get('active-personnel/download-template', [ActivePersonnelController::class, 'downloadTemplate']);
     Route::post('active-personnel/import-excel', [ActivePersonnelController::class, 'importExcel']);
     Route::post('active-personnel/photos/{activePersonnel}', [ActivePersonnelController::class, 'updatePhotos']);
-    
+
     Route::resource('active-personnel', ActivePersonnelController::class)->except(['edit', 'create']);
 
     Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
@@ -62,8 +62,6 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Personnel (Fe de Vida)
     Route::resource('personnels', PersonnelController::class)->except(['edit', 'create']);
     Route::post('personnels/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
-    Route::post('personnels/{personnel}/census', [PersonnelController::class, 'census']);
-    Route::delete('personnels/{personnel}/uncensus', [PersonnelController::class, 'uncensus']);
 
     Route::get('activities', ActivityController::class);
 

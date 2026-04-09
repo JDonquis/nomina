@@ -9,6 +9,50 @@ use Illuminate\Support\Facades\Storage;
 
 class PersonnelService
 {
+    private $fieldsWithoutCensus = [
+        'photo',
+        'nac',
+        'ci',
+        'full_name',
+        'date_birth',
+        'sex',
+        'asic_id',
+        'city',
+        'state',
+        'phone_number',
+        'email',
+        'municipality',
+        'parish',
+        'address',
+        'civil_status',
+        'receive_pension_from_another_organization_status',
+        'has_authorizations',
+        'pension_survivor_status',
+        'suspend_payment_status',
+        'additional_data' => [
+            'type_pension',
+            'type_pay_sheet',
+            'last_charge',
+            'minor_child_nro',
+            'disabled_child_nro',
+            'another_organization_name',
+            'fullname_causative',
+            'age_causative',
+            'parent_causative',
+            'sex_causative',
+            'ci_causative',
+            'decease_date',
+            'last_payment',
+            'degree_obtained',
+            'postgraduate_degree',
+            'mobile_phone',
+            'fixed_phone',
+            'shirt_size',
+            'pant_size',
+            'shoe_size',
+        ],
+    ];
+
     public function get($params = [])
     {
         $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency']);
@@ -80,16 +124,73 @@ class PersonnelService
         return $personnel;
     }
 
+    private function getAllowedFields($toCensus)
+    {
+        $allowedFields = [];
+
+        foreach ($this->fieldsWithoutCensus as $key => $value) {
+            if (is_array($value)) {
+                $allowedFields['additional_data'] = array_keys($value);
+            } else {
+                $allowedFields[] = $value;
+            }
+        }
+
+        return $toCensus ? null : $allowedFields;
+    }
+
+    private function filterData($data, $allowedFields)
+    {
+        if ($allowedFields === null) {
+            return $data;
+        }
+
+        $filtered = [];
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $allowedFields)) {
+                $filtered[$key] = $value;
+            }
+        }
+
+        if (isset($data['additional_data']) && isset($allowedFields['additional_data'])) {
+            $filtered['additional_data'] = [];
+            foreach ($data['additional_data'] as $key => $value) {
+                if (in_array($key, $allowedFields['additional_data'])) {
+                    $filtered['additional_data'][$key] = $value;
+                }
+            }
+            if (empty($filtered['additional_data'])) {
+                unset($filtered['additional_data']);
+            }
+        }
+
+        return $filtered;
+    }
+
     public function store($data, $photo = null)
     {
+        $action = 'create';
+
+        $censusStatus = $data['to_census'] ?? false;
+        unset($data['to_census']);
+
+        $allowedFields = $this->getAllowedFields($censusStatus);
+        $data = $this->filterData($data, $allowedFields);
+
         $personnel = Personnel::create($data);
 
         if ($photo) {
             $this->updatePhoto($photo, $personnel);
         }
 
+        if ($censusStatus) {
+            $action = 'create_and_census';
+            $personnel->update(['census_status' => true]);
+        }
+
         AuditLog::create([
-            'action' => 'create',
+            'action' => $action,
             'auditable_type' => Personnel::class,
             'auditable_id' => $personnel->id,
             'user_id' => Auth::id(),
@@ -102,18 +203,33 @@ class PersonnelService
 
     public function update($data, Personnel $personnel, $photo = null)
     {
+
+        $action = 'update';
+        $censusStatus = $data['to_census'] ?? false;
+
+
         $oldValues = $personnel->toArray();
 
-        $personnel->update($data);
+        $allowedFields = $this->getAllowedFields($censusStatus);
+        $data = $this->filterData($data, $allowedFields);
+
+        if (!empty($data)) {
+            $personnel->update($data);
+        }
 
         if ($photo) {
             $this->updatePhoto($photo, $personnel);
         }
 
+        if ($censusStatus) {
+            $action = 'update_and_census';
+            $personnel->update(['census_status' => true]);
+        }
+
         $personnel->refresh();
 
         AuditLog::create([
-            'action' => 'update',
+            'action' => $action,
             'auditable_type' => Personnel::class,
             'auditable_id' => $personnel->id,
             'user_id' => Auth::id(),
@@ -154,46 +270,6 @@ class PersonnelService
 
         $path = $photo->store('photos', 'public');
         $personnel->update(['photo' => $path]);
-
-        return $personnel;
-    }
-
-    public function census(Personnel $personnel)
-    {
-        $oldValues = $personnel->toArray();
-
-        $personnel->update(['census_status' => true]);
-
-        $personnel->refresh();
-
-        AuditLog::create([
-            'action' => 'census',
-            'auditable_type' => Personnel::class,
-            'auditable_id' => $personnel->id,
-            'user_id' => Auth::id(),
-            'old_values' => $oldValues,
-            'new_values' => $personnel->toArray(),
-        ]);
-
-        return $personnel;
-    }
-
-    public function uncensus(Personnel $personnel)
-    {
-        $oldValues = $personnel->toArray();
-
-        $personnel->update(['census_status' => false]);
-
-        $personnel->refresh();
-
-        AuditLog::create([
-            'action' => 'uncensus',
-            'auditable_type' => Personnel::class,
-            'auditable_id' => $personnel->id,
-            'user_id' => Auth::id(),
-            'old_values' => $oldValues,
-            'new_values' => $personnel->toArray(),
-        ]);
 
         return $personnel;
     }
