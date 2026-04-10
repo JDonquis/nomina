@@ -94,25 +94,25 @@ export const usersAPI = {
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };
 
-export const payrollAPI = {
-  getWorkers: (params) => api.get("/admin/pay-sheets", { params }),
-  createWorker: (workerData) =>
-    api.post("/admin/pay-sheets", workerData, {
+export const liveProofAPI = {
+  getPersonnel: (params) => api.get("/admin/personnels/life_proof", { params }),
+  createPersonnel: (workerData) =>
+    api.post("/admin/personnels/life_proof", workerData, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-  updateWorker: (id, workerData) =>
-    api.put(`/admin/pay-sheets/${id}`, workerData),
-  updatePhoto: (id, photo) =>
-    api.post(`/admin/pay-sheets/photo/${id}`, photo, {
+  updatePersonnel: (id, workerData) =>
+    api.put(`/admin/personnels/life_proof/${id}`, workerData),
+  updatePersonnelPhoto: (id, photo) =>
+    api.post(`/admin/personnels/life_proof/photo/${id}`, photo, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-  deleteWorker: (id) => api.delete(`/admin/pay-sheets/${id}`),
+  deletePersonnel: (id) => api.delete(`/admin/personnels/life_proof/${id}`),
   importExcel: (file) =>
-    api.post("/admin/pay-sheets/sheet", file, {
+    api.post("/admin/personnels/life_proof/sheet", file, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-  getHistory: (id) => api.get(`/admin/pay-sheets/${id}`),
-  getReport: () => api.get("/admin/pay-sheets/generate/report"),
+  getHistory: (id) => api.get(`/admin/personnels/life_proof/${id}`),
+  getReport: () => api.get("/admin/personnels/life_proof/generate/report"),
 };
 
 export const asicAPI = {
@@ -131,8 +131,8 @@ export const activitiesAPI = {
   getActivities: (params) => api.get("/admin/activities", { params }),
 };
 
-export const typePaySheetsAPI = {
-  getPaySheets: () => api.get("/admin/type-pay-sheets"),
+export const nominaNamesAPI = {
+  get: () => api.get("/admin/type-personnels"),
 };
 
 export const ASICAPI = {
@@ -178,20 +178,20 @@ export const servicesAPI = {
 };
 
 export const activePersonnelAPI = {
-  getPersonnel: (params) => api.get("/admin/active-personnel", { params }),
-  getPersonnelById: (id) => api.get(`/admin/active-personnel/${id}`),
+  getPersonnel: (params) => api.get("/admin/personnels/active", { params }),
+  getPersonnelById: (id) => api.get(`/admin/personnels/active/${id}`),
   createPersonnel: (personnelData) =>
-    api.post("/admin/active-personnel", personnelData, {
+    api.post("/admin/personnels/active", personnelData, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
 
   updatePersonnel: (id, personnelData) =>
-    api.put(`/admin/active-personnel/${id}`, personnelData),
+    api.put(`/admin/personnels/active/${id}`, personnelData),
   updatePersonnelPhoto: (id, photo) =>
-    api.post(`/admin/active-personnel/photos/${id}`, photo, {
+    api.post(`/admin/personnels/active/photos/${id}`, photo, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-  deletePersonnel: (id) => api.delete(`/admin/active-personnel/${id}`),
+  deletePersonnel: (id) => api.delete(`/admin/personnels/active/${id}`),
 };
 
 // Export the api instance for direct use if needed

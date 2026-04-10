@@ -9,10 +9,10 @@ import React, {
 import { API_URL } from "../../config/env.js";
 
 import {
-  payrollAPI,
+  liveProofAPI,
   asicAPI,
   censusAPI,
-  typePaySheetsAPI,
+  nominaNamesAPI,
 } from "../../services/api.js";
 import externalApi from "../../services/saludfalcon.api.js";
 import { Icon } from "@iconify/react";
@@ -105,12 +105,12 @@ export default function FeDeVidaPage() {
       }));
       setAdministrativeLocations(formattedLocations);
 
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
-      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
-        value: type_pay_sheet.id,
-        label: type_pay_sheet.name,
+      const type_personnel = await nominaNamesAPI.get();
+      const formattedTypePersonnel = type_personnel.map((type) => ({
+        value: type.id,
+        label: type.name,
       }));
-      setTypePaySheets(formattedTypePaySheets);
+      setTypePaySheets(formattedTypePersonnel);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -252,6 +252,7 @@ export default function FeDeVidaPage() {
 
   const defaultFormData = {
     to_census: false,
+    status: "inactive", // Siempre inactive para fe de vida
     // Datos personales
     photo: "",
     nac: "V",
@@ -261,34 +262,37 @@ export default function FeDeVidaPage() {
     sex: "F",
     city: "Coro",
     state: "Falcón",
-    administrative_location_id: 1,
+    asic_id: 1,
     phone_number: "",
     email: "",
     municipality: "",
     parish: "",
     address: "",
-
-    // Datos de pensión
-    type_pension: "Jubilacion",
-    type_pay_sheet_id: 1,
-    last_charge: "",
     civil_status: "C",
-    minor_child_nro: 0,
-    disabled_child_nro: 0,
     receive_pension_from_another_organization_status: false,
-    another_organization_name: null,
     has_authorizations: true,
-
-    // Pensión sobrevivencia (condicional - en este caso false)
     pension_survivor_status: false,
-    fullname_causative: null,
-    age_causative: null,
-    parent_causative: null,
-    sex_causative: null,
-    ci_causative: null,
-    decease_date: null,
     suspend_payment_status: false,
-    last_payment: null,
+    is_resident: false,
+
+    // Nuevo campo para tipo de personal
+    type_personnel_id: 1,
+
+    // Datos que van en additional_data
+    additional_data: {
+      type_pension: "Jubilacion",
+      last_charge: "",
+      minor_child_nro: 0,
+      disabled_child_nro: 0,
+      another_organization_name: null,
+      fullname_causative: null,
+      age_causative: null,
+      parent_causative: null,
+      sex_causative: null,
+      ci_causative: null,
+      decease_date: null,
+      last_payment: null,
+    },
     fotoChanged: false,
   };
 
@@ -345,8 +349,8 @@ export default function FeDeVidaPage() {
       className: "col-span-6",
     },
     {
-      name: "administrative_location_id",
-      label: "Ubicación administrativa",
+      name: "asic_id",
+      label: "Ubicación administrativa (ASIC)",
       type: "select",
       options: administrativeLocations,
       required: true,
@@ -416,8 +420,8 @@ export default function FeDeVidaPage() {
       className: "col-span-6",
     },
     {
-      name: "type_pay_sheet_id",
-      label: "Nombre de nómina",
+      name: "type_personnel_id",
+      label: "Tipo de personal",
       type: "select",
       options: typePaySheets,
       className: "col-span-6",
@@ -580,19 +584,25 @@ export default function FeDeVidaPage() {
         photoData.append("photo", formData.photo);
 
         if (submitString === "Actualizar") {
-          await payrollAPI.updatePhoto(formData.id, photoData);
+          await liveProofAPI.updatePersonnelPhoto(formData.id, photoData);
         }
       }
 
       if (submitString === "Actualizar") {
-        await payrollAPI.updateWorker(formData.id, formData);
+        await liveProofAPI.updatePersonnel(formData.id, formData);
         setSubmitString("Registrar");
       } else {
-        // createWorker uses multipart/form-data (for photo on create),
+        // createPersonnel uses multipart/form-data (for photo on create),
         // so booleans must be sent as "1"/"0"
-        await payrollAPI.createWorker({
+        await liveProofAPI.createPersonnel({
           ...formData,
           to_census: formData.to_census ? "1" : "0",
+          status: "inactive",
+          receive_pension_from_another_organization_status: formData.receive_pension_from_another_organization_status ? "1" : "0",
+          has_authorizations: formData.has_authorizations ? "1" : "0",
+          pension_survivor_status: formData.pension_survivor_status ? "1" : "0",
+          suspend_payment_status: formData.suspend_payment_status ? "1" : "0",
+          is_resident: formData.is_resident ? "1" : "0",
         });
       }
 
@@ -616,12 +626,12 @@ export default function FeDeVidaPage() {
 
   const handleDelete = async (id) => {
     try {
-      if (!window.confirm("¿Está seguro de eliminar esta nómina?")) {
+      if (!window.confirm("¿Está seguro de eliminar este personal?")) {
         return;
       }
-      const res = await payrollAPI.deleteWorker(id);
+      const res = await liveProofAPI.deletePersonnel(id);
       if (res.status) {
-        showSuccess("Trabajador eliminado con éxito");
+        showSuccess("Personal eliminado con éxito");
       }
       fetchData();
     } catch (error) {
@@ -696,8 +706,8 @@ export default function FeDeVidaPage() {
 
   const getHistory = async (id) => {
     try {
-      const res = await payrollAPI.getHistory(id);
-      setHistoryData(res.paySheet);
+      const res = await liveProofAPI.getPersonnelById(id);
+      setHistoryData(res);
       setIsHistoryModalOpen(true);
     } catch (error) {
       const errorMessage =
@@ -988,7 +998,7 @@ export default function FeDeVidaPage() {
     setIsLoading(true);
 
     try {
-      const res = await payrollAPI.getWorkers({
+      const res = await liveProofAPI.getPersonnel({
         page: pagination.pageIndex + 1,
         per_page: user.is_admin ? pagination.pageSize : 1,
         sortField: sorting[0]?.id || "id",
@@ -1001,8 +1011,8 @@ export default function FeDeVidaPage() {
           }, {}),
         ),
       });
-      setData(res.paySheets.data);
-      setRowCount(res.paySheets.total);
+      setData(res.personnels.data);
+      setRowCount(res.personnels.total);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }

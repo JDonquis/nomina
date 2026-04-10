@@ -15,7 +15,7 @@ import {
   departmentAPI,
   servicesAPI,
   censusAPI,
-  typePaySheetsAPI,
+  nominaNamesAPI,
 } from "../../services/api.js";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal.jsx";
@@ -92,9 +92,9 @@ const levelOptionsRAPCE = [
 ];
 
 const shiftOptions = [
-  {value: "7/1" , label: "7/1"},
-  {value: "1/7" , label: "1/7"},
-  {value: "7/7" , label: "7/7"},
+  { value: "7/1", label: "7/1" },
+  { value: "1/7", label: "1/7" },
+  { value: "7/7", label: "7/7" },
 ];
 
 const typePersonnelOptions = [
@@ -106,10 +106,9 @@ const typePersonnelOptions = [
 
 const budgetOptions = [
   { value: "MPPS - Falcón", label: "MPPS - Falcón" },
-  { value: "MPPS - Cc", label: "MPPS - Cc" },
+  { value: "MPPS - CCS", label: "MPPS - CCS" },
   { value: "Gobernación", label: "Gobernación" },
 ];
-
 
 const laborRelationshipOptions = [
   { value: "Fijo", label: "Fijo" },
@@ -170,7 +169,7 @@ export default function PersonalActivoPage() {
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [censusStatus, setCensusStatus] = useState(true);
   const [serviceOptions, setServiceOptions] = useState([]);
-  const [typePaySheets, setTypePaySheets] = useState([]);
+  const [nominasNames, setNominasNames] = useState([]);
 
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [familyMembers, setFamilyMembers] = useState([]);
@@ -183,12 +182,13 @@ export default function PersonalActivoPage() {
       setAsicOptions(
         asicRes.map((item) => ({ value: item.id, label: item.name })),
       );
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
-      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
-        value: type_pay_sheet.id,
-        label: type_pay_sheet.name,
+      const nominas = await nominaNamesAPI.get();
+      const formattedNominas = nominas.map((nomina) => ({
+        value: nomina.id,
+        label: `${nomina.code} | ${nomina.name} `,
+        ...nomina,
       }));
-      setTypePaySheets(formattedTypePaySheets);
+      setNominasNames(formattedNominas);
     } catch (e) {
       console.error("Failed to fetch initial data", e);
       showError("Error al cargar datos iniciales");
@@ -303,14 +303,9 @@ export default function PersonalActivoPage() {
         if (unit) {
           const depts = unit.departments || [];
 
-          const autoSelectDept =
-            depts.length === 1 &&
-            depts[0].name.toLowerCase() === unit.name.toLowerCase();
+          const autoSelectDept = depts.length === 1;
           const autoSelectService =
-            autoSelectDept &&
-            depts[0].services?.length === 1 &&
-            depts[0].services[0].name.toLowerCase() ===
-              depts[0].name.toLowerCase();
+            autoSelectDept && depts[0].services?.length === 1;
 
           setFormData((prev) => ({
             ...prev,
@@ -532,9 +527,29 @@ export default function PersonalActivoPage() {
         ],
         className: "col-span-6 md:col-span-3",
       },
+
       {
         name: "degree_obtained",
-        label: "Grado Obtenido",
+        label: "Nivel académico",
+        type: "select",
+        options: [
+          { value: "No Bachiller", label: "No Bachiller" },
+          { value: "Bachiller", label: "Bachiller" },
+          {
+            value: "Técnico Superior Universitario",
+            label: "Técnico Superior Universitario",
+          },
+          { value: "Profesional", label: "Profesional" },
+          { value: "Especialista", label: "Especialista" },
+          { value: "Maestría", label: "Maestría" },
+          { value: "Doctorado", label: "Doctorado" },
+        ],
+        required: false,
+        className: "col-span-12 md:col-span-4",
+      },
+      {
+        name: "undergraduate_degree",
+        label: "Pregrado",
         type: "text",
         required: false,
         className: "col-span-12 md:col-span-4",
@@ -544,7 +559,7 @@ export default function PersonalActivoPage() {
         label: "Postgrado",
         type: "text",
         required: false,
-        className: "col-span-12 md:col-span-5",
+        className: "col-span-12 md:col-span-4",
       },
       {
         name: "home_address",
@@ -650,19 +665,41 @@ export default function PersonalActivoPage() {
         required: false,
         className: "col-span-12 md:col-span-6",
       },
+
       {
-        name: "payroll_code",
-        label: "Código de Nómina",
-        type: "text",
+        name: "type_personnel_id",
+        label: "Nómina",
+        type: "autocomplete",
+        options: nominasNames,
         required: false,
-        className: "col-span-12 md:col-span-6",
+        className: "col-span-12 md:col-span-8",
+    
       },
       {
-        name: "payroll_name",
-        label: "Nombre de Nómina",
+        name: "personnel_type",
+        label: "Tipo de Personal",
+        type: "select",
+        options: typePersonnelOptions,
+        readOnly: true,
+        required: false,
+        className: "col-span-12 md:col-span-4",
+      },
+      {
+        name: "budget",
+        label: "Presupuesto",
         type: "text",
         required: false,
-        className: "col-span-12 md:col-span-6",
+        readOnly: true,
+        className: "col-span-12 md:col-span-4",
+      },
+      
+      {
+        name: "labor_relationship",
+        label: "Relación Laboral",
+        type: "text",
+        required: false,
+        readOnly: true,
+        className: "col-span-12 md:col-span-4",
       },
       {
         name: "entry_date",
@@ -696,8 +733,12 @@ export default function PersonalActivoPage() {
           setFormData((prev) => ({
             ...prev,
             residency_type: val,
-            university: val === "Postgrado Universitario" ? prev.university : "",
-            level: val === "Postgrado Universitario" || val === "RAPCE" ? prev.level : "",
+            university:
+              val === "Postgrado Universitario" ? prev.university : "",
+            level:
+              val === "Postgrado Universitario" || val === "RAPCE"
+                ? prev.level
+                : "",
           }));
         },
       },
@@ -707,7 +748,8 @@ export default function PersonalActivoPage() {
         type: "select",
         options: universityOptionsList,
         required:
-          formData.is_resident && formData.residency_type === "Postgrado Universitario",
+          formData.is_resident &&
+          formData.residency_type === "Postgrado Universitario",
         className: `col-span-12 md:col-span-3 ${!(formData.is_resident && formData.residency_type === "Postgrado Universitario") ? "hidden" : ""}`,
       },
       {
@@ -721,7 +763,7 @@ export default function PersonalActivoPage() {
             formData.residency_type === "RAPCE"),
         className: `col-span-12 md:col-span-3 ${!(formData.is_resident && (formData.residency_type === "Postgrado Universitario" || formData.residency_type === "RAPCE")) ? "hidden" : ""}`,
       },
-   
+
       {
         name: "job_code",
         label: "Código del Cargo",
@@ -744,31 +786,7 @@ export default function PersonalActivoPage() {
         required: false,
         className: "col-span-12 md:col-span-6",
       },
-      {
-        name: "personnel_type",
-        label: "Tipo de Personal",
-        type: "select",
-        options: typePersonnelOptions,
 
-        required: false,
-        className: "col-span-12 md:col-span-6",
-      },
-      {
-        name: "budget",
-        label: "Presupuesto",
-        type: "select",
-        options: budgetOptions,
-        required: false,
-        className: "col-span-12 md:col-span-4",
-      },
-      {
-        name: "labor_relationship",
-        label: "Relación Laboral",
-        type: "select",
-        options: laborRelationshipOptions,
-        required: false,
-        className: "col-span-12 md:col-span-4",
-      },
       {
         name: "grade",
         label: "Grado",
@@ -776,7 +794,7 @@ export default function PersonalActivoPage() {
         required: false,
         className: "col-span-12 md:col-span-4",
       },
-   
+
       {
         name: "observation",
         label: "Observaciones",
@@ -787,6 +805,7 @@ export default function PersonalActivoPage() {
     ],
     [
       asicOptions,
+      nominasNames,
       dependencyOptions,
       unitOptions,
       departmentOptions,
@@ -810,7 +829,9 @@ export default function PersonalActivoPage() {
   }, []);
 
   const capitalizeWords = (str) => {
-    return str.replace(/(?:^|\s|-)[a-záéíóúñü]/gi, (match) => match.toUpperCase());
+    return str.replace(/(?:^|\s|-)[a-záéíóúñü]/gi, (match) =>
+      match.toUpperCase(),
+    );
   };
 
   const handleFieldChange = useCallback((e, field) => {
@@ -829,6 +850,18 @@ export default function PersonalActivoPage() {
           }
           return updated;
         });
+      } else if (e.target.type === "autocomplete") {
+        const selectedOption = e.target.selectedOption;
+        setFormData((prev) => {
+          const updated = { ...prev, [name]: value };
+          // When type_personnel_id changes, also set personnel_type
+          if (name === "type_personnel_id" && selectedOption) {
+            updated.personnel_type = selectedOption.type_personal || "";
+            updated.labor_relationship = selectedOption.laboral_relationship || "";
+            updated.budget = selectedOption.source_budget || "";
+          }
+          return updated;
+        });
       } else {
         setFormData((prev) => ({ ...prev, [name]: value }));
       }
@@ -840,10 +873,63 @@ export default function PersonalActivoPage() {
     setLoading(true);
 
     try {
+      // Fields that are direct columns in the DB
       const submitData = {
-        ...formData,
-        family_members: familyMembers,
+        status: "active",
         to_census: censusStatus,
+        type_personnel_id: formData.type_personnel_id,
+        nac: formData.nac,
+        ci: formData.ci,
+        full_name: formData.full_name,
+        date_birth: formData.date_birth,
+        sex: formData.sex,
+        civil_status: formData.civil_status,
+        phone_number: formData.phone_number,
+        email: formData.email,
+        address: formData.address,
+        municipality: formData.municipality,
+        parish: formData.parish,
+        state: formData.state,
+        city: formData.city,
+        asic_id: formData.asic_id,
+        dependency_id: formData.dependency_id,
+        administrative_unit_id: formData.administrative_unit_id,
+        department_id: formData.department_id,
+        service_id: formData.service_id,
+        receive_pension_from_another_organization_status: formData.receive_pension_from_another_organization_status,
+        has_authorizations: formData.has_authorizations,
+        pension_survivor_status: formData.pension_survivor_status,
+        suspend_payment_status: formData.suspend_payment_status,
+        is_resident: formData.is_resident,
+        to_census: censusStatus,
+        family_members: familyMembers,
+        // Everything else goes into additional_data
+        additional_data: {
+          payroll_dependency: formData.payroll_dependency,
+          payroll_code: formData.payroll_code,
+          payroll_name: formData.payroll_name,
+          entry_date: formData.entry_date,
+          job_title: formData.job_title,
+          residency_type: formData.residency_type,
+          university: formData.university,
+          level: formData.level,
+          job_code: formData.job_code,
+          shift: formData.shift,
+          bank_account_number: formData.bank_account_number,
+          personnel_type: formData.personnel_type,
+          budget: formData.budget,
+          labor_relationship: formData.labor_relationship,
+          grade: formData.grade,
+          observation: formData.observation,
+          degree_obtained: formData.degree_obtained,
+          postgraduate_degree: formData.postgraduate_degree,
+          home_address: formData.home_address,
+          mobile_phone: formData.mobile_phone,
+          fixed_phone: formData.fixed_phone,
+          shirt_size: formData.shirt_size,
+          pant_size: formData.pant_size,
+          shoe_size: formData.shoe_size,
+        },
       };
 
       // Upload photo separately if changed
@@ -859,14 +945,7 @@ export default function PersonalActivoPage() {
       if (submitString === "Actualizar") {
         await activePersonnelAPI.updatePersonnel(editingId, submitData);
       } else {
-        // createPersonnel uses multipart/form-data (for photo),
-        // so booleans must be sent as "1"/"0"
-        await activePersonnelAPI.createPersonnel({
-          ...submitData,
-          to_census: censusStatus ? "1" : "0",
-          is_resident: formData.is_resident ? "1" : "0",
-          status: formData.status ? "1" : "0",
-        });
+        await activePersonnelAPI.createPersonnel(submitData);
       }
 
       showSuccess(
@@ -1052,6 +1131,7 @@ export default function PersonalActivoPage() {
                 setFormData({
                   ...defaultFormData,
                   ...row,
+                  ...(row.additional_data || {}), // Flatten additional_data back into formData
                   fotoChanged: false,
                 });
                 setFamilyMembers(row.family_members || []);
@@ -1235,7 +1315,7 @@ export default function PersonalActivoPage() {
     title,
   }) => (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
-      <div className="flex flex-col items-center gap-4 p-4">
+      <div className="flex  flex-col items-center gap-4 p-4">
         <div className="relative w-full max-w-md bg-black rounded-lg overflow-hidden">
           <video
             ref={videoRef}
@@ -1347,7 +1427,7 @@ export default function PersonalActivoPage() {
                     f.name !== "service_id" &&
                     f.name !== "payroll_dependency" &&
                     f.name !== "payroll_code" &&
-                    f.name !== "payroll_name" &&
+                    f.name !== "type_personnel_id" &&
                     f.name !== "entry_date" &&
                     f.name !== "job_title" &&
                     f.name !== "is_resident" &&
@@ -1380,7 +1460,9 @@ export default function PersonalActivoPage() {
                     Datos administrativos
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text text-gray-600">Censar al guardar</span>
+                    <span className="text text-gray-600">
+                      Censar al guardar
+                    </span>
                     <Switch
                       checked={censusStatus}
                       onChange={(e) => setCensusStatus(e.target.checked)}
@@ -1392,214 +1474,227 @@ export default function PersonalActivoPage() {
                 {censusStatus && (
                   <div className="space-y-4">
                     <div className="md:grid space-y-3 md:grid-cols-12 gap-4">
-                    {formFields
-                      .filter(
-                        (f) =>
-                          f.name === "asic_id" ||
-                          f.name === "dependency_id" ||
-                          f.name === "administrative_unit_id" ||
-                          f.name === "department_id" ||
-                          f.name === "service_id",
-                      )
-                      .map((field) => (
-                        <FormField
-                          key={field.name}
-                          {...field}
-                          value={formData[field.name] ?? ""}
-                          onChange={(e) => handleFieldChange(e, field)}
-                        />
-                      ))}
-                  </div>
-
-                  <div className="md:grid space-y-3 md:grid-cols-12 gap-4 mt-4">
-                    {formFields
-                      .filter(
-                        (f) =>
-                          f.name === "payroll_dependency" ||
-                          f.name === "payroll_code" ||
-                          f.name === "payroll_name" ||
-                          f.name === "entry_date" ||
-                          f.name === "job_title" ||
-                          f.name === "is_resident" ||
-                          f.name === "residency_type" ||
-                          f.name === "university" ||
-                          f.name === "level" ||
-                          f.name === "job_code" ||
-                          f.name === "shift" ||
-                          f.name === "bank_account_number" ||
-                          f.name === "personnel_type" ||
-                          f.name === "budget" ||
-                          f.name === "labor_relationship" ||
-                          f.name === "grade" ||
-                          f.name === "observation",
-                      )
-                      .map((field) => (
-                        <FormField
-                          key={field.name}
-                          {...field}
-                          value={formData[field.name] ?? ""}
-                          onChange={(e) => handleFieldChange(e, field)}
-                        />
-                      ))}
-                  </div>
-
-                  <div className="border-t pt-4 mt-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold text-gray-700">
-                        Carga Familiar
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFamilyMembers([
-                            ...familyMembers,
-                            { ...defaultFamilyMember },
-                          ])
-                        }
-                        className="px-3 py-1.5 bg-color2 text-white text-sm rounded-md hover:bg-color3 flex items-center gap-1"
-                      >
-                        <Icon icon="tabler:plus" width={16} height={16} />
-                        Agregar Familiar
-                      </button>
+                      {formFields
+                        .filter(
+                          (f) =>
+                            f.name === "asic_id" ||
+                            f.name === "dependency_id" ||
+                            f.name === "administrative_unit_id" ||
+                            f.name === "department_id" ||
+                            f.name === "service_id",
+                        )
+                        .map((field) => (
+                          <FormField
+                            key={field.name}
+                            {...field}
+                            value={formData[field.name] ?? ""}
+                            onChange={(e) => handleFieldChange(e, field)}
+                          />
+                        ))}
                     </div>
 
-                    {familyMembers.length === 0 ? (
-                      <p className="text-gray-500 text-sm text-center py-4 bg-gray-50 rounded-md">
-                        No hay familiares agregados
-                      </p>
-                    ) : (
-                      <div className="space-y-3 max-h-96 overflow-y-auto">
-                        {familyMembers.map((member, index) => (
-                          <div
-                            key={index}
-                            className="bg-gray-50 p-3 rounded-md border"
-                          >
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="font-medium text-sm text-gray-600">
-                                Familiar #{index + 1}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setFamilyMembers(
-                                    familyMembers.filter(
-                                      (_, i) => i !== index,
-                                    ),
-                                  )
-                                }
-                                className="text-red-500 hover:text-red-700 p-1"
-                                title="Eliminar"
-                              >
-                          <Icon icon="tabler:trash" width={18} height={18} />
+                    <div className="md:grid space-y-3 md:grid-cols-12 gap-4 mt-4">
+                      {formFields
+                        .filter(
+                          (f) =>
+                            f.name === "payroll_dependency" ||
+                            f.name === "payroll_code" ||
+                            f.name === "type_personnel_id" ||
+                            f.name === "entry_date" ||
+                            f.name === "job_title" ||
+                            f.name === "is_resident" ||
+                            f.name === "residency_type" ||
+                            f.name === "university" ||
+                            f.name === "level" ||
+                            f.name === "job_code" ||
+                            f.name === "shift" ||
+                            f.name === "bank_account_number" ||
+                            f.name === "personnel_type" ||
+                            f.name === "budget" ||
+                            f.name === "labor_relationship" ||
+                            f.name === "grade" ||
+                            f.name === "observation",
+                        )
+                        .map((field) => (
+                          <FormField
+                            key={field.name}
+                            {...field}
+                            value={formData[field.name] ?? ""}
+                            onChange={(e) => handleFieldChange(e, field)}
+                          />
+                        ))}
+                    </div>
+
+                    <div className="border-t pt-4 mt-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-semibold text-gray-700">
+                          Carga Familiar
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFamilyMembers([
+                              ...familyMembers,
+                              { ...defaultFamilyMember },
+                            ])
+                          }
+                          className="px-3 py-1.5 bg-color2 text-white text-sm rounded-md hover:bg-color3 flex items-center gap-1"
+                        >
+                          <Icon icon="tabler:plus" width={16} height={16} />
+                          Agregar Familiar
                         </button>
                       </div>
-                      <div className="grid grid-cols-12 gap-2">
-                        <FormField
-                          type="text"
-                          name={`family_ci_${index}`}
-                          label="Cédula"
-                          value={member.ci}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].ci = e.target.value.toUpperCase();
-                            setFamilyMembers(updated);
-                          }}
-                          className="col-span-3"
-                          sx={{ "& input": { textTransform: "uppercase" } }}
-                        />
-                        <FormField
-                          type="text"
-                          name={`family_full_name_${index}`}
-                          label="Nombre Completo"
-                          value={member.full_name}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].full_name = e.target.value;
-                            setFamilyMembers(updated);
-                          }}
-                          className="col-span-4"
-                          sx={{ "& input": { textTransform: "uppercase" } }}
-                        />
-                        <FormField
-                          type="date"
-                          name={`family_date_birth_${index}`}
-                          label="Fec. Nac."
-                          value={member.date_birth}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].date_birth = e.target.value;
-                            setFamilyMembers(updated);
-                          }}
-                          className="col-span-2"
-                        />
-                        <FormField
-                          type="select"
-                          name={`family_sex_${index}`}
-                          label="Sexo"
-                          options={[
-                            { value: "M", label: "M" },
-                            { value: "F", label: "F" },
-                          ]}
-                          value={member.sex}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].sex = e.target.value;
-                            setFamilyMembers(updated);
-                          }}
-                          className="col-span-2"
-                        />
-                        <FormField
-                          type="select"
-                          name={`family_relationship_${index}`}
-                          label="Parentesco"
-                          options={[
-                            { value: "", label: "Seleccionar" },
-                            ...relationshipOptions,
-                          ]}
-                          value={member.relationship}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].relationship = e.target.value;
-                            setFamilyMembers(updated);
-                          }}
-                          className="col-span-4"
-                        />
-                        <FormField
-                          type="select"
-                          name={`family_study_level_${index}`}
-                          label="Nivel Estudio"
-                          options={[
-                            { value: "", label: "Seleccionar" },
-                            ...studyLevelOptions,
-                          ]}
-                          value={member.study_level}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].study_level = e.target.value;
-                            setFamilyMembers(updated);
-                          }}
-                          className="col-span-4"
-                        />
-                        <FormField
-                          type="text"
-                          name={`family_current_grade_${index}`}
-                          label="Grado Actual"
-                          value={member.current_grade}
-                          onChange={(e) => {
-                            const updated = [...familyMembers];
-                            updated[index].current_grade = e.target.value.toUpperCase();
-                            setFamilyMembers(updated);
-                          }}
-                          placeholder="Ej: 4TO GRADO"
-                          className="col-span-4"
-                          sx={{ "& input": { textTransform: "uppercase" } }}
-                        />
-                      </div>
+
+                      {familyMembers.length === 0 ? (
+                        <p className="text-gray-500 text-sm text-center py-4 bg-gray-50 rounded-md">
+                          No hay familiares agregados
+                        </p>
+                      ) : (
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {familyMembers.map((member, index) => (
+                            <div
+                              key={index}
+                              className="bg-gray-50 p-3 rounded-md border"
+                            >
+                              <div className="flex justify-between items-center mb-2">
+                                <span className="font-medium text-sm text-gray-600">
+                                  Familiar #{index + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setFamilyMembers(
+                                      familyMembers.filter(
+                                        (_, i) => i !== index,
+                                      ),
+                                    )
+                                  }
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                  title="Eliminar"
+                                >
+                                  <Icon
+                                    icon="tabler:trash"
+                                    width={18}
+                                    height={18}
+                                  />
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-12 gap-2">
+                                <FormField
+                                  type="text"
+                                  name={`family_ci_${index}`}
+                                  label="Cédula"
+                                  value={member.ci}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].ci =
+                                      e.target.value.toUpperCase();
+                                    setFamilyMembers(updated);
+                                  }}
+                                  className="col-span-3"
+                                  sx={{
+                                    "& input": { textTransform: "uppercase" },
+                                  }}
+                                />
+                                <FormField
+                                  type="text"
+                                  name={`family_full_name_${index}`}
+                                  label="Nombre Completo"
+                                  value={member.full_name}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].full_name = e.target.value;
+                                    setFamilyMembers(updated);
+                                  }}
+                                  className="col-span-4"
+                                  sx={{
+                                    "& input": { textTransform: "uppercase" },
+                                  }}
+                                />
+                                <FormField
+                                  type="date"
+                                  name={`family_date_birth_${index}`}
+                                  label="Fec. Nac."
+                                  value={member.date_birth}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].date_birth = e.target.value;
+                                    setFamilyMembers(updated);
+                                  }}
+                                  className="col-span-2"
+                                />
+                                <FormField
+                                  type="select"
+                                  name={`family_sex_${index}`}
+                                  label="Sexo"
+                                  options={[
+                                    { value: "M", label: "M" },
+                                    { value: "F", label: "F" },
+                                  ]}
+                                  value={member.sex}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].sex = e.target.value;
+                                    setFamilyMembers(updated);
+                                  }}
+                                  className="col-span-2"
+                                />
+                                <FormField
+                                  type="select"
+                                  name={`family_relationship_${index}`}
+                                  label="Parentesco"
+                                  options={[
+                                    { value: "", label: "Seleccionar" },
+                                    ...relationshipOptions,
+                                  ]}
+                                  value={member.relationship}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].relationship =
+                                      e.target.value;
+                                    setFamilyMembers(updated);
+                                  }}
+                                  className="col-span-4"
+                                />
+                                <FormField
+                                  type="select"
+                                  name={`family_study_level_${index}`}
+                                  label="Nivel Estudio"
+                                  options={[
+                                    { value: "", label: "Seleccionar" },
+                                    ...studyLevelOptions,
+                                  ]}
+                                  value={member.study_level}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].study_level = e.target.value;
+                                    setFamilyMembers(updated);
+                                  }}
+                                  className="col-span-4"
+                                />
+                                <FormField
+                                  type="text"
+                                  name={`family_current_grade_${index}`}
+                                  label="Grado Actual"
+                                  value={member.current_grade}
+                                  onChange={(e) => {
+                                    const updated = [...familyMembers];
+                                    updated[index].current_grade =
+                                      e.target.value.toUpperCase();
+                                    setFamilyMembers(updated);
+                                  }}
+                                  placeholder="Ej: 4TO GRADO"
+                                  className="col-span-4"
+                                  sx={{
+                                    "& input": { textTransform: "uppercase" },
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                  </div>
-                )}
-                </div>
                   </div>
                 )}
               </div>
