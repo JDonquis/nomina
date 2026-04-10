@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Personnel (Fe de Vida)
     Route::get('personnels/life_proof', [PersonnelController::class, 'lifeProof']);
     Route::post('personnels/life_proof', [PersonnelController::class, 'store']);
+    Route::get('personnels/life_proof/{personnel}', [PersonnelController::class, 'show']);
     Route::put('personnels/life_proof/{personnel}', [PersonnelController::class, 'update']);
     Route::post('personnels/life_proof/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
 

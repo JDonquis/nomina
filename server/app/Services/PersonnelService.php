@@ -121,7 +121,7 @@ class PersonnelService
 
     public function show(Personnel $personnel)
     {
-        $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
+        $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service', 'auditLogs']);
 
         return $personnel;
     }
