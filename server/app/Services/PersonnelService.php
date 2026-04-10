@@ -61,6 +61,11 @@ class PersonnelService
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
 
+        if (isset($params['census_status'])) {
+            $censusStatus = $params['census_status'] === 'CENSADO' || $params['census_status'] === true;
+            $query->where('census_status', $censusStatus);
+        }
+
         if (!empty($params['search'])) {
             $search = $params['search'];
             $query->where(function ($q) use ($search) {
