@@ -17,7 +17,11 @@ use App\Models\Personnel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Models\AuditLog;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -179,18 +183,41 @@ class PersonnelController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $headers = [
-            'NAC (V/E)', 'CEDULA', 'NOMBRE COMPLETO', 'FECHA NACIMIENTO (YYYY-MM-DD)',
-            'SEXO (M/F)', 'ESTADO CIVIL (S/C/V/D)', 'GRADO OBTENIDO', 'TITULO PRE GRADO',
-            'TITULO POST GRADO', 'DIRECCION', 'EMAIL', 'TELEFONO MOVIL', 'TELEFONO FIJO',
-            'TALLA CAMISA', 'TALLA PANTALON', 'TALLA ZAPATOS', 'NOMBRE ASIC',
-            'NOMBRE DEPENDENCIA', 'NOMBRE UNIDAD ADM', 'NOMBRE DEPARTAMENTO', 'NOMBRE SERVICIO',
-            'FECHA INGRESO (YYYY-MM-DD)', 'CARGO', 'RELACION LABORAL', 'CODIGO NOMINA',
-            'NOMBRE NOMINA', 'PRESUPUESTO', 'DEPENDENCIA NÓMINA', 'CODIGO CARGO', 'NUMERO DE CUENTA'
+            'NAC (V/E)',
+            'CEDULA',
+            'NOMBRE COMPLETO',
+            'FECHA NACIMIENTO (YYYY-MM-DD)',
+            'SEXO (M/F)',
+            'ESTADO CIVIL (S/C/V/D)',
+            'GRADO OBTENIDO',
+            'TITULO PRE GRADO',
+            'TITULO POST GRADO',
+            'DIRECCION',
+            'EMAIL',
+            'TELEFONO MOVIL',
+            'TELEFONO FIJO',
+            'TALLA CAMISA',
+            'TALLA PANTALON',
+            'TALLA ZAPATOS',
+            'NOMBRE ASIC',
+            'NOMBRE DEPENDENCIA',
+            'NOMBRE UNIDAD ADM',
+            'NOMBRE DEPARTAMENTO',
+            'NOMBRE SERVICIO',
+            'FECHA INGRESO (YYYY-MM-DD)',
+            'CARGO',
+            'RELACION LABORAL',
+            'CODIGO NOMINA',
+            'NOMBRE NOMINA',
+            'PRESUPUESTO',
+            'DEPENDENCIA NÓMINA',
+            'CODIGO CARGO',
+            'NUMERO DE CUENTA'
         ];
 
         $sheet->fromArray($headers, null, 'A1');
 
-        $columns = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD'];
+        $columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD'];
         foreach ($columns as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
@@ -213,80 +240,68 @@ class PersonnelController extends Controller
         ]);
 
         try {
-            $file = $request->file('file');
-            $spreadsheet = IOFactory::load($file);
-            $sheet = $spreadsheet->getSheetByName('DATA PERSONAL');
+            $dataRows = [];
 
-            $headers = [];
-            foreach ($sheet->getRowIterator()->current()->getCellIterator() as $cell) {
-                $headers[trim($cell->getColumn())] = trim($cell->getValue() ?? '');
-            }
+            $import = new class($dataRows) implements ToCollection, WithHeadingRow {
+                public array $rows;
 
-            $created = 0;
+                public function __construct(array &$rows)
+                {
+                    $this->rows = &$rows;
+                }
+
+                public function collection(Collection $rows)
+                {
+                    $this->rows = $rows->toArray();
+                }
+
+                public function headingRow(): int
+                {
+                    return 1;
+                }
+            };
+
+            Excel::import($import, $request->file('file'));
+
+            $headers = !empty($dataRows[0] ?? []) ? array_keys($dataRows[0]) : [];
+
+            $data = [];
             $errors = [];
 
-            $rowIterator = $sheet->getRowIterator();
-            $rowIndex = 1;
-            foreach ($rowIterator as $row) {
-                if ($rowIndex === 1) {
-                    $rowIndex++;
-                    continue;
-                }
+            foreach ($dataRows as $index => $row) {
 
-                $rowData = [];
-                foreach ($row->getCellIterator() as $cell) {
-                    $col = trim($cell->getColumn());
-                    $header = $headers[$col] ?? '';
-                    $value = $cell->getValue();
-                    $rowData[$header] = $value;
-                }
 
-                $ci = $rowData['CEDULA'] ?? null;
-                $fullName = $rowData['NOMBRE COMPLETO'] ?? null;
+                $rowIndex = $index + 1;
+                $rowData = $row;
+
+                $ci = $rowData['cedula'] ?? null;
+                $fullName = $rowData['nombre_completo'] ?? null;
 
                 if (empty($ci) || empty($fullName)) {
                     $errors[] = "Fila $rowIndex sin Cédula o Nombre";
-                    $rowIndex++;
                     continue;
                 }
 
-                $dateBirth = null;
-                if (!empty($rowData['FECHA NACIMIENTO (YYYY-MM-DD)'])) {
-                    $dateValue = $rowData['FECHA NACIMIENTO (YYYY-MM-DD)'];
-                    if (is_numeric($dateValue)) {
-                        $dateBirth = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dateValue)->format('Y-m-d');
-                    } else {
-                        $dateBirth = $dateValue;
-                    }
-                }
-
-                $entryDate = null;
-                if (!empty($rowData['FECHA INGRESO (YYYY-MM-DD)'])) {
-                    $entryValue = $rowData['FECHA INGRESO (YYYY-MM-DD)'];
-                    if (is_numeric($entryValue)) {
-                        $entryDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($entryValue)->format('Y-m-d');
-                    } else {
-                        $entryDate = $entryValue;
-                    }
-                }
+                $dateBirthValue = $rowData['fecha_nacimiento_yyyy_mm_dd'] ?? null;
+                $dateBirth = $this->excelDateToDate($dateBirthValue);
+                $entryDateValue = $rowData['fecha_greso_yyyy_mm_dd'] ?? null;
+                $entryDate = $this->excelDateToDate($entryDateValue);
 
                 $sexMap = ['Masculino' => 'M', 'Femenino' => 'F'];
-                $sex = $sexMap[$rowData['SEXO (M/F)']] ?? $rowData['SEXO (M/F)'];
+                $sex = $sexMap[$rowData['sexo_mf']] ?? $rowData['sexo_mf'] ?? 'M';
 
                 $civilMap = ['Soltero' => 'S', 'Casado' => 'C', 'Viudo' => 'V', 'Divorciado' => 'D'];
-                $civilStatus = $civilMap[$rowData['ESTADO CIVIL (S/C/V/D)']] ?? $rowData['ESTADO CIVIL (S/C/V/D)'];
+                $civilStatus = $civilMap[$rowData['estado_civil_scvd']] ?? $rowData['estado_civil_scvd'] ?? 'S';
 
-                $asic = ASIC::where('name', $rowData['NOMBRE ASIC'] ?? null)->first();
-                $dependency = Dependency::where('name', $rowData['NOMBRE DEPENDENCIA'] ?? null)->first();
-                $adminUnit = AdministrativeUnit::where('name', $rowData['NOMBRE UNIDAD ADM'] ?? null)->first();
-                $department = Department::where('name', $rowData['NOMBRE DEPARTAMENTO'] ?? null)->first();
-                $service = Service::where('name', $rowData['NOMBRE SERVICIO'] ?? null)->first();
+                $asic = ASIC::where('name', $rowData['nombre_asic'] ?? null)->first();
+                $dependency = Dependency::where('name', $rowData['nombre_dependencia'] ?? null)->first();
+                $adminUnit = AdministrativeUnit::where('name', $rowData['nombre_unidad_adm'] ?? null)->first();
+                $department = Department::where('name', $rowData['nombre_departamento'] ?? null)->first();
+                $service = Service::where('name', $rowData['nombre_servicio'] ?? null)->first();
 
                 $typePersonnel = null;
-                $codigoNomina = $rowData['CODIGO NOMINA'] ?? '';
-                $nombreNomina = $rowData['NOMBRE NOMINA'] ?? '';
-
-                Log::info("Fila $rowIndex - CODIGO NOMINA: '$codigoNomina', NOMBRE NOMINA: '$nombreNomina'");
+                $codigoNomina = $rowData['codigo_nomina'] ?? '';
+                $nombreNomina = $rowData['nombre_nomina'] ?? '';
 
                 if (!empty($codigoNomina) && is_numeric($codigoNomina)) {
                     $typePersonnel = TypePersonnel::where('code', $codigoNomina)->first();
@@ -295,21 +310,19 @@ class PersonnelController extends Controller
                     $typePersonnel = TypePersonnel::where('name', 'LIKE', '%' . $nombreNomina . '%')->first();
                 }
 
-                Log::info("Fila $rowIndex - TypePersonnel encontrado: " . ($typePersonnel ? $typePersonnel->id : 'NULL'));
-
                 $personnel = Personnel::create([
                     'status' => 'active',
                     'census_status' => false,
                     'type_personnel_id' => $typePersonnel?->id,
-                    'nac' => $rowData['NAC (V/E)'] ?? 'V',
+                    'nac' => $rowData['nac_ve'] ?? 'V',
                     'ci' => (string) $ci,
                     'full_name' => $fullName,
                     'date_birth' => $dateBirth,
                     'sex' => $sex,
                     'civil_status' => $civilStatus,
-                    'address' => $rowData['DIRECCION'] ?? null,
-                    'email' => $rowData['EMAIL'] ?? null,
-                    'phone_number' => $rowData['TELEFONO MOVIL'] ?? null,
+                    'address' => $rowData['direccion'] ?? null,
+                    'email' => $rowData['email'] ?? null,
+                    'phone_number' => $rowData['telefono_movil'] ?? null,
                     'state' => 'Falcón',
                     'city' => 'Sin asignar',
                     'asic_id' => $asic?->id,
@@ -317,33 +330,84 @@ class PersonnelController extends Controller
                     'administrative_unit_id' => $adminUnit?->id,
                     'department_id' => $department?->id,
                     'service_id' => $service?->id,
-                    'entry_date' => $entryDate,
-                    'job_title' => $rowData['CARGO'] ?? null,
-                    'bank_account_number' => (string) ($rowData['NUMERO DE CUENTA'] ?? ''),
-                    'job_code' => $rowData['CODIGO CARGO'] ?? null,
                     'is_resident' => false,
                     'additional_data' => [
-                        'degree_obtained' => $rowData['GRADO OBTENIDO'] ?? null,
-                        'postgraduate_degree' => $rowData['TITULO POST GRADO'] ?? null,
-                        'mobile_phone' => $rowData['TELEFONO MOVIL'] ?? null,
-                        'fixed_phone' => $rowData['TELEFONO FIJO'] ?? null,
-                        'shirt_size' => $rowData['TALLA CAMISA'] ?? null,
-                        'pant_size' => $rowData['TALLA PANTALON'] ?? null,
-                        'shoe_size' => $rowData['TALLA ZAPATOS'] ?? null,
-                        'payroll_dependency' => $rowData['DEPENDENCIA NÓMINA'] ?? null,
-                        'payroll_code' => $rowData['CODIGO NOMINA'] ?? null,
-                        'payroll_name' => $rowData['NOMBRE NOMINA'] ?? null,
-                        'budget' => $rowData['PRESUPUESTO'] ?? null,
+                        'degree_obtained' => $rowData['grado_obtenido'] ?? null,
+                        'postgraduate_degree' => $rowData['titulo_post_grado'] ?? null,
+                        'fixed_phone' => $rowData['telefono_fijo'] ?? null,
+                        'shirt_size' => $rowData['talla_camisa'] ?? null,
+                        'pant_size' => $rowData['talla_pantalon'] ?? null,
+                        'shoe_size' => $rowData['talla_zapatos'] ?? null,
+                        'payroll_dependency' => $rowData['dependencia_nómina'] ?? null,
+                        'entry_date' => $entryDate,
+                        'job_title' => $rowData['cargo'] ?? null,
+                        'bank_account_number' => (string) ($rowData['numero_de_cuenta'] ?? ''),
+                        'job_code' => $rowData['codigo_cargo'] ?? null,
                     ],
                 ]);
 
-                $created++;
-                $rowIndex++;
+                AuditLog::create([
+                    'action' => 'import_excel',
+                    'auditable_type' => Personnel::class,
+                    'auditable_id' => $personnel->id,
+                    'user_id' => auth()->id() ?? null,
+                    'old_values' => null,
+                    'new_values' => $personnel->toArray(),
+                ]);
+
+                $data[] = [
+                    'row' => $rowIndex,
+                    'id' => $personnel->id,
+                    'status' => 'active',
+                    'census_status' => false,
+                    'type_personnel_id' => $typePersonnel?->id,
+                    'type_personnel_code' => $codigoNomina,
+                    'type_personnel_name' => $nombreNomina,
+                    'nac' => $rowData['nac_ve'] ?? 'V',
+                    'ci' => (string) $ci,
+                    'full_name' => $fullName,
+                    'date_birth' => $dateBirth,
+                    'sex' => $sex,
+                    'civil_status' => $civilStatus,
+                    'address' => $rowData['direccion'] ?? null,
+                    'email' => $rowData['email'] ?? null,
+                    'phone_number' => $rowData['telefono_movil'] ?? null,
+                    'state' => 'Falcón',
+                    'city' => 'Sin asignar',
+                    'asic_id' => $asic?->id,
+                    'asic_name' => $rowData['nombre_asic'] ?? null,
+                    'dependency_id' => $dependency?->id,
+                    'dependency_name' => $rowData['nombre_dependencia'] ?? null,
+                    'administrative_unit_id' => $adminUnit?->id,
+                    'administrative_unit_name' => $rowData['nombre_unidad_adm'] ?? null,
+                    'department_id' => $department?->id,
+                    'department_name' => $rowData['nombre_departamento'] ?? null,
+                    'service_id' => $service?->id,
+                    'service_name' => $rowData['nombre_servicio'] ?? null,
+                    'entry_date' => $entryDate,
+                    'job_title' => $rowData['cargo'] ?? null,
+                    'bank_account_number' => (string) ($rowData['numero_de_cuenta'] ?? ''),
+                    'job_code' => $rowData['codigo_cargo'] ?? null,
+                    'is_resident' => false,
+                    'additional_data' => [
+                        'degree_obtained' => $rowData['grado_obtenido'] ?? null,
+                        'postgraduate_degree' => $rowData['titulo_post_grado'] ?? null,
+                        'mobile_phone' => $rowData['telefono_movil'] ?? null,
+                        'fixed_phone' => $rowData['telefono_fijo'] ?? null,
+                        'shirt_size' => $rowData['talla_camisa'] ?? null,
+                        'pant_size' => $rowData['talla_pantalon'] ?? null,
+                        'shoe_size' => $rowData['talla_zapatos'] ?? null,
+                        'payroll_dependency' => $rowData['dependencia_nómina'] ?? null,
+                        'payroll_code' => $rowData['codigo_nomina'] ?? null,
+                        'payroll_name' => $rowData['nombre_nomina'] ?? null,
+                        'budget' => $rowData['presupuesto'] ?? null,
+                    ],
+                ];
             }
 
             return response()->json([
-                'message' => 'Importación completada',
-                'created' => $created,
+                'data' => $data,
+                'total' => count($data),
                 'errors' => $errors
             ]);
         } catch (Exception $e) {
@@ -357,5 +421,18 @@ class PersonnelController extends Controller
                 'message' => 'Error al importar Excel: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function excelDateToDate($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+        }
+
+        return $value;
     }
 }

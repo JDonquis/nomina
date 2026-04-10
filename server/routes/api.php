@@ -31,28 +31,10 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Route::post('refresh_token', [LoginController::class, 'refreshToken'])->name('refresh_token');
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-    Route::get('administrative-locations', [AdministrativeLocationController::class, 'index']);
-    Route::get('type-pay-sheets', [TypePaySheetController::class, 'index']);
     Route::get('type-personnels', [TypePersonnelController::class, 'index']);
-
 
     Route::resource('users', UserController::class)->except(['edit', 'create'])
         ->middleware('admin');
-
-
-    Route::resource('pay-sheets', PaySheetController::class)->except(['edit', 'create']);
-
-    // Rutas específicas antes del recurso para evitar conflictos con IDs
-    Route::get('active-personnel/download-template', [ActivePersonnelController::class, 'downloadTemplate']);
-    Route::post('active-personnel/import-excel', [ActivePersonnelController::class, 'importExcel']);
-    Route::post('active-personnel/photos/{activePersonnel}', [ActivePersonnelController::class, 'updatePhotos']);
-
-    Route::resource('active-personnel', ActivePersonnelController::class)->except(['edit', 'create']);
-
-    Route::post('pay-sheets/sheet', [PaySheetController::class, 'storeSheet']);
-    Route::post('pay-sheets/photo/{paySheet}', [PaySheetController::class, 'updatePhoto']);
-    Route::get('pay-sheets/generate/report', [PaySheetController::class, 'report']);
-
 
     // Census
     Route::get('censuses/export', [CensusController::class, 'export']);
