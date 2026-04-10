@@ -66,7 +66,7 @@ const defaultFormData = {
   observation: "",
   personnel_type: "",
   budget: "",
-  labor_relationship: "",
+  laboral_relationship: "",
   grade: "",
   residency_type: "",
   fotoChanged: false,
@@ -552,7 +552,7 @@ export default function PersonalActivoPage() {
         label: "Pregrado",
         type: "text",
         required: false,
-        className: "col-span-12 md:col-span-4",
+        className: `col-span-12 md:col-span-4 $`,
       },
       {
         name: "postgraduate_degree",
@@ -678,8 +678,7 @@ export default function PersonalActivoPage() {
       {
         name: "personnel_type",
         label: "Tipo de Personal",
-        type: "select",
-        options: typePersonnelOptions,
+        type: "text",
         readOnly: true,
         required: false,
         className: "col-span-12 md:col-span-4",
@@ -694,7 +693,7 @@ export default function PersonalActivoPage() {
       },
       
       {
-        name: "labor_relationship",
+        name: "laboral_relationship",
         label: "Relación Laboral",
         type: "text",
         required: false,
@@ -857,7 +856,7 @@ export default function PersonalActivoPage() {
           // When type_personnel_id changes, also set personnel_type
           if (name === "type_personnel_id" && selectedOption) {
             updated.personnel_type = selectedOption.type_personal || "";
-            updated.labor_relationship = selectedOption.laboral_relationship || "";
+            updated.laboral_relationship = selectedOption.laboral_relationship || "";
             updated.budget = selectedOption.source_budget || "";
           }
           return updated;
@@ -918,7 +917,7 @@ export default function PersonalActivoPage() {
           bank_account_number: formData.bank_account_number,
           personnel_type: formData.personnel_type,
           budget: formData.budget,
-          labor_relationship: formData.labor_relationship,
+          laboral_relationship: formData.laboral_relationship,
           grade: formData.grade,
           observation: formData.observation,
           degree_obtained: formData.degree_obtained,
@@ -1131,8 +1130,10 @@ export default function PersonalActivoPage() {
                 setFormData({
                   ...defaultFormData,
                   ...row,
-                  ...(row.additional_data || {}), // Flatten additional_data back into formData
                   fotoChanged: false,
+                  laboral_relationship: row.type_personnel.laboral_relationship || "",
+                  personnel_type: row.type_personnel.name || "",
+                  budget: row.type_personnel.source_budget || "",
                 });
                 setFamilyMembers(row.family_members || []);
                 setEditingId(row.id);
@@ -1387,11 +1388,13 @@ export default function PersonalActivoPage() {
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            setFormData(structuredClone(defaultFormData));
-            setFamilyMembers([]);
-            setCensusStatus(true);
-            setSubmitString("Registrar");
-            setEditingId(null);
+            if (submitString === "Actualizar") {
+              setFormData(structuredClone(defaultFormData));
+              setFamilyMembers([]);
+              setSubmitString("Registrar");
+              setCensusStatus(true);
+              setEditingId(null);
+            }
           }}
           title={
             submitString === "Actualizar"
@@ -1439,7 +1442,7 @@ export default function PersonalActivoPage() {
                     f.name !== "bank_account_number" &&
                     f.name !== "personnel_type" &&
                     f.name !== "budget" &&
-                    f.name !== "labor_relationship" &&
+                    f.name !== "laboral_relationship" &&
                     f.name !== "grade" &&
                     f.name !== "observation",
                 )
@@ -1511,7 +1514,7 @@ export default function PersonalActivoPage() {
                             f.name === "bank_account_number" ||
                             f.name === "personnel_type" ||
                             f.name === "budget" ||
-                            f.name === "labor_relationship" ||
+                            f.name === "laboral_relationship" ||
                             f.name === "grade" ||
                             f.name === "observation",
                         )
