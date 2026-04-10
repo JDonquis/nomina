@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\Personnel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PersonnelService
@@ -180,6 +181,8 @@ class PersonnelService
     public function store($data, $photo = null)
     {
         $action = 'create';
+
+        Log::info('Datos recibidos para crear personal', ['data' => $data]);
 
         $censusStatus = $data['to_census'] ?? false;
         unset($data['to_census']);
