@@ -58,7 +58,7 @@ class PersonnelService
 
     public function get($params = [], $type = 'inactive')
     {
-        $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency']);
+        $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
 
