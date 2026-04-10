@@ -188,10 +188,13 @@ export const activePersonnelAPI = {
   updatePersonnel: (id, personnelData) =>
     api.put(`/admin/personnels/active/${id}`, personnelData),
   updatePersonnelPhoto: (id, photo) =>
-    api.post(`/admin/personnels/active/photos/${id}`, photo, {
+    api.post(`/admin/personnels/active/photo/${id}`, photo, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   deletePersonnel: (id) => api.delete(`/admin/personnels/active/${id}`),
+  importExcel: (file) => api.post("/admin/active-personnel/import-excel", file, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }),
 };
 
 // Export the api instance for direct use if needed

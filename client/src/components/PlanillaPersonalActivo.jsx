@@ -12,7 +12,10 @@ const calculateAge = (birthDate) => {
   const birthDateObj = new Date(birthDate);
   let age = today.getFullYear() - birthDateObj.getFullYear();
   const monthDiff = today.getMonth() - birthDateObj.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDateObj.getDate())
+  ) {
     age--;
   }
   return age;
@@ -29,6 +32,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
   const { data } = props;
   const familyMembers = data?.family_members || [];
 
+  console.log("Datos del personal activo:", data);
   return (
     <div
       ref={ref}
@@ -47,7 +51,9 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           width={1120}
           height={140}
           loading="eager"
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
         />
         <h3 className="text-center font-bold gap-3 my-3 mt-4 text-color1 text-lg">
           FICHA DE PERSONAL ACTIVO
@@ -73,9 +79,16 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           <img
             src={data.photo ? API_URL + "/storage/" + data.photo : withoutPhoto}
             alt="Foto"
-            style={{ width: 100, height: 110, borderRadius: "0 0 0 6px", objectFit: "cover" }}
+            style={{
+              width: 100,
+              height: 110,
+              borderRadius: "0 0 0 6px",
+              objectFit: "cover",
+            }}
             loading="lazy"
-            onError={(e) => { e.target.src = withoutPhoto; }}
+            onError={(e) => {
+              e.target.src = withoutPhoto;
+            }}
           />
         </div>
 
@@ -110,7 +123,9 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
                 <p className="font-medium text-gray-600">Fec. Nac.</p>
               </div>
               <div className="px-2 py-1">
-                <p className="font-semibold">{data.date_birth?.replaceAll("-", "/") || "N/A"}</p>
+                <p className="font-semibold">
+                  {data.date_birth?.replaceAll("-", "/") || "N/A"}
+                </p>
               </div>
             </div>
             <div className="col-span-1 bg-white">
@@ -137,15 +152,17 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
                 <p className="font-medium text-gray-600">Edo. Civil</p>
               </div>
               <div className="px-2 py-1">
-                <p className="font-semibold">{civilStatusMap[data.civil_status] || data.civil_status}</p>
+                <p className="font-semibold">
+                  {civilStatusMap[data.civil_status] || data.civil_status}
+                </p>
               </div>
             </div>
             <div className="col-span-6 bg-white">
               <div className="px-2 py-0.5 bg-gray-100">
-                <p className="font-medium text-gray-600">Dirección de Habitación</p>
+                <p className="font-medium text-gray-600">Correo Electrónico</p>
               </div>
               <div className="px-2 py-1">
-                <p className="font-semibold">{data.home_address || "N/A"}</p>
+                <p className="font-semibold text-xs">{data.email || "N/A"}</p>
               </div>
             </div>
             <div className="col-span-3 bg-white">
@@ -159,33 +176,35 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           </div>
 
           <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-0.5">
-            <div className="col-span-5 bg-white">
+            <div className="col-span-9 bg-white">
               <div className="px-2 py-0.5 bg-gray-100">
-                <p className="font-medium text-gray-600">Correo Electrónico</p>
+                <p className="font-medium text-gray-600">
+                  Dirección de Habitación
+                </p>
               </div>
               <div className="px-2 py-1">
-                <p className="font-semibold text-xs">{data.email || "N/A"}</p>
+                <p className="font-semibold">{data.address || "N/A"}</p>
               </div>
             </div>
-            <div className="col-span-2 bg-white">
-              <div className="px-2 py-0.5 bg-gray-100">
+            <div className="col-span-1 bg-white">
+              <div className="px-1 py-0.5 bg-gray-100">
                 <p className="font-medium text-gray-600">Camisa</p>
               </div>
               <div className="px-2 py-1">
                 <p className="font-semibold">{data.shirt_size || "N/A"}</p>
               </div>
             </div>
-            <div className="col-span-2 bg-white">
-              <div className="px-2 py-0.5 bg-gray-100">
+            <div className="col-span-1 bg-white">
+              <div className="px-0.5 py-0.5 bg-gray-100">
                 <p className="font-medium text-gray-600">Pantalón</p>
               </div>
               <div className="px-2 py-1">
                 <p className="font-semibold">{data.pant_size || "N/A"}</p>
               </div>
             </div>
-            <div className="col-span-3 bg-white">
-              <div className="px-2 py-0.5 bg-gray-100">
-                <p className="font-medium text-gray-600">Zapatos</p>
+            <div className="col-span-1 bg-white">
+              <div className="px-1 py-0.5 bg-gray-100">
+                <p className="font-medium text-gray-600">Zapato</p>
               </div>
               <div className="px-2 py-1">
                 <p className="font-semibold">{data.shoe_size || "N/A"}</p>
@@ -194,37 +213,53 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           </div>
         </div>
       </div>
+    
 
+      <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-0.5">
+        <div className="col-span-4 bg-white">
+          <div className="px-2 py-0.5 bg-gray-100">
+            <p className="font-medium text-gray-600">Nivel académico</p>
+          </div>
+          <div className="px-2 py-1">
+            <p className="font-semibold">{data.degree_obtained || "N/A"}</p>
+          </div>
+        </div>
+        <div className="col-span-4 bg-white">
+          <div className="px-2 py-0.5 bg-gray-100">
+            <p className="font-medium text-gray-600">Pregrado</p>
+          </div>
+          <div className="px-2 py-1">
+            <p className="font-semibold">
+              {data.undergraduate_degree || "N/A"}
+            </p>
+          </div>
+        </div>
+        <div className="col-span-4 bg-white">
+          <div className="px-2 py-0.5 bg-gray-100">
+            <p className="font-medium text-gray-600">Postgrado</p>
+          </div>
+          <div className="px-2 py-1">
+            <p className="font-semibold">{data.postgraduate_degree || "N/A"}</p>
+          </div>
+        </div>
+      </div>
       <div className="mt-3">
         <div className="bg-color1 text-white text-xs font-bold px-3 py-1 rounded-t">
           I. DATOS ADMINISTRATIVOS
         </div>
         <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300">
-          <div className="col-span-3 bg-white">
+          <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Subdirección</p>
+              <p className="font-medium text-gray-600">Unidad Administrativa</p>
             </div>
             <div className="px-2 py-1">
-              <p className="font-semibold">{data.asic?.name || "N/A"}</p>
+              <p className="font-semibold">
+                {data.administrative_unit?.name || "N/A"}
+              </p>
             </div>
           </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Dependencia</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.dependency?.name || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-2 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Unidad Admin.</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.administrativeUnit?.name || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-2 bg-white">
+
+          <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Departamento</p>
             </div>
@@ -232,7 +267,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
               <p className="font-semibold">{data.department?.name || "N/A"}</p>
             </div>
           </div>
-          <div className="col-span-2 bg-white">
+          <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Servicio</p>
             </div>
@@ -243,87 +278,40 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
         </div>
 
         <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-px">
-          <div className="col-span-3 bg-white">
+          <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Dependencia Nómina</p>
+              <p className="font-medium text-gray-600"> Nómina</p>
             </div>
             <div className="px-2 py-1">
-              <p className="font-semibold">{data.payroll_dependency || "N/A"}</p>
+              <p className="font-semibold">
+                <span className="font-semibold">
+                  {data.type_personnel.code}
+                </span>{" "}
+                | {data.type_personnel.name || "N/A"}
+              </p>
             </div>
           </div>
-          <div className="col-span-2 bg-white">
+          <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Código Nómina</p>
+              <p className="font-medium text-gray-600">
+                Cód. Cargo / Título del Cargo
+              </p>
             </div>
             <div className="px-2 py-1">
-              <p className="font-semibold">{data.payroll_code || "N/A"}</p>
+              <p className="font-semibold">
+                {data.job_code} | {data.job_title || "N/A"}
+              </p>
             </div>
           </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Nombre Nómina</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.payroll_name || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-2 bg-white">
+
+          <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Fecha Ingreso</p>
             </div>
             <div className="px-2 py-1">
-              <p className="font-semibold">{data.entry_date?.replaceAll("-", "/") || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-1 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">¿Residente?</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.is_resident ? "Sí" : "No"}</p>
-            </div>
-          </div>
-          <div className="col-span-2 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Tipo Residencia</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.residency_type || "N/A"}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-px">
-          <div className="col-span-4 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Cargo / Título del Cargo</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.job_title || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-2 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Nivel</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.level || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Universidad</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.university || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Grado de Instrucción</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.degree_obtained || "N/A"}</p>
+              <p className="font-semibold">
+                {data.entry_date?.replaceAll("-", "/") || "N/A"}
+              </p>
             </div>
           </div>
         </div>
@@ -331,20 +319,13 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
         <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-px">
           <div className="col-span-2 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Cód. Posición</p>
+              <p className="font-medium text-gray-600">Cód. puesto</p>
             </div>
             <div className="px-2 py-1">
               <p className="font-semibold">{data.position_code || "N/A"}</p>
             </div>
           </div>
-          <div className="col-span-2 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Cód. Cargo</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.job_code || "N/A"}</p>
-            </div>
-          </div>
+
           <div className="col-span-2 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Turno</p>
@@ -355,53 +336,20 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           </div>
           <div className="col-span-3 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">N°. Cuenta Bancaria</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.bank_account_number || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">N°. IVSS</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.ivss_number || "N/A"}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-px">
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Tipo de Personal</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.personnel_type || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Presupuesto</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.budget || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
-              <p className="font-medium text-gray-600">Relación Laboral</p>
-            </div>
-            <div className="px-2 py-1">
-              <p className="font-semibold">{data.labor_relationship || "N/A"}</p>
-            </div>
-          </div>
-          <div className="col-span-3 bg-white">
-            <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Grado</p>
             </div>
             <div className="px-2 py-1">
               <p className="font-semibold">{data.grade || "N/A"}</p>
+            </div>
+          </div>
+          <div className="col-span-5 bg-white">
+            <div className="px-2 py-0.5 bg-gray-100">
+              <p className="font-medium text-gray-600">Nº Cuenta de Banco</p>
+            </div>
+            <div className="px-2 py-1">
+              <p className="font-semibold">
+                {data.bank_account_number || "N/A"}
+              </p>
             </div>
           </div>
         </div>
@@ -412,20 +360,20 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           II. CARGA FAMILIAR
         </div>
         <div className="bg-gray-300 border border-gray-300">
-          <div className="grid grid-cols-12 text-xs gap-px bg-gray-600 text-white">
-            <div className="col-span-2 bg-gray-700 px-2 py-1">
+          <div className="grid grid-cols-12 text-xs gap-px bg-gray-400 ">
+            <div className="col-span-2 bg-gray-200 px-2 py-1">
               <p className="font-semibold text-center">Cédula</p>
             </div>
-            <div className="col-span-5 bg-gray-700 px-2 py-1">
+            <div className="col-span-5 bg-gray-200 px-2 py-1">
               <p className="font-semibold text-center">Nombres y Apellidos</p>
             </div>
-            <div className="col-span-2 bg-gray-700 px-2 py-1">
+            <div className="col-span-2 bg-gray-200 px-2 py-1">
               <p className="font-semibold text-center">Fecha Nac.</p>
             </div>
-            <div className="col-span-1 bg-gray-700 px-2 py-1">
+            <div className="col-span-1 bg-gray-200 px-2 py-1">
               <p className="font-semibold text-center">Sexo</p>
             </div>
-            <div className="col-span-2 bg-gray-700 px-2 py-1">
+            <div className="col-span-2 bg-gray-200 px-2 py-1">
               <p className="font-semibold text-center">Parentesco</p>
             </div>
           </div>
@@ -439,19 +387,27 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             familyMembers.map((member, index) => (
               <div key={index} className="grid grid-cols-12 text-xs gap-px">
                 <div className="col-span-2 bg-white px-2 py-1">
-                  <p className="font-semibold text-center">{member.ci || "N/A"}</p>
+                  <p className="font-semibold text-center">
+                    {member.ci || "N/A"}
+                  </p>
                 </div>
                 <div className="col-span-5 bg-white px-2 py-1">
                   <p className="font-semibold">{member.full_name || "N/A"}</p>
                 </div>
                 <div className="col-span-2 bg-white px-2 py-1">
-                  <p className="font-semibold text-center">{member.date_birth?.replaceAll("-", "/") || "N/A"}</p>
+                  <p className="font-semibold text-center">
+                    {member.date_birth?.replaceAll("-", "/") || "N/A"}
+                  </p>
                 </div>
                 <div className="col-span-1 bg-white px-2 py-1">
-                  <p className="font-semibold text-center">{member.sex || "N/A"}</p>
+                  <p className="font-semibold text-center">
+                    {member.sex || "N/A"}
+                  </p>
                 </div>
                 <div className="col-span-2 bg-white px-2 py-1">
-                  <p className="font-semibold text-center">{member.relationship || "N/A"}</p>
+                  <p className="font-semibold text-center">
+                    {member.relationship || "N/A"}
+                  </p>
                 </div>
               </div>
             ))
@@ -460,7 +416,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
       </div>
 
       <div className="mt-3">
-        <div className="bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-t">
+        <div className="bg-gray-300  text-xs font-bold px-3 py-1 rounded-t">
           III. OBSERVACIONES
         </div>
         <div
@@ -484,11 +440,11 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           </div>
           <div className="grid grid-cols-2 border border-t-0 border-gray-300">
             <div className="h-24 flex flex-col items-center justify-end pb-1">
-              <div className="border border-gray-300 w-10 h-12 rounded-b"></div>
+              <div className=" w-10 h-12 rounded-b"></div>
               <p className="text-xs text-gray-500 mt-1">Pulg. Izq.</p>
             </div>
             <div className="h-24 flex flex-col items-center justify-end pb-1 border-l border-gray-300">
-              <div className="border border-gray-300 w-10 h-12 rounded-b"></div>
+              <div className=" w-10 h-12 rounded-b"></div>
               <p className="text-xs text-gray-500 mt-1">Pulg. Der.</p>
             </div>
           </div>
@@ -522,12 +478,17 @@ const PlanillaPersonalActivo = (props) => {
             onClick={handlePrint}
             className="flex gap-2 text-xl mx-auto py-1 px-2"
           >
-            <Icon icon="material-symbols:download-rounded" className="w-6 min-h-7 text-gray-700 mr-3 inline" />
+            <Icon
+              icon="material-symbols:download-rounded"
+              className="w-6 min-h-7 text-gray-700 mr-3 inline"
+            />
             <span>Descargar / Imprimir</span>
           </FuturisticButton>
         </div>
       )}
-      {props.data && <PrintablePersonalActivo data={props.data} ref={componentRef} />}
+      {props.data && (
+        <PrintablePersonalActivo data={props.data} ref={componentRef} />
+      )}
     </div>
   );
 };
