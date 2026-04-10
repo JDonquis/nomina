@@ -69,11 +69,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('personnels/life_proof/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
 
     // Personnel Active
+    Route::get('personnels/active/export-template', [PersonnelController::class, 'exportTemplate']);
     Route::get('personnels/active', [PersonnelController::class, 'active']);
     Route::post('personnels/active', [PersonnelController::class, 'store']);
     Route::put('personnels/active/{personnel}', [PersonnelController::class, 'update']);
     Route::get('personnels/active/{personnel}', [PersonnelController::class, 'show']);
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
+    Route::post('personnels/active/import-excel', [PersonnelController::class, 'importExcel']);
 
     Route::get('activities', ActivityController::class);
 
