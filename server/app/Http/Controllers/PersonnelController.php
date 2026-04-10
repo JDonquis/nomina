@@ -33,7 +33,7 @@ class PersonnelController extends Controller
 
     public function active(Request $request)
     {
-        $personnels = $this->personnelService->get($request->all());
+        $personnels = $this->personnelService->get($request->all(), 'active');
 
         return response()->json([
             'message' => 'OK',

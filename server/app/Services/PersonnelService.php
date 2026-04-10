@@ -55,9 +55,11 @@ class PersonnelService
         ],
     ];
 
-    public function get($params = [])
+    public function get($params = [], $type = 'inactive')
     {
         $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency']);
+
+        $query->where('status', $type === 'active' ? 'active' : 'inactive');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
