@@ -25,6 +25,8 @@ const calculateAge = (birthDate) => {
 };
 
 const PrintableContent = forwardRef((props, ref) => {
+
+  console.log(props.data);
   return (
     <div
       ref={ref}
@@ -133,7 +135,7 @@ const PrintableContent = forwardRef((props, ref) => {
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
                 <p className="font-semibold">
-                  {props.data.type_pay_sheet.type_personal}
+                  {props.data.type_personnel.type_personal}
                 </p>
               </div>
             </div>
@@ -143,7 +145,7 @@ const PrintableContent = forwardRef((props, ref) => {
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
                 <p className="font-semibold">
-                  {props.data.administrative_location?.name}
+                  {props.data.asic?.name}
                 </p>
               </div>
             </div>
@@ -210,7 +212,7 @@ const PrintableContent = forwardRef((props, ref) => {
             <p>Tipo de Pensión</p>
           </div>
           <div className="px-3 min-h-7 flex items-center pt-0.5">
-            <p className="font-semibold">{props.data.type_pension}</p>
+            <p className="font-semibold">{props.data.additional_data.type_pension}</p>
           </div>
         </div>
         <div className="col-span-4">
@@ -218,7 +220,7 @@ const PrintableContent = forwardRef((props, ref) => {
             <p>Último Cargó</p>
           </div>
           <div className="px-3 min-h-7 flex items-center pt-0.5">
-            <p className="font-semibold">{props.data.last_charge}</p>
+            <p className="font-semibold">{props.data.additional_data.last_charge}</p>
           </div>
         </div>
         <div className="col-span-4">
@@ -236,7 +238,7 @@ const PrintableContent = forwardRef((props, ref) => {
             <p>Nro. Hijos Menores</p>
           </div>
           <div className="px-3 min-h-7 flex items-center pt-0.5">
-            <p className="font-semibold">{props.data.minor_child_nro}</p>
+            <p className="font-semibold">{props.data.additional_data.minor_child_nro}</p>
           </div>
         </div>
         <div className="col-span-4">
@@ -244,7 +246,7 @@ const PrintableContent = forwardRef((props, ref) => {
             <p>Nro. Hijos Discapacitados</p>
           </div>
           <div className="px-3 min-h-7 flex items-center pt-0.5">
-            <p className="font-semibold">{props.data.disabled_child_nro}</p>
+            <p className="font-semibold">{props.data.additional_data.disabled_child_nro}</p>
           </div>
         </div>
         <div className="col-span-4">
@@ -267,7 +269,7 @@ const PrintableContent = forwardRef((props, ref) => {
           </div>
           <div className="px-3 min-h-7 flex items-center pt-0.5">
             <p className="font-semibold">
-              {props.data.another_organization_name}
+              {props.data.additional_data.another_organization_name}
             </p>
           </div>
         </div>
@@ -287,7 +289,7 @@ const PrintableContent = forwardRef((props, ref) => {
           </div>
           <div className="px-3 min-h-7 flex items-center pt-0.5">
             <p className="font-semibold text-xs">
-              {props.data.type_pay_sheet.name}
+              {props.data.type_personnel?.name}
             </p>
           </div>
         </div>
@@ -304,7 +306,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Nombre Completo del Causante</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.fullname_causative}</p>
+                <p className="font-semibold">{props.data.additional_data.fullname_causative}</p>
               </div>
             </div>
             <div className="col-span-4">
@@ -312,7 +314,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Edad del Causante</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.age_causative}</p>
+                <p className="font-semibold">{props.data.additional_data.age_causative}</p>
               </div>
             </div>
             <div className="col-span-4">
@@ -320,7 +322,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Parentesco con el Causante</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.parent_causative}</p>
+                <p className="font-semibold">{props.data.additional_data.parent_causative}</p>
               </div>
             </div>
           </div>
@@ -330,7 +332,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Sexo del Causante</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.sex_causative}</p>
+                <p className="font-semibold">{props.data.additional_data.sex_causative}</p>
               </div>
             </div>
             <div className="col-span-4">
@@ -338,7 +340,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>C.I del Causante</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.ci_causative}</p>
+                <p className="font-semibold">{props.data.additional_data.ci_causative}</p>
               </div>
             </div>
             <div className="col-span-4">
@@ -346,7 +348,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Fecha de Fallecimiento</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.decease_date}</p>
+                <p className="font-semibold">{props.data.additional_data.decease_date}</p>
               </div>
             </div>
           </div>
@@ -357,7 +359,7 @@ const PrintableContent = forwardRef((props, ref) => {
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
                 <p className="font-semibold">
-                  {props.data.suspend_payment_status ? "Sí" : "No"}
+                  {props.data.additional_data.suspend_payment_status ? "Sí" : "No"}
                 </p>
               </div>
             </div>
@@ -366,7 +368,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 <p>Último Pago</p>
               </div>
               <div className="px-3 min-h-7 flex items-center pt-0.5">
-                <p className="font-semibold">{props.data.last_payment}</p>
+                <p className="font-semibold">{props.data.additional_data.last_payment}</p>
               </div>
             </div>
           </div>

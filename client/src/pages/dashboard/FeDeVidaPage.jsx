@@ -865,19 +865,23 @@ export default function FeDeVidaPage() {
       },
       {
         header: "Censado",
-        accessorKey: "status",
+        accessorKey: "census_status",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["CENSADO", "NO CENSADO"],
         enableColumnFilter: true,
         enableSorting: true,
-        Cell: ({ cell }) => {
-          return cell.getValue() ? (
-            <p className="text-color2 text-xs font-semibold">CENSADO</p>
+        Cell: ({ cell }) => 
+           cell.getValue() ? (
+            <span className="text-color2 text-xs font-semibold bg-color4/30 px-2 py-1 rounded">
+              Censado
+            </span>
           ) : (
-            <p className="text-dark/75 text-xs ">NO CENSADO</p>
-          );
-        },
+            <span className="text-red-500 text-xs bg-red-100 px-2 py-1 rounded">
+              No censado
+            </span>
+          ),
+        
       },
 
       //   {

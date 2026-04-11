@@ -190,7 +190,7 @@ export const activePersonnelAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   deletePersonnel: (id) => api.delete(`/admin/personnels/active/${id}`),
-  importExcel: (file) => api.post("/admin/active-personnel/import-excel", file, {
+  importExcel: (file) => api.post("/admin/personnels/active/import-excel", file, {
     headers: { "Content-Type": "multipart/form-data" },
   }),
 };
