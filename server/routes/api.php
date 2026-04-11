@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('personnels/life_proof/{personnel}', [PersonnelController::class, 'show']);
     Route::put('personnels/life_proof/{personnel}', [PersonnelController::class, 'update']);
     Route::post('personnels/life_proof/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
+    Route::delete('personnels/life_proof/{personnel}', [PersonnelController::class, 'destroy']);
 
     // Personnel Active
     Route::get('personnels/active/export-template', [PersonnelController::class, 'exportTemplate']);
@@ -51,4 +52,5 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('personnels/active/{personnel}', [PersonnelController::class, 'show']);
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
     Route::post('personnels/active/import-excel', [PersonnelController::class, 'importExcel']);
+    Route::delete('personnels/active/{personnel}', [PersonnelController::class, 'destroy']);
 });
