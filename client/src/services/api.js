@@ -115,9 +115,7 @@ export const liveProofAPI = {
   getReport: () => api.get("/admin/personnels/life_proof/generate/report"),
 };
 
-export const asicAPI = {
-  getASIC: () => api.get("/admin/administrative-locations"),
-};
+
 
 export const censusAPI = {
   getCensus: (params) => api.get("/admin/censuses", { params }),

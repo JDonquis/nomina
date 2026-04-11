@@ -10,7 +10,7 @@ import { API_URL } from "../../config/env.js";
 
 import {
   liveProofAPI,
-  asicAPI,
+  ASICAPI,
   censusAPI,
   nominaNamesAPI,
 } from "../../services/api.js";
@@ -97,9 +97,9 @@ export default function FeDeVidaPage() {
   const canvasRef = useRef(null);
   const fetchInitialData = useCallback(async () => {
     try {
-      const administrative_locations = await asicAPI.getASIC();
+      const asics = await ASICAPI.getASIC();
       // Transform API response to match select component format { value, label }
-      const formattedLocations = administrative_locations.map((location) => ({
+      const formattedLocations = asics.map((location) => ({
         value: location.id,
         label: location.name,
       }));
@@ -117,6 +117,7 @@ export default function FeDeVidaPage() {
   }, []);
   // Form configuration for ReusableForm
 
+  console.log(administrativeLocations)
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
@@ -279,20 +280,19 @@ export default function FeDeVidaPage() {
     type_personnel_id: 1,
 
     // Datos que van en additional_data
-    additional_data: {
-      type_pension: "Jubilacion",
-      last_charge: "",
-      minor_child_nro: 0,
-      disabled_child_nro: 0,
-      another_organization_name: null,
-      fullname_causative: null,
-      age_causative: null,
-      parent_causative: null,
-      sex_causative: null,
-      ci_causative: null,
-      decease_date: null,
-      last_payment: null,
-    },
+    type_pension: "Jubilacion",
+    last_charge: "",
+    minor_child_nro: 0,
+    disabled_child_nro: 0,
+    another_organization_name: null,
+    fullname_causative: null,
+    age_causative: null,
+    parent_causative: null,
+    sex_causative: null,
+    ci_causative: null,
+    decease_date: null,
+    last_payment: null,
+
     fotoChanged: false,
   };
 
@@ -417,14 +417,14 @@ export default function FeDeVidaPage() {
       label: "Tipo de Pensión",
       type: "select",
       options: typePensions,
-      className: "col-span-6",
+      className: "col-span-5",
     },
     {
       name: "type_personnel_id",
       label: "Tipo de personal",
       type: "select",
       options: typePaySheets,
-      className: "col-span-6",
+      className: "col-span-7",
     },
     {
       name: "last_charge",
@@ -470,7 +470,9 @@ export default function FeDeVidaPage() {
       label: "Nombre de la Otra Organización",
       type: "text",
       required: false,
-      className: "col-span-6",
+       className: `${
+        formData.receive_pension_from_another_organization_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "has_authorizations",
@@ -578,6 +580,51 @@ export default function FeDeVidaPage() {
     setLoading(true);
 
     try {
+      // Structure the data like PersonalActivoPage
+      const submitData = {
+        // Direct fields
+        to_census: formData.to_census,
+        type_personnel_id: formData.type_personnel_id,
+        nac: formData.nac,
+        ci: formData.ci,
+        full_name: formData.full_name,
+        date_birth: formData.date_birth,
+        sex: formData.sex,
+        civil_status: formData.civil_status,
+        address: formData.address,
+        phone_number: formData.phone_number,
+        email: formData.email,
+        municipality: formData.municipality,
+        parish: formData.parish,
+        state: formData.state,
+        city: formData.city,
+        asic_id: formData.asic_id,
+        dependency_id: formData.dependency_id,
+        administrative_unit_id: formData.administrative_unit_id,
+        department_id: formData.department_id,
+        service_id: formData.service_id,
+        receive_pension_from_another_organization_status: formData.receive_pension_from_another_organization_status,
+        has_authorizations: formData.has_authorizations,
+        pension_survivor_status: formData.pension_survivor_status,
+        suspend_payment_status: formData.suspend_payment_status,
+        is_resident: formData.is_resident,
+        // additional_data fields
+        additional_data: {
+          type_pension: formData.type_pension,
+          last_charge: formData.last_charge,
+          minor_child_nro: formData.minor_child_nro,
+          disabled_child_nro: formData.disabled_child_nro,
+          another_organization_name: formData.another_organization_name,
+          fullname_causative: formData.fullname_causative,
+          age_causative: formData.age_causative,
+          parent_causative: formData.parent_causative,
+          sex_causative: formData.sex_causative,
+          ci_causative: formData.ci_causative,
+          decease_date: formData.decease_date,
+          last_payment: formData.last_payment,
+        },
+      };
+
       // Upload photo separately if changed
       if (formData.fotoChanged && formData.photo instanceof File) {
         const photoData = new FormData();
@@ -589,20 +636,20 @@ export default function FeDeVidaPage() {
       }
 
       if (submitString === "Actualizar") {
-        await liveProofAPI.updatePersonnel(formData.id, formData);
+        await liveProofAPI.updatePersonnel(formData.id, submitData);
         setSubmitString("Registrar");
       } else {
         // createPersonnel uses multipart/form-data (for photo on create),
         // so booleans must be sent as "1"/"0"
         await liveProofAPI.createPersonnel({
-          ...formData,
-          to_census: formData.to_census ? "1" : "0",
+          ...submitData,
+          to_census: submitData.to_census ? "1" : "0",
           status: "inactive",
-          receive_pension_from_another_organization_status: formData.receive_pension_from_another_organization_status ? "1" : "0",
-          has_authorizations: formData.has_authorizations ? "1" : "0",
-          pension_survivor_status: formData.pension_survivor_status ? "1" : "0",
-          suspend_payment_status: formData.suspend_payment_status ? "1" : "0",
-          is_resident: formData.is_resident ? "1" : "0",
+          receive_pension_from_another_organization_status: submitData.receive_pension_from_another_organization_status ? "1" : "0",
+          has_authorizations: submitData.has_authorizations ? "1" : "0",
+          pension_survivor_status: submitData.pension_survivor_status ? "1" : "0",
+          suspend_payment_status: submitData.suspend_payment_status ? "1" : "0",
+          is_resident: submitData.is_resident ? "1" : "0",
         });
       }
 
@@ -879,7 +926,7 @@ export default function FeDeVidaPage() {
       },
       {
         header: "Ubicación administrativa",
-        accessorKey: "administrative_location.name",
+        accessorKey: "asic.name",
         size: 130,
         filterVariant: "select",
         enableColumnFilter: true,
@@ -903,6 +950,7 @@ export default function FeDeVidaPage() {
                   setFormData({
                     ...cell.row.original,
                     to_census: false,
+                    ...cell.row.original.additional_data,
                   });
                   setSubmitString("Actualizar");
                 }}
