@@ -37,6 +37,7 @@ class Personnel extends Model
         'pension_survivor_status',
         'suspend_payment_status',
         'is_resident',
+        'work_status',
         'additional_data',
     ];
 
