@@ -2,20 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\ASIC;
-use App\Models\Census;
-use App\Models\Department;
-use App\Models\Dependency;
-use App\Models\Service;
-use App\Models\AdministrativeUnit;
-use App\Models\FamilyMember;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class ActivePersonnel extends Model
 {
     protected $table = 'active_personnels';
 
     protected $fillable = [
+        'sync_id',
         'nac',
         'ci',
         'full_name',
@@ -60,6 +55,16 @@ class ActivePersonnel extends Model
         'latest_census_id',
         'status'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->sync_id)) {
+                $model->sync_id = (string) Str::uuid();
+            }
+        });
+    }
 
     public function asic()
     {

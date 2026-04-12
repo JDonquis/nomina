@@ -10,30 +10,11 @@ import { lazy, Suspense } from "react";
 import { setLogoutCallback } from "./services/api";
 import { useAuth } from "./context/AuthContext";
 
-// Lazy load heavy components
-
-const FeDeVidaPage = lazy(
-  () =>
-    import(/* webpackChunkName: "examenes" */ "./pages/dashboard/FeDeVidaPage"),
-);
-const MovimientosPage = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "movimientos" */ "./pages/dashboard/MovimientosPage"
-    ),
-);
-const PersonalActivoPage = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "movimientos" */ "./pages/dashboard/PersonalActivoPage"
-    ),
-);
-const ConfiguracionPage = lazy(
-  () =>
-    import(
-      /* webpackChunkName: "configuracion" */ "./pages/dashboard/ConfiguracionPage"
-    ),
-);
+const FeDeVidaPage = lazy(() => import("./pages/dashboard/FeDeVidaPage"));
+const MovimientosPage = lazy(() => import("./pages/dashboard/MovimientosPage"));
+const PersonalActivoPage = lazy(() => import("./pages/dashboard/PersonalActivoPage"));
+const ConfiguracionPage = lazy(() => import("./pages/dashboard/ConfiguracionPage"));
+const SyncPage = lazy(() => import("./pages/dashboard/SyncPage"));
 import UsuariosPage from "./pages/dashboard/UsuariosPage";
 import ActivateAccountPage from "./pages/ActivateAccountPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -55,12 +36,10 @@ function AppContent() {
     <FeedbackProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public routes */}
           <Route path="/" element={<LoginPage />} />
           <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
           <Route path="/olvide-contrasena" element={<ActivateAccountPage />} />
 
-          {/* Protected dashboard routes */}
           <Route
             path="/dashboard"
             element={
@@ -85,7 +64,6 @@ function AppContent() {
                 </Suspense>
               }
             />
-
             <Route
               path="movimientos"
               element={
@@ -94,7 +72,16 @@ function AppContent() {
                 </Suspense>
               }
             />
-            {/* Only show "usuarios" if user has permission */}
+            <Route
+              path="sincronizacion"
+              element={
+                <PermissionGate requiredPermission="is_admin">
+                  <Suspense fallback={<PageLoader />}>
+                    <SyncPage />
+                  </Suspense>
+                </PermissionGate>
+              }
+            />
             <Route
               path="usuarios"
               element={
@@ -113,17 +100,15 @@ function AppContent() {
                 </PermissionGate>
               }
             />
-
-            {/* Fallback route */}
           </Route>
 
-          {/* Catch-all 404 route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </FeedbackProvider>
   );
 }
+
 function App() {
   return (
     <AuthProvider>

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Personnel extends Model
 {
     protected $fillable = [
+        'sync_id',
         'status',
         'census_status',
         'type_personnel_id',
@@ -47,6 +49,16 @@ class Personnel extends Model
         'is_resident' => 'boolean',
         'additional_data' => 'array',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->sync_id)) {
+                $model->sync_id = (string) Str::uuid();
+            }
+        });
+    }
 
     public function typePersonnel(): BelongsTo
     {
