@@ -2,13 +2,11 @@ import labFalconLogo from "../../assets/logoBlue.webp";
 import secretariaLogo from "../../assets/secretaria_logo.png";
 import { useAuth } from "../../context/AuthContext";
 import { authAPI } from "../../services/api";
-import { useState } from "react";
 
 import { NavLink, Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
 
 const links = [
-
   {
     permission: true,
     name: "Fe de vida",
@@ -29,6 +27,12 @@ const links = [
   },
   {
     permission: "admin",
+    name: "Sincronización",
+    href: "/dashboard/sincronizacion",
+    icon: "mdi:sync"
+  },
+  {
+    permission: "admin",
     name: "Usuarios",
     href: "/dashboard/usuarios",
     icon: "meteor-icons:key"
@@ -39,7 +43,6 @@ const links = [
     href: "/dashboard/configuracion",
     icon: "mdi:cog-outline"
   }
- 
 ];
 
 export default function SideNav(props) {
@@ -51,12 +54,10 @@ export default function SideNav(props) {
     } catch (error) {
       console.error("Failed to logout", error);
       logout();
-
     }
   }
 
   const { user } = useAuth();
-
 
   return (
     <nav
@@ -64,7 +65,6 @@ export default function SideNav(props) {
       onMouseEnter={() => props.onMouseEnter()}
       onMouseLeave={() => props.onMouseLeave()}
     >
-
       <Link
         className={`duration-150 hidden  mb-4 font-exo2 md:flex h-20 items-end justify-end rounded-md bg-white bg-opacity-5   md:h-28 ${props.isSidebarOpen ? 'p-4' : 'p-1'}`}
         href="/"
@@ -105,7 +105,6 @@ export default function SideNav(props) {
                     <span className={props.isSidebarOpen ? "whitespace-nowrap hidden md:block opacity-100" : "hidden md:block whitespace-nowrap  opacity-0" + " duration-200 z-0"}>
                       {eachLink.name}
                     </span>
-
                 </div>
               </NavLink>
             );
@@ -113,7 +112,6 @@ export default function SideNav(props) {
         })}
         <div className="hidden h-auto w-full grow rounded-md md:block"></div>
         <div className="flex gap-2 justify-start items-center">
-        
           <button
             onClick={handleLogout}
             title="Cerrar sesión"

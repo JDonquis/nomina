@@ -49,6 +49,7 @@ class UpdatePersonnelRequest extends FormRequest
             'suspend_payment_status' => 'boolean',
             'is_resident' => 'boolean',
             'additional_data' => 'nullable|array',
+            'work_status' => 'nullable|string|max:100',
             'to_census' => 'boolean',
         ];
     }

@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\AdministrativeLocation;
-use App\Models\Census;
-use App\Models\TypePaySheet;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PaySheet extends Model
 {
     protected $fillable = [
+        'sync_id',
         'nac',
         'ci',
         'email',
@@ -45,6 +44,16 @@ class PaySheet extends Model
         'status',
         'user_id'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->sync_id)) {
+                $model->sync_id = (string) Str::uuid();
+            }
+        });
+    }
 
     public function typePaySheet()
     {

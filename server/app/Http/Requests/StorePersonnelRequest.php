@@ -43,6 +43,7 @@ class StorePersonnelRequest extends FormRequest
             'is_resident' => 'boolean',
             'additional_data' => 'nullable|array',
             'to_census' => 'boolean',
+            'work_status' => 'nullable|string|max:100',
         ];
     }
 
