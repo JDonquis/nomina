@@ -111,7 +111,7 @@ export const liveProofAPI = {
     api.post("/admin/personnels/life_proof/sheet", file, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-  getHistory: (id) => api.get(`/admin/personnels/life_proof/${id}`),
+  getDetailById: (id) => api.get(`/admin/personnels/life_proof/${id}`),
   getReport: () => api.get("/admin/personnels/life_proof/generate/report"),
 };
 
@@ -193,6 +193,7 @@ export const activePersonnelAPI = {
   importExcel: (file) => api.post("/admin/personnels/active/import-excel", file, {
     headers: { "Content-Type": "multipart/form-data" },
   }),
+  getDetail: (id) => api.get(`/admin/personnels/active/${id}`),
 };
 
 // Export the api instance for direct use if needed

@@ -95,6 +95,7 @@ export default function FeDeVidaPage() {
   const photoOptionsRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
   const fetchInitialData = useCallback(async () => {
     try {
       const asics = await ASICAPI.getASIC();
@@ -117,7 +118,7 @@ export default function FeDeVidaPage() {
   }, []);
   // Form configuration for ReusableForm
 
-  console.log(administrativeLocations)
+ 
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
@@ -212,44 +213,6 @@ export default function FeDeVidaPage() {
       }
     };
   }, [cameraStream]);
-
-  {
-    /* 
-    
-    // Datos personales
-    "nac": "V",
-    "ci": "12345678",
-    "full_name": "María Elena Rodríguez Pérez",
-    "date_birth": "1975-05-15",
-    "sex": "F",
-    "city": "Caracas",
-    "state": "Distrito Capital",
-    "administrative_location_id": 1,
-    "phone_number": "+584141234567",
-    
-    // Datos de pensión
-    "type_pension": "Jubilacion",
-    "type_pay_sheet_id": 1,
-    "last_charge": "Jefe de Departamento",
-    "civil_status": "C",
-    "minor_child_nro": 2,
-    "disabled_child_nro": 0,
-    "receive_pension_from_another_organization_status": false,
-    "another_organization_name": null,
-    "has_authorizations": true,
-    
-    // Pensión sobrevivencia (condicional - en este caso false)
-    "pension_survivor_status": false,
-    "fullname_causative": null,
-    "age_causative": null,
-    "parent_causative": null,
-    "sex_causative": null,
-    "ci_causative": null,
-    "decease_date": null,
-    "suspend_payment_status": false,
-    "last_payment": null
-    */
-  }
 
   const defaultFormData = {
     to_census: false,
@@ -753,7 +716,7 @@ export default function FeDeVidaPage() {
 
   const getHistory = async (id) => {
     try {
-      const res = await liveProofAPI.getPersonnelById(id);
+      const res = await liveProofAPI.getDetailById(id);
       setHistoryData(res);
       setIsHistoryModalOpen(true);
     } catch (error) {
@@ -763,24 +726,19 @@ export default function FeDeVidaPage() {
     }
   };
 
-  const handleUncensus = async (id) => {
-    if (
-      !window.confirm(
-        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`,
-      )
-    ) {
-      return;
-    }
+  const getDetail = async (id, row) => {
     try {
-      await censusAPI.deleteCensus(id);
-      showSuccess("Censo anulado con éxito");
-      fetchData();
-      setIsCensusModalOpen(false);
+      const res = await liveProofAPI.getDetailById(id);
+      console.log(res)
+      setPDFdata(res.personnel);
+      setPDFmodal(true);
+
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
       showError(errorMessage);
     }
+
   };
 
   const importExcel = async (e) => {
@@ -1000,11 +958,8 @@ export default function FeDeVidaPage() {
               {cell.row.original.status ? (
                 <button
                   onClick={() => {
-                    setPDFmodal(true);
 
-                    setPDFdata({
-                      ...cell.row.original,
-                    });
+                    getDetail(cell.row.original.id, cell.row.original);
                   }}
                   className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
                   title="Descargar"

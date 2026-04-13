@@ -421,7 +421,7 @@ const PrintableContent = forwardRef((props, ref) => {
                 }
               )}
             </p>
-            <p>{props.data?.user?.charge}</p>
+            <p>{props.data?.audit_logs[props.data?.audit_logs.length - 1]?.user?.charge}</p>
           </div>
         </>
       )}

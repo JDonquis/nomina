@@ -55,8 +55,9 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             e.target.style.display = "none";
           }}
         />
-        <h3 className="text-center font-bold gap-3 my-3 mt-4 text-color1 text-lg">
+        <h3 className="text-center flex font-bold gap-3 my-3 mt-4 text-color1 text-lg">
           FICHA DE PERSONAL ACTIVO
+          <span className="text-xs text-dark bg-gray-200 px-2 py-1 rounded">{data.audit}</span>
         </h3>
         <h4 className="text-center font-bold gap-3 -mt-2 text-gray-600 text-sm">
           OFICINA DE RECURSOS HUMANOS
@@ -248,6 +249,16 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           I. DATOS ADMINISTRATIVOS
         </div>
         <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300">
+          <div className="col-span-4 bg-white">
+            <div className="px-2 py-0.5 bg-gray-100">
+              <p className="font-medium text-gray-600">ASIC</p>
+            </div>
+            <div className="px-2 py-1">
+              <p className="font-semibold">
+                {data.asic.name || "N/A"}
+              </p>
+            </div>
+          </div>
           <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Unidad Administrativa</p>
