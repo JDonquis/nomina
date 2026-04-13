@@ -410,7 +410,7 @@ const PrintableContent = forwardRef((props, ref) => {
             <p>Funcionario responsable del censo</p>
           </div>
           <div className=" flex justify-between items-center">
-            <p>{props.data?.user?.full_name}</p>
+            <p>{props.data?.audit_logs[props.data?.audit_logs.length - 1]?.user?.full_name}</p>
             <p className="text-xs mt-1">
               Censado el{" "}
               {new Date(props.data?.updated_at).toLocaleString(

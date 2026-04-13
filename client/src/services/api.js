@@ -158,7 +158,7 @@ export const activePersonnelAPI = {
   importExcel: (file) => api.post("/admin/personnels/active/import-excel", file, {
     headers: { "Content-Type": "multipart/form-data" },
   }),
-  getDetail: (id) => api.get(`/admin/personnels/active/${id}`),
+  getDetailById: (id) => api.get(`/admin/personnels/active/${id}`),
 };
 
 export default api;

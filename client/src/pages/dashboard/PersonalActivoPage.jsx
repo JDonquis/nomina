@@ -604,14 +604,14 @@ export default function PersonalActivoPage() {
       {
         name: "pant_size",
         label: "Pantalón",
-        type: "text",
+        type: "number",
         required: false,
         className: "col-span-12 md:col-span-2",
       },
       {
         name: "shoe_size",
         label: "Zapatos",
-        type: "text",
+        type: "number",
         required: false,
         className: "col-span-12 md:col-span-2",
       },
@@ -1031,6 +1031,21 @@ export default function PersonalActivoPage() {
     }
   };
 
+  const getDetailsForPDF = async (id) => {
+    try {
+      const res = await activePersonnelAPI.getDetailById(id);
+      setPDFdata({ ...res.personnel, ...res.personnel.additional_data });
+
+      setPDFmodal(true);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error al obtener detalles";
+      showError(errorMessage);
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -1226,11 +1241,12 @@ export default function PersonalActivoPage() {
               <>
                 <button
                   onClick={() => {
-                    setPDFdata({
-                      ...cell.row.original,
-                      ...cell.row.original.additional_data,
-                    });
-                    setPDFmodal(true);
+                    // setPDFdata({
+                    //   ...cell.row.original,
+                    //   ...cell.row.original.additional_data,
+                    // });
+                    // setPDFmodal(true);
+                    getDetailsForPDF(cell.row.original.id);
                   }}
                   className="text-gray-600 p-1.5 rounded-full hover:bg-gray-200"
                   title="Ver Planilla"
@@ -1472,7 +1488,11 @@ export default function PersonalActivoPage() {
               {isOptionsModalOpen ? (
                 <Icon icon="material-symbols:close" width={24} height={24} />
               ) : (
-                <Icon icon="material-symbols:more-vert" width={24} height={24} />
+                <Icon
+                  icon="material-symbols:more-vert"
+                  width={24}
+                  height={24}
+                />
               )}
             </button>
           </div>
@@ -1913,45 +1933,54 @@ export default function PersonalActivoPage() {
         onClose={() => setIsOptionsModalOpen(false)}
       >
         <div className="px-4 flex flex-col">
-        <label
-              htmlFor="importExcelPersonnel"
-              className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold ${
-                loading
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
-            >
-              {loading ? (
-                <>
-                  <Icon icon="eos-icons:loading" width={20} height={20} className="animate-spin" />
-                  Importando...
-                </>
-              ) : (
-                <>
-                  <Icon icon="vscode-icons:file-type-excel" width={20} height={20} />
-                  Importar personal activo desde Excel
-                </>
-              )}
-              <input
-                type="file"
-                name="importExcelPersonnel"
-                id="importExcelPersonnel"
-                className="hidden"
-                disabled={loading}
-                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                onChange={(e) => {
-                  if (
-                    e.target.files[0] &&
-                    window.confirm(
-                      e.target.files[0].name +
-                        " — ¿Desea importar los datos de este Excel?",
-                    )
-                  ) {
-                    importExcel(e);
-                  }
-                }}
-              />
-            </label>
+          <label
+            htmlFor="importExcelPersonnel"
+            className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold ${
+              loading
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 text-white"
+            }`}
+          >
+            {loading ? (
+              <>
+                <Icon
+                  icon="eos-icons:loading"
+                  width={20}
+                  height={20}
+                  className="animate-spin"
+                />
+                Importando...
+              </>
+            ) : (
+              <>
+                <Icon
+                  icon="vscode-icons:file-type-excel"
+                  width={20}
+                  height={20}
+                />
+                Importar personal activo desde Excel
+              </>
+            )}
+            <input
+              type="file"
+              name="importExcelPersonnel"
+              id="importExcelPersonnel"
+              className="hidden"
+              disabled={loading}
+              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+              onChange={(e) => {
+                if (
+                  e.target.files[0] &&
+                  window.confirm(
+                    e.target.files[0].name +
+                      " — ¿Desea importar los datos de este Excel?",
+                  )
+                ) {
+                  importExcel(e);
+                }
+              }}
+            />
+          </label>
           {loading && (
             <div className="flex w-full items-center gap-2 p-2">
               <Icon
