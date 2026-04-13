@@ -66,6 +66,7 @@ const defaultFormData = {
   shift: "",
   bank_account_number: "",
   job_code: "",
+  work_status: "",
   observation: "",
   personnel_type: "",
   budget: "",
@@ -100,6 +101,27 @@ const shiftOptions = [
   { value: "7/1", label: "7/1" },
   { value: "1/7", label: "1/7" },
   { value: "7/7", label: "7/7" },
+];
+
+const work_status_options = [
+  { value: "Estatus", label: "Estatus" },
+  { value: "Abandono", label: "Abandono" },
+  { value: "Activo", label: "Activo" },
+  { value: "Activo Jubilables", label: "Activo Jubilables" },
+  { value: "Apoyo Institucional", label: "Apoyo Institucional" },
+  { value: "Comisión de Servicio", label: "Comisión de Servicio" },
+  { value: "Inactivo Jubilables", label: "Inactivo Jubilables" },
+  { value: "Pensionado por Invalidez", label: "Pensionado por Invalidez" },
+  { value: "Permiso Gremial", label: "Permiso Gremial" },
+  { value: "Permiso No Remunerado", label: "Permiso No Remunerado" },
+  { value: "Permiso por Cuido", label: "Permiso por Cuido" },
+  { value: "Permiso por Cuido (Más de Tres Permisos)", label: "Permiso por Cuido (Más de Tres Permisos)" },
+  { value: "Permiso Remunerado", label: "Permiso Remunerado" },
+  { value: "Permiso Sindical", label: "Permiso Sindical" },
+  { value: "Personal con 14-08", label: "Personal con 14-08" },
+  { value: "Proceso Administrativo", label: "Proceso Administrativo" },
+  { value: "Reposo Médico", label: "Reposo Médico" },
+  { value: "Vacaciones", label: "Vacaciones" },
 ];
 
 const typePersonnelOptions = [
@@ -804,7 +826,14 @@ export default function PersonalActivoPage() {
         required: false,
         className: "col-span-12 md:col-span-6",
       },
-
+      {
+        name: "work_status",
+        label: "Estatus Laboral",
+        type: "select",
+        options: work_status_options,
+        required: false,
+        className: "col-span-12 md:col-span-6",
+      },
       {
         name: "observation",
         label: "Observaciones",
@@ -936,6 +965,7 @@ export default function PersonalActivoPage() {
           laboral_relationship: formData.laboral_relationship,
           position_code: formData.position_code,
           grade: formData.grade,
+          work_status: formData.work_status,
           observation: formData.observation,
           degree_obtained: formData.degree_obtained,
           undergraduate_degree: formData.undergraduate_degree,
@@ -1558,6 +1588,7 @@ export default function PersonalActivoPage() {
                     f.name !== "laboral_relationship" &&
                     f.name !== "position_code" &&
                     f.name !== "grade" &&
+                    f.name !== "work_status" &&
                     f.name !== "observation",
                 )
                 .map((field) => (
@@ -1631,6 +1662,7 @@ export default function PersonalActivoPage() {
                             f.name === "laboral_relationship" ||
                             f.name === "position_code" ||
                             f.name === "grade" ||
+                            f.name === "work_status" ||
                             f.name === "observation",
                         )
                         .map((field) => (

@@ -65,11 +65,14 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
         </h4>
       </header>
 
-      <div className="flex mt-4">
+          <div className="bg-color1 text-white text-xs font-bold px-3 py-1 rounded-t">
+          I. DATOS PERSONALES
+        </div>
+      <div className="flex ">
         <div className="flex flex-col">
           <div className="flex justify-center items-center">
             {data.status ? (
-              <div className="min-h-6 items-center flex justify-center bg-color2 rounded-tl-md w-full text-center px-2">
+              <div className="min-h-6 items-center flex justify-center bg-color2  w-full text-center px-2">
                 <p className="text-white font-bold text-xs">ACTIVO</p>
               </div>
             ) : (
@@ -84,7 +87,6 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             style={{
               width: 100,
               height: 110,
-              borderRadius: "0 0 0 6px",
               objectFit: "cover",
             }}
             loading="lazy"
@@ -140,7 +142,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-0.5">
+          <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-t-0 border-gray-300 ">
             <div className="col-span-1 bg-white">
               <div className="px-2 py-0.5 bg-gray-100">
                 <p className="font-medium text-gray-600">Sexo</p>
@@ -177,7 +179,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-0.5">
+          <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-t-0 border-gray-300 ">
             <div className="col-span-9 bg-white">
               <div className="px-2 py-0.5 bg-gray-100">
                 <p className="font-medium text-gray-600">
@@ -217,7 +219,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
       </div>
     
 
-      <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-0.5">
+      <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-t-0 border-gray-300 ">
         <div className="col-span-4 bg-white">
           <div className="px-2 py-0.5 bg-gray-100">
             <p className="font-medium text-gray-600">Nivel académico</p>
@@ -247,7 +249,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
       </div>
       <div className="mt-3">
         <div className="bg-color1 text-white text-xs font-bold px-3 py-1 rounded-t">
-          I. DATOS ADMINISTRATIVOS
+          II. DATOS ADMINISTRATIVOS
         </div>
         <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300">
           <div className="col-span-6 bg-white">
@@ -299,7 +301,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-px">
+        <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 border-t-0">
           <div className="col-span-4 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600"> Nómina</p>
@@ -338,7 +340,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 mt-px">
+        <div className="grid grid-cols-12 text-xs gap-px bg-gray-300 border border-gray-300 border-t-0">
           <div className="col-span-2 bg-white">
             <div className="px-2 py-0.5 bg-gray-100">
               <p className="font-medium text-gray-600">Cód. puesto</p>
@@ -379,7 +381,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
 
       <div className="mt-3">
         <div className="bg-color2 text-white text-xs font-bold px-3 py-1 rounded-t">
-          II. CARGA FAMILIAR
+          III. CARGA FAMILIAR
         </div>
         <div className="bg-gray-300 border border-gray-300">
           <div className="grid grid-cols-12 text-xs gap-px bg-gray-400 ">
@@ -477,7 +479,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
           <div className="bg-gray-200 mt-3 py-0.5 text-center">
             <p>Funcionario responsable del censo</p>
           </div>
-          <div className=" flex justify-between items-center">
+          <div className="text-sm flex justify-between items-center">
             <p>{props.data?.audit_logs[props.data?.audit_logs.length - 1]?.user?.full_name}</p>
             <p className="text-xs mt-1">
               Censado el{" "}
