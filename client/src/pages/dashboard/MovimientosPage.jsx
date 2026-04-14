@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   activitiesAPI,
-  asicAPI,
+  ASICAPI,
   nominaNamesAPI,
   usersAPI,
 } from "../../services/api.js";
@@ -73,7 +73,7 @@ export default function MovimientosPage() {
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const administrative_locations = await asicAPI.getASIC();
+      const administrative_locations = await ASICAPI.getASIC();
       // Transform API response to match select component format { value, label }
       const formattedLocations = administrative_locations.map((location) => ({
         value: location.id,
