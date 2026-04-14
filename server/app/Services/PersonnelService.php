@@ -131,7 +131,7 @@ class PersonnelService
             }
         }
 
-        $sortField = $filters['sort_by'] ?? 'created_at';
+        $sortField = $filters['sort_by'] ?? 'id';
         $sortDirection = $filters['sort_direction'] ?? 'desc';
         $query->orderBy($sortField, $sortDirection);
 
