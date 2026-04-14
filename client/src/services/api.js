@@ -141,6 +141,17 @@ export const servicesAPI = {
   deleteService: (id) => api.delete(`/admin/services/${id}`),
 };
 
+export const syncAPI = {
+  lastSync: () => api.get("/admin/sync/last"),
+  history: () => api.get("/admin/sync/history"),
+  export: () => api.get("/admin/sync/export", { responseType: "blob" }),
+  import: (file) =>
+    api.post("/admin/sync/import", file, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  resolve: (data) => api.post("/admin/sync/resolve", data),
+};
+
 export const activePersonnelAPI = {
   getPersonnel: (params) => api.get("/admin/personnels/active", { params }),
   getPersonnelById: (id) => api.get(`/admin/personnels/active/${id}`),
