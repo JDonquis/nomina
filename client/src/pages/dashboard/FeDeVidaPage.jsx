@@ -9,11 +9,7 @@ import React, {
 import { API_URL } from "../../config/env.js";
 
 import {
-<<<<<<< HEAD
-  life_proofAPI,
-=======
   liveProofAPI,
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
   ASICAPI,
   censusAPI,
   nominaNamesAPI,
@@ -102,11 +98,7 @@ export default function FeDeVidaPage() {
 
   const fetchInitialData = useCallback(async () => {
     try {
-<<<<<<< HEAD
-      const administrative_locations = await ASICAPI.getASIC();
-=======
       const asics = await ASICAPI.getASIC();
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       // Transform API response to match select component format { value, label }
       const formattedLocations = asics.map((location) => ({
         value: location.id,
@@ -114,17 +106,10 @@ export default function FeDeVidaPage() {
       }));
       setAdministrativeLocations(formattedLocations);
 
-<<<<<<< HEAD
-      const type_pay_sheets = await nominaNamesAPI.getPaySheets();
-      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
-        value: type_pay_sheet.id,
-        label: type_pay_sheet.name,
-=======
       const type_personnel = await nominaNamesAPI.get();
       const formattedTypePersonnel = type_personnel.map((type) => ({
         value: type.id,
         label: type.name,
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       }));
       setTypePaySheets(formattedTypePersonnel);
     } catch (e) {
@@ -609,29 +594,16 @@ export default function FeDeVidaPage() {
         photoData.append("photo", formData.photo);
 
         if (submitString === "Actualizar") {
-<<<<<<< HEAD
-          await life_proofAPI.updatePhoto(formData.id, photoData);
-=======
           await liveProofAPI.updatePersonnelPhoto(formData.id, photoData);
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         }
       }
 
       if (submitString === "Actualizar") {
-<<<<<<< HEAD
-        await life_proofAPI.updateWorker(formData.id, formData);
-=======
         await liveProofAPI.updatePersonnel(formData.id, submitData);
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         setSubmitString("Registrar");
       } else {
         // createPersonnel uses multipart/form-data (for photo on create),
         // so booleans must be sent as "1"/"0"
-<<<<<<< HEAD
-        await life_proofAPI.createWorker({
-          ...formData,
-          to_census: formData.to_census ? "1" : "0",
-=======
         await liveProofAPI.createPersonnel({
           ...submitData,
           to_census: submitData.to_census ? "1" : "0",
@@ -641,7 +613,6 @@ export default function FeDeVidaPage() {
           pension_survivor_status: submitData.pension_survivor_status ? "1" : "0",
           suspend_payment_status: submitData.suspend_payment_status ? "1" : "0",
           is_resident: submitData.is_resident ? "1" : "0",
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         });
       }
 
@@ -668,11 +639,7 @@ export default function FeDeVidaPage() {
       if (!window.confirm("¿Está seguro de eliminar este personal?")) {
         return;
       }
-<<<<<<< HEAD
-      const res = await life_proofAPI.deleteWorker(id);
-=======
       const res = await liveProofAPI.deletePersonnel(id);
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       if (res.status) {
         showSuccess("Personal eliminado con éxito");
       }
@@ -749,13 +716,8 @@ export default function FeDeVidaPage() {
 
   const getHistory = async (id) => {
     try {
-<<<<<<< HEAD
-      const res = await life_proofAPI.getHistory(id);
-      setHistoryData(res.paySheet);
-=======
       const res = await liveProofAPI.getDetailById(id);
       setHistoryData(res);
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       setIsHistoryModalOpen(true);
     } catch (error) {
       const errorMessage =
@@ -1043,11 +1005,7 @@ export default function FeDeVidaPage() {
     setIsLoading(true);
 
     try {
-<<<<<<< HEAD
-      const res = await life_proofAPI.getWorkers({
-=======
       const res = await liveProofAPI.getPersonnel({
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         page: pagination.pageIndex + 1,
         per_page: user.is_admin ? pagination.pageSize : 1,
         sortField: sorting[0]?.id || "id",

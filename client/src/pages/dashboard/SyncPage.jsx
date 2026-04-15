@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { syncAPI } from "../../services/api";
 import { Icon } from "@iconify/react";
 
-export default function SyncPage() {
+export function SyncSection() {
   const [loading, setLoading] = useState(false);
   const [lastSync, setLastSync] = useState(null);
   const [importResult, setImportResult] = useState(null);
@@ -127,15 +127,6 @@ export default function SyncPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Sincronización de Datos
-        </h1>
-        <p className="text-gray-600">
-          Exporta e importa datos para mantener bases de datos sincronizadas
-        </p>
-      </div>
-
       {lastSync && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
           <p className="text-sm text-gray-600">

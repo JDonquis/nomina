@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ASICAPI,
   dependenciesAPI,
@@ -11,18 +12,18 @@ import debounce from "lodash.debounce";
 import { produce } from "immer";
 import { Icon } from "@iconify/react";
 
-
-
 import { useFeedback } from "../../context/FeedbackContext";
 import { FormField } from "../../components/forms";
 import {
   SidebarASICList,
   ASICDetailPanel,
 } from "../../components/configuracion";
+import { SyncSection } from "./SyncPage";
 
 export default function ConfiguracionPage() {
   const { showError, showSuccess } = useFeedback();
 
+  const [activeTab, setActiveTab] = useState("estructura");
   const [asicData, setAsicData] = useState([]);
   const [selectedAsicId, setSelectedAsicId] = useState(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -189,7 +190,10 @@ export default function ConfiguracionPage() {
   const updateDependency = useCallback(
     async (id, updatedData) => {
       try {
-        await dependenciesAPI.updateDependency(id, { ...updatedData, name: updatedData.name });
+        await dependenciesAPI.updateDependency(id, {
+          ...updatedData,
+          name: updatedData.name,
+        });
       } catch (error) {
         console.error("Error updating dependency:", error);
         const errorMessage =
@@ -209,17 +213,16 @@ export default function ConfiguracionPage() {
     [updateDependency],
   );
 
-    const objPosiblesNames = {
-      "Médicos": "Servicios Generales",
-      "Servicios Generales": "Electromedicina",
-      "Electromedicina": "Sala de parto",
-      "Sala de parto": "Odontología",
-      "Odontología": "Laboratorio",
-      "Laboratorio": "Enfermeras",
-      "Enfermeras": "Promoción Social",
-      "Promoción Social": "Seguridad y Vigilancia"
-    }
-  
+  const objPosiblesNames = {
+    Médicos: "Servicios Generales",
+    "Servicios Generales": "Electromedicina",
+    Electromedicina: "Sala de parto",
+    "Sala de parto": "Odontología",
+    Odontología: "Laboratorio",
+    Laboratorio: "Enfermeras",
+    Enfermeras: "Promoción Social",
+    "Promoción Social": "Seguridad y Vigilancia",
+  };
 
   const createAdministrativeUnit = async (dependenceId, unitName) => {
     if (!unitName || !dependenceId) return;
@@ -241,7 +244,8 @@ export default function ConfiguracionPage() {
               departments: [],
             });
           }
-          draft[`newUnitName_${dependenceId}`] = objPosiblesNames[unitName] || "";
+          draft[`newUnitName_${dependenceId}`] =
+            objPosiblesNames[unitName] || "";
         }),
       );
       setTimeout(() => {
@@ -292,7 +296,10 @@ export default function ConfiguracionPage() {
   const updateAdministrativeUnit = useCallback(
     async (id, updatedData) => {
       try {
-        await administrativeUnitsAPI.updateUnit(id, { ...updatedData, name: updatedData.name});
+        await administrativeUnitsAPI.updateUnit(id, {
+          ...updatedData,
+          name: updatedData.name,
+        });
       } catch (error) {
         console.error("Error updating administrative unit:", error);
         const errorMessage =
@@ -387,7 +394,10 @@ export default function ConfiguracionPage() {
   const updateDepartment = useCallback(
     async (id, updatedData) => {
       try {
-        await departmentAPI.updateDepartment(id, { ...updatedData, name: updatedData.name });
+        await departmentAPI.updateDepartment(id, {
+          ...updatedData,
+          name: updatedData.name,
+        });
       } catch (error) {
         console.error("Error updating department:", error);
         const errorMessage =
@@ -472,7 +482,10 @@ export default function ConfiguracionPage() {
   const updateService = useCallback(
     async (id, updatedData) => {
       try {
-        await servicesAPI.updateService(id, { ...updatedData, name: updatedData.name });
+        await servicesAPI.updateService(id, {
+          ...updatedData,
+          name: updatedData.name,
+        });
       } catch (error) {
         console.error("Error updating service:", error);
         const errorMessage =
@@ -522,61 +535,88 @@ export default function ConfiguracionPage() {
 
   const selectedAsic = asicData.find((a) => a.id === selectedAsicId);
 
-  const handlers = React.useMemo(() => ({
-    asicId: selectedAsicId,
-    asicName: formData.asicName,
-    onUpdateAsic: updateAsic,
-    onDeleteAsic: deleteAsic,
-    onAddDependency: addNewDependency,
-    onUpdateDependency: debouncedUpdateDependency,
-    onDeleteDependency: deleteDependency,
-    onCreateUnit: createAdministrativeUnit,
-    onUpdateUnit: debouncedUpdateUnit,
-    onDeleteUnit: deleteAdministrativeUnit,
-    onCreateDepartment: createDepartment,
-    onUpdateDepartment: debouncedUpdateDepartment,
-    onDeleteDepartment: deleteDepartment,
-    onCreateService: createService,
-    onUpdateService: debouncedUpdateService,
-    onDeleteService: deleteService,
-  }), [
-    selectedAsicId,
-    formData.asicName,
-    updateAsic,
-    deleteAsic,
-    addNewDependency,
-    debouncedUpdateDependency,
-    deleteDependency,
-    createAdministrativeUnit,
-    debouncedUpdateUnit,
-    deleteAdministrativeUnit,
-    createDepartment,
-    debouncedUpdateDepartment,
-    deleteDepartment,
-    createService,
-    debouncedUpdateService,
-    deleteService,
-  ]);
+  const handlers = React.useMemo(
+    () => ({
+      asicId: selectedAsicId,
+      asicName: formData.asicName,
+      onUpdateAsic: updateAsic,
+      onDeleteAsic: deleteAsic,
+      onAddDependency: addNewDependency,
+      onUpdateDependency: debouncedUpdateDependency,
+      onDeleteDependency: deleteDependency,
+      onCreateUnit: createAdministrativeUnit,
+      onUpdateUnit: debouncedUpdateUnit,
+      onDeleteUnit: deleteAdministrativeUnit,
+      onCreateDepartment: createDepartment,
+      onUpdateDepartment: debouncedUpdateDepartment,
+      onDeleteDepartment: deleteDepartment,
+      onCreateService: createService,
+      onUpdateService: debouncedUpdateService,
+      onDeleteService: deleteService,
+    }),
+    [
+      selectedAsicId,
+      formData.asicName,
+      updateAsic,
+      deleteAsic,
+      addNewDependency,
+      debouncedUpdateDependency,
+      deleteDependency,
+      createAdministrativeUnit,
+      debouncedUpdateUnit,
+      deleteAdministrativeUnit,
+      createDepartment,
+      debouncedUpdateDepartment,
+      deleteDepartment,
+      createService,
+      debouncedUpdateService,
+      deleteService,
+    ],
+  );
 
   return (
-    <div className="md:flex h-full">
-      <SidebarASICList
-        asics={asicData}
-        selectedAsicId={selectedAsicId}
-        onSelectAsic={getAsicRelations}
-        newAsicName={newAsicName}
-        onNewAsicNameChange={setNewAsicName}
-        onCreateAsic={createASIC}
-        isCreating={isLoadingForm}
-      />
-      <ASICDetailPanel
-        asic={selectedAsic}
-        objPosiblesNames={objPosiblesNames}
-        formData={formData}
-        setFormData={setFormData}
-        handlers={handlers}
-        isLoading={isLoadingForm}
-      />
+    <div>
+      <nav className="w-full flex mb-4">
+        <button
+          onClick={() => setActiveTab("estructura")}
+          className={`px-10 py-3 hover:bg-gray-200 ${
+            activeTab === "estructura" ? "border-b-2 border-blue-500 font-semibold" : ""
+          }`}
+        >
+          Estructura ASIC
+        </button>
+        <button
+          onClick={() => setActiveTab("sincronizacion")}
+          className={`px-10 py-3 hover:bg-gray-200 ${
+            activeTab === "sincronizacion" ? "border-b-2 border-blue-500 font-semibold" : ""
+          }`}
+        >
+          Sincronización
+        </button>
+      </nav>
+      {activeTab === "estructura" ? (
+        <div className="md:flex h-full">
+          <SidebarASICList
+            asics={asicData}
+            selectedAsicId={selectedAsicId}
+            onSelectAsic={getAsicRelations}
+            newAsicName={newAsicName}
+            onNewAsicNameChange={setNewAsicName}
+            onCreateAsic={createASIC}
+            isCreating={isLoadingForm}
+          />
+          <ASICDetailPanel
+            asic={selectedAsic}
+            objPosiblesNames={objPosiblesNames}
+            formData={formData}
+            setFormData={setFormData}
+            handlers={handlers}
+            isLoading={isLoadingForm}
+          />
+        </div>
+      ) : (
+        <SyncSection />
+      )}
     </div>
   );
 }

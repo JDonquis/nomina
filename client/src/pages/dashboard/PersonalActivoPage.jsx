@@ -209,18 +209,11 @@ export default function PersonalActivoPage() {
       setAsicOptions(
         asicRes.map((item) => ({ value: item.id, label: item.name })),
       );
-<<<<<<< HEAD
-      const type_pay_sheets = await nominaNamesAPI.getPaySheets();
-      const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
-        value: type_pay_sheet.id,
-        label: type_pay_sheet.name,
-=======
       const nominas = await nominaNamesAPI.get();
       const formattedNominas = nominas.map((nomina) => ({
         value: nomina.id,
         label: `${nomina.code} | ${nomina.name} `,
         ...nomina,
->>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       }));
       setNominasNames(formattedNominas);
     } catch (e) {
