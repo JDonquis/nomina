@@ -33,7 +33,7 @@ class PersonnelController extends Controller
 
     public function active(Request $request)
     {
-        $personnels = $this->personnelService->get($request->all());
+        $personnels = $this->personnelService->get($request->all(), 'active');
 
         return response()->json([
             'message' => 'OK',
@@ -162,5 +162,15 @@ class PersonnelController extends Controller
                 'message' => 'Ha ocurrido un error al actualizar la foto'
             ], 500);
         }
+    }
+
+    public function exportTemplate()
+    {
+        return $this->personnelService->exportTemplate();
+    }
+
+    public function importExcel(Request $request)
+    {
+        return $this->personnelService->importExcel($request);
     }
 }

@@ -7,6 +7,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import React from "react";
 
@@ -154,7 +155,6 @@ const FormField = React.memo(function FormField({
           fullWidth={fullWidth}
           size="small"
           variant={variant}
-         
           InputProps={{
             endAdornment: unit && (
               <InputAdornment position="end">{unit}</InputAdornment>
@@ -168,6 +168,31 @@ const FormField = React.memo(function FormField({
           {...props}
         />
       </div>
+    );
+  } else if (type === "autocomplete") {
+    return (
+      <Autocomplete
+        disablePortal
+        className={className}
+        options={options || []}
+        value={options?.find((opt) => opt.value === value) || null}
+        onChange={(event, newValue) => {
+          // Create a synthetic event for handleFieldChange
+          const syntheticEvent = {
+            target: {
+              name,
+              value: newValue?.value ?? "",
+              type: "autocomplete",
+              selectedOption: newValue, // Pass the full object
+            },
+          };
+          if (onChange) onChange(syntheticEvent);
+        }}
+        isOptionEqualToValue={(option, val) => option.value === val.value}
+        size="small"
+        fullWidth={fullWidth}
+        renderInput={(params) => <TextField {...params} label={label} />}
+      />
     );
   }
 

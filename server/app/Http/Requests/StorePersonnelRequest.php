@@ -43,6 +43,7 @@ class StorePersonnelRequest extends FormRequest
             'is_resident' => 'boolean',
             'additional_data' => 'nullable|array',
             'to_census' => 'boolean',
+            'work_status' => 'nullable|string|max:100',
         ];
     }
 
@@ -65,6 +66,7 @@ class StorePersonnelRequest extends FormRequest
             'has_authorizations' => $this->boolean('has_authorizations'),
             'pension_survivor_status' => $this->boolean('pension_survivor_status'),
             'suspend_payment_status' => $this->boolean('suspend_payment_status'),
+            'to_census' => $this->boolean('to_census'),
             'is_resident' => $this->boolean('is_resident'),
             'sex' => $this->sex ?? 'Sin asignar',
             'civil_status' => $this->civil_status ?? 'Sin asignar',

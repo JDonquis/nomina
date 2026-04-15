@@ -9,7 +9,11 @@ import React, {
 import { API_URL } from "../../config/env.js";
 
 import {
+<<<<<<< HEAD
   life_proofAPI,
+=======
+  liveProofAPI,
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
   ASICAPI,
   censusAPI,
   nominaNamesAPI,
@@ -95,28 +99,41 @@ export default function FeDeVidaPage() {
   const photoOptionsRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
   const fetchInitialData = useCallback(async () => {
     try {
+<<<<<<< HEAD
       const administrative_locations = await ASICAPI.getASIC();
+=======
+      const asics = await ASICAPI.getASIC();
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       // Transform API response to match select component format { value, label }
-      const formattedLocations = administrative_locations.map((location) => ({
+      const formattedLocations = asics.map((location) => ({
         value: location.id,
         label: location.name,
       }));
       setAdministrativeLocations(formattedLocations);
 
+<<<<<<< HEAD
       const type_pay_sheets = await nominaNamesAPI.getPaySheets();
       const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
         value: type_pay_sheet.id,
         label: type_pay_sheet.name,
+=======
+      const type_personnel = await nominaNamesAPI.get();
+      const formattedTypePersonnel = type_personnel.map((type) => ({
+        value: type.id,
+        label: type.name,
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       }));
-      setTypePaySheets(formattedTypePaySheets);
+      setTypePaySheets(formattedTypePersonnel);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
   }, []);
   // Form configuration for ReusableForm
 
+ 
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
@@ -212,46 +229,9 @@ export default function FeDeVidaPage() {
     };
   }, [cameraStream]);
 
-  {
-    /* 
-    
-    // Datos personales
-    "nac": "V",
-    "ci": "12345678",
-    "full_name": "María Elena Rodríguez Pérez",
-    "date_birth": "1975-05-15",
-    "sex": "F",
-    "city": "Caracas",
-    "state": "Distrito Capital",
-    "administrative_location_id": 1,
-    "phone_number": "+584141234567",
-    
-    // Datos de pensión
-    "type_pension": "Jubilacion",
-    "type_pay_sheet_id": 1,
-    "last_charge": "Jefe de Departamento",
-    "civil_status": "C",
-    "minor_child_nro": 2,
-    "disabled_child_nro": 0,
-    "receive_pension_from_another_organization_status": false,
-    "another_organization_name": null,
-    "has_authorizations": true,
-    
-    // Pensión sobrevivencia (condicional - en este caso false)
-    "pension_survivor_status": false,
-    "fullname_causative": null,
-    "age_causative": null,
-    "parent_causative": null,
-    "sex_causative": null,
-    "ci_causative": null,
-    "decease_date": null,
-    "suspend_payment_status": false,
-    "last_payment": null
-    */
-  }
-
   const defaultFormData = {
     to_census: false,
+    status: "inactive", // Siempre inactive para fe de vida
     // Datos personales
     photo: "",
     nac: "V",
@@ -261,34 +241,36 @@ export default function FeDeVidaPage() {
     sex: "F",
     city: "Coro",
     state: "Falcón",
-    administrative_location_id: 1,
+    asic_id: 1,
     phone_number: "",
     email: "",
     municipality: "",
     parish: "",
     address: "",
-
-    // Datos de pensión
-    type_pension: "Jubilacion",
-    type_pay_sheet_id: 1,
-    last_charge: "",
     civil_status: "C",
+    receive_pension_from_another_organization_status: false,
+    has_authorizations: true,
+    pension_survivor_status: false,
+    suspend_payment_status: false,
+    is_resident: false,
+
+    // Nuevo campo para tipo de personal
+    type_personnel_id: 1,
+
+    // Datos que van en additional_data
+    type_pension: "Jubilacion",
+    last_charge: "",
     minor_child_nro: 0,
     disabled_child_nro: 0,
-    receive_pension_from_another_organization_status: false,
     another_organization_name: null,
-    has_authorizations: true,
-
-    // Pensión sobrevivencia (condicional - en este caso false)
-    pension_survivor_status: false,
     fullname_causative: null,
     age_causative: null,
     parent_causative: null,
     sex_causative: null,
     ci_causative: null,
     decease_date: null,
-    suspend_payment_status: false,
     last_payment: null,
+
     fotoChanged: false,
   };
 
@@ -345,8 +327,8 @@ export default function FeDeVidaPage() {
       className: "col-span-6",
     },
     {
-      name: "administrative_location_id",
-      label: "Ubicación administrativa",
+      name: "asic_id",
+      label: "Ubicación administrativa (ASIC)",
       type: "select",
       options: administrativeLocations,
       required: true,
@@ -413,14 +395,14 @@ export default function FeDeVidaPage() {
       label: "Tipo de Pensión",
       type: "select",
       options: typePensions,
-      className: "col-span-6",
+      className: "col-span-5",
     },
     {
-      name: "type_pay_sheet_id",
-      label: "Nombre de nómina",
+      name: "type_personnel_id",
+      label: "Tipo de personal",
       type: "select",
       options: typePaySheets,
-      className: "col-span-6",
+      className: "col-span-7",
     },
     {
       name: "last_charge",
@@ -466,7 +448,9 @@ export default function FeDeVidaPage() {
       label: "Nombre de la Otra Organización",
       type: "text",
       required: false,
-      className: "col-span-6",
+       className: `${
+        formData.receive_pension_from_another_organization_status ? "col-span-6" : "hidden"
+      }`,
     },
     {
       name: "has_authorizations",
@@ -574,25 +558,90 @@ export default function FeDeVidaPage() {
     setLoading(true);
 
     try {
+      // Structure the data like PersonalActivoPage
+      const submitData = {
+        // Direct fields
+        to_census: formData.to_census,
+        type_personnel_id: formData.type_personnel_id,
+        nac: formData.nac,
+        ci: formData.ci,
+        full_name: formData.full_name,
+        date_birth: formData.date_birth,
+        sex: formData.sex,
+        civil_status: formData.civil_status,
+        address: formData.address,
+        phone_number: formData.phone_number,
+        email: formData.email,
+        municipality: formData.municipality,
+        parish: formData.parish,
+        state: formData.state,
+        city: formData.city,
+        asic_id: formData.asic_id,
+        dependency_id: formData.dependency_id,
+        administrative_unit_id: formData.administrative_unit_id,
+        department_id: formData.department_id,
+        service_id: formData.service_id,
+        receive_pension_from_another_organization_status: formData.receive_pension_from_another_organization_status,
+        has_authorizations: formData.has_authorizations,
+        pension_survivor_status: formData.pension_survivor_status,
+        suspend_payment_status: formData.suspend_payment_status,
+        is_resident: formData.is_resident,
+        // additional_data fields
+        additional_data: {
+          type_pension: formData.type_pension,
+          last_charge: formData.last_charge,
+          minor_child_nro: formData.minor_child_nro,
+          disabled_child_nro: formData.disabled_child_nro,
+          another_organization_name: formData.another_organization_name,
+          fullname_causative: formData.fullname_causative,
+          age_causative: formData.age_causative,
+          parent_causative: formData.parent_causative,
+          sex_causative: formData.sex_causative,
+          ci_causative: formData.ci_causative,
+          decease_date: formData.decease_date,
+          last_payment: formData.last_payment,
+        },
+      };
+
       // Upload photo separately if changed
       if (formData.fotoChanged && formData.photo instanceof File) {
         const photoData = new FormData();
         photoData.append("photo", formData.photo);
 
         if (submitString === "Actualizar") {
+<<<<<<< HEAD
           await life_proofAPI.updatePhoto(formData.id, photoData);
+=======
+          await liveProofAPI.updatePersonnelPhoto(formData.id, photoData);
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         }
       }
 
       if (submitString === "Actualizar") {
+<<<<<<< HEAD
         await life_proofAPI.updateWorker(formData.id, formData);
+=======
+        await liveProofAPI.updatePersonnel(formData.id, submitData);
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         setSubmitString("Registrar");
       } else {
-        // createWorker uses multipart/form-data (for photo on create),
+        // createPersonnel uses multipart/form-data (for photo on create),
         // so booleans must be sent as "1"/"0"
+<<<<<<< HEAD
         await life_proofAPI.createWorker({
           ...formData,
           to_census: formData.to_census ? "1" : "0",
+=======
+        await liveProofAPI.createPersonnel({
+          ...submitData,
+          to_census: submitData.to_census ? "1" : "0",
+          status: "inactive",
+          receive_pension_from_another_organization_status: submitData.receive_pension_from_another_organization_status ? "1" : "0",
+          has_authorizations: submitData.has_authorizations ? "1" : "0",
+          pension_survivor_status: submitData.pension_survivor_status ? "1" : "0",
+          suspend_payment_status: submitData.suspend_payment_status ? "1" : "0",
+          is_resident: submitData.is_resident ? "1" : "0",
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         });
       }
 
@@ -616,12 +665,16 @@ export default function FeDeVidaPage() {
 
   const handleDelete = async (id) => {
     try {
-      if (!window.confirm("¿Está seguro de eliminar esta nómina?")) {
+      if (!window.confirm("¿Está seguro de eliminar este personal?")) {
         return;
       }
+<<<<<<< HEAD
       const res = await life_proofAPI.deleteWorker(id);
+=======
+      const res = await liveProofAPI.deletePersonnel(id);
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       if (res.status) {
-        showSuccess("Trabajador eliminado con éxito");
+        showSuccess("Personal eliminado con éxito");
       }
       fetchData();
     } catch (error) {
@@ -696,8 +749,13 @@ export default function FeDeVidaPage() {
 
   const getHistory = async (id) => {
     try {
+<<<<<<< HEAD
       const res = await life_proofAPI.getHistory(id);
       setHistoryData(res.paySheet);
+=======
+      const res = await liveProofAPI.getDetailById(id);
+      setHistoryData(res);
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
       setIsHistoryModalOpen(true);
     } catch (error) {
       const errorMessage =
@@ -706,24 +764,19 @@ export default function FeDeVidaPage() {
     }
   };
 
-  const handleUncensus = async (id) => {
-    if (
-      !window.confirm(
-        `¿Está seguro de anular el censo de ${PDFdata.full_name}?`,
-      )
-    ) {
-      return;
-    }
+  const getDetail = async (id, row) => {
     try {
-      await censusAPI.deleteCensus(id);
-      showSuccess("Censo anulado con éxito");
-      fetchData();
-      setIsCensusModalOpen(false);
+      const res = await liveProofAPI.getDetailById(id);
+      console.log(res)
+      setPDFdata(res.personnel);
+      setPDFmodal(true);
+
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
       showError(errorMessage);
     }
+
   };
 
   const importExcel = async (e) => {
@@ -808,19 +861,23 @@ export default function FeDeVidaPage() {
       },
       {
         header: "Censado",
-        accessorKey: "status",
+        accessorKey: "census_status",
         size: 100,
         filterVariant: "select",
         filterSelectOptions: ["CENSADO", "NO CENSADO"],
         enableColumnFilter: true,
         enableSorting: true,
-        Cell: ({ cell }) => {
-          return cell.getValue() ? (
-            <p className="text-color2 text-xs font-semibold">CENSADO</p>
+        Cell: ({ cell }) => 
+           cell.getValue() ? (
+            <span className="text-color2 text-xs font-semibold bg-color4/30 px-2 py-1 rounded">
+              Censado
+            </span>
           ) : (
-            <p className="text-dark/75 text-xs ">NO CENSADO</p>
-          );
-        },
+            <span className="text-red-500 text-xs bg-red-100 px-2 py-1 rounded">
+              No censado
+            </span>
+          ),
+        
       },
 
       //   {
@@ -869,7 +926,7 @@ export default function FeDeVidaPage() {
       },
       {
         header: "Ubicación administrativa",
-        accessorKey: "administrative_location.name",
+        accessorKey: "asic.name",
         size: 130,
         filterVariant: "select",
         enableColumnFilter: true,
@@ -893,6 +950,7 @@ export default function FeDeVidaPage() {
                   setFormData({
                     ...cell.row.original,
                     to_census: false,
+                    ...cell.row.original.additional_data,
                   });
                   setSubmitString("Actualizar");
                 }}
@@ -938,11 +996,8 @@ export default function FeDeVidaPage() {
               {cell.row.original.status ? (
                 <button
                   onClick={() => {
-                    setPDFmodal(true);
 
-                    setPDFdata({
-                      ...cell.row.original,
-                    });
+                    getDetail(cell.row.original.id, cell.row.original);
                   }}
                   className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
                   title="Descargar"
@@ -988,7 +1043,11 @@ export default function FeDeVidaPage() {
     setIsLoading(true);
 
     try {
+<<<<<<< HEAD
       const res = await life_proofAPI.getWorkers({
+=======
+      const res = await liveProofAPI.getPersonnel({
+>>>>>>> 6fac654356fce694fd1088186ea208ad5634fe2a
         page: pagination.pageIndex + 1,
         per_page: user.is_admin ? pagination.pageSize : 1,
         sortField: sorting[0]?.id || "id",
