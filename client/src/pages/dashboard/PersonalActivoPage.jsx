@@ -15,7 +15,7 @@ import {
   departmentAPI,
   servicesAPI,
   censusAPI,
-  typePaySheetsAPI,
+  nominaNamesAPI,
 } from "../../services/api.js";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal.jsx";
@@ -183,7 +183,7 @@ export default function PersonalActivoPage() {
       setAsicOptions(
         asicRes.map((item) => ({ value: item.id, label: item.name })),
       );
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const type_pay_sheets = await nominaNamesAPI.getPaySheets();
       const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
         value: type_pay_sheet.id,
         label: type_pay_sheet.name,

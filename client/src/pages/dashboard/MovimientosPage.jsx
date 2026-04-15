@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   activitiesAPI,
-  asicAPI,
-  typePaySheetsAPI,
+  ASICAPI,
+  nominaNamesAPI,
   usersAPI,
 } from "../../services/api.js";
 import { MaterialReactTable } from "material-react-table";
@@ -73,7 +73,7 @@ export default function MovimientosPage() {
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const administrative_locations = await asicAPI.getASIC();
+      const administrative_locations = await ASICAPI.getASIC();
       // Transform API response to match select component format { value, label }
       const formattedLocations = administrative_locations.map((location) => ({
         value: location.id,
@@ -81,7 +81,7 @@ export default function MovimientosPage() {
       }));
       setAdministrativeLocations(formattedLocations);
 
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const type_pay_sheets = await nominaNamesAPI.getPaySheets();
       const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
         value: type_pay_sheet.id,
         label: type_pay_sheet.name,

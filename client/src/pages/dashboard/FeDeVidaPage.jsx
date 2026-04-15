@@ -9,10 +9,10 @@ import React, {
 import { API_URL } from "../../config/env.js";
 
 import {
-  payrollAPI,
-  asicAPI,
+  life_proofAPI,
+  ASICAPI,
   censusAPI,
-  typePaySheetsAPI,
+  nominaNamesAPI,
 } from "../../services/api.js";
 import externalApi from "../../services/saludfalcon.api.js";
 import { Icon } from "@iconify/react";
@@ -97,7 +97,7 @@ export default function FeDeVidaPage() {
   const canvasRef = useRef(null);
   const fetchInitialData = useCallback(async () => {
     try {
-      const administrative_locations = await asicAPI.getASIC();
+      const administrative_locations = await ASICAPI.getASIC();
       // Transform API response to match select component format { value, label }
       const formattedLocations = administrative_locations.map((location) => ({
         value: location.id,
@@ -105,7 +105,7 @@ export default function FeDeVidaPage() {
       }));
       setAdministrativeLocations(formattedLocations);
 
-      const type_pay_sheets = await typePaySheetsAPI.getPaySheets();
+      const type_pay_sheets = await nominaNamesAPI.getPaySheets();
       const formattedTypePaySheets = type_pay_sheets.map((type_pay_sheet) => ({
         value: type_pay_sheet.id,
         label: type_pay_sheet.name,
@@ -580,17 +580,17 @@ export default function FeDeVidaPage() {
         photoData.append("photo", formData.photo);
 
         if (submitString === "Actualizar") {
-          await payrollAPI.updatePhoto(formData.id, photoData);
+          await life_proofAPI.updatePhoto(formData.id, photoData);
         }
       }
 
       if (submitString === "Actualizar") {
-        await payrollAPI.updateWorker(formData.id, formData);
+        await life_proofAPI.updateWorker(formData.id, formData);
         setSubmitString("Registrar");
       } else {
         // createWorker uses multipart/form-data (for photo on create),
         // so booleans must be sent as "1"/"0"
-        await payrollAPI.createWorker({
+        await life_proofAPI.createWorker({
           ...formData,
           to_census: formData.to_census ? "1" : "0",
         });
@@ -619,7 +619,7 @@ export default function FeDeVidaPage() {
       if (!window.confirm("¿Está seguro de eliminar esta nómina?")) {
         return;
       }
-      const res = await payrollAPI.deleteWorker(id);
+      const res = await life_proofAPI.deleteWorker(id);
       if (res.status) {
         showSuccess("Trabajador eliminado con éxito");
       }
@@ -696,7 +696,7 @@ export default function FeDeVidaPage() {
 
   const getHistory = async (id) => {
     try {
-      const res = await payrollAPI.getHistory(id);
+      const res = await life_proofAPI.getHistory(id);
       setHistoryData(res.paySheet);
       setIsHistoryModalOpen(true);
     } catch (error) {
@@ -732,7 +732,7 @@ export default function FeDeVidaPage() {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append("file", file);
-      const res = await payrollAPI.importExcel(formData);
+      const res = await life_proofAPI.importExcel(formData);
       showSuccess(res.message);
       fetchData();
     } catch (error) {
@@ -988,7 +988,7 @@ export default function FeDeVidaPage() {
     setIsLoading(true);
 
     try {
-      const res = await payrollAPI.getWorkers({
+      const res = await life_proofAPI.getWorkers({
         page: pagination.pageIndex + 1,
         per_page: user.is_admin ? pagination.pageSize : 1,
         sortField: sorting[0]?.id || "id",
@@ -1001,8 +1001,8 @@ export default function FeDeVidaPage() {
           }, {}),
         ),
       });
-      setData(res.paySheets.data);
-      setRowCount(res.paySheets.total);
+      setData(res.personnels.data);
+      setRowCount(res.personnels.total);
     } catch (e) {
       console.error("Failed to fetch data", e);
     }
@@ -1015,7 +1015,7 @@ export default function FeDeVidaPage() {
 
   const generateReport = async () => {
     try {
-      const res = await payrollAPI.getReport();
+      const res = await life_proofAPI.getReport();
       console.log(res);
       setReportData(res);
       setIsReportModalOpen(true);
