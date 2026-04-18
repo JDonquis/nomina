@@ -14,7 +14,6 @@ const FeDeVidaPage = lazy(() => import("./pages/dashboard/FeDeVidaPage"));
 const MovimientosPage = lazy(() => import("./pages/dashboard/MovimientosPage"));
 const PersonalActivoPage = lazy(() => import("./pages/dashboard/PersonalActivoPage"));
 const ConfiguracionPage = lazy(() => import("./pages/dashboard/ConfiguracionPage"));
-const SyncPage = lazy(() => import("./pages/dashboard/SyncPage"));
 import UsuariosPage from "./pages/dashboard/UsuariosPage";
 import ActivateAccountPage from "./pages/ActivateAccountPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -70,16 +69,6 @@ function AppContent() {
                 <Suspense fallback={<PageLoader />}>
                   <MovimientosPage />
                 </Suspense>
-              }
-            />
-            <Route
-              path="sincronizacion"
-              element={
-                <PermissionGate requiredPermission="is_admin">
-                  <Suspense fallback={<PageLoader />}>
-                    <SyncPage />
-                  </Suspense>
-                </PermissionGate>
               }
             />
             <Route
