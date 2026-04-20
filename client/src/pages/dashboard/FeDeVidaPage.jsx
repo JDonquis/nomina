@@ -1032,7 +1032,7 @@ export default function FeDeVidaPage() {
 
   const generateReport = async () => {
     try {
-      const res = await life_proofAPI.getReport();
+      const res = await liveProofAPI.getReport();
       console.log(res);
       setReportData(res);
       setIsReportModalOpen(true);
