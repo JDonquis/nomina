@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
         $allPaySheets = PaySheet::get();
 
         foreach ($allPaySheets as $paySheet) {
+            $paySheetCreatedAt = $paySheet->created_at;
+
             $typePersonnel = null;
 
             if ($paySheet->typePaySheet) {
@@ -109,19 +111,29 @@ class DatabaseSeeder extends Seeder
                 'census_status' => $paySheet->status
             ]);
 
+            $personnel->update([
+                'created_at' => $paySheetCreatedAt,
+                'updated_at' => $paySheetCreatedAt,
+            ]);
+
             $action = 'create';
 
             if ($paySheet->status) {
                 $action = 'create_and_census';
             }
 
-            AuditLog::create([
+            $auditLog = AuditLog::create([
                 'action' => $action,
                 'auditable_type' => Personnel::class,
                 'auditable_id' => $personnel->id,
                 'user_id' => $paySheet->user_id ?? 1,
                 'old_values' => null,
                 'new_values' => $personnel->toArray(),
+            ]);
+
+            $auditLog->update([
+                'created_at' => $paySheetCreatedAt,
+                'updated_at' => $paySheetCreatedAt,
             ]);
         }
     }

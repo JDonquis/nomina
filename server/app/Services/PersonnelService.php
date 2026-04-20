@@ -506,14 +506,36 @@ class PersonnelService
     {
         Carbon::setLocale('es');
 
-        // Usar año actual si no se proporciona
         $year = $year ?? now()->year;
 
-        // Obtener todos los censos válidos del año especificado
-        $personnels = Personnel::where('census_status', true)
+        $censusLogs = AuditLog::where('auditable_type', Personnel::class)
+            ->whereIn('action', ['create_and_census', 'update_and_census'])
             ->whereYear('created_at', $year)
-            ->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service'])
-            ->get();
+            ->orderBy('created_at')
+            ->get()
+            ->groupBy('auditable_id')
+            ->map(function ($logs) {
+                return $logs->first()->created_at;
+            });
+
+        if ($censusLogs->isEmpty()) {
+            return response()->json([
+                'asics' => [],
+                'days' => []
+            ]);
+        }
+
+        $personnelIds = $censusLogs->keys()->toArray();
+
+        $personnels = Personnel::whereIn('id', $personnelIds)
+            ->where('census_status', true)
+            ->where('status', 'inactive')
+            ->with(['asic'])
+            ->get()
+            ->map(function ($personnel) use ($censusLogs) {
+                $personnel->census_date = $censusLogs->get($personnel->id);
+                return $personnel;
+            });
 
         if ($personnels->isEmpty()) {
             return response()->json([
@@ -522,7 +544,6 @@ class PersonnelService
             ]);
         }
 
-        // Generar array de ASICs con sus censos por día
         $asics = $personnels
             ->groupBy(function ($personnel) {
                 return $personnel->asic->id ?? 'sin-asic';
@@ -531,10 +552,9 @@ class PersonnelService
                 $asic = $asicPersonnels->first()->asic;
                 $asicName = $asic->name ?? 'SIN ASIC';
 
-                // Agrupar censos por fecha para este ASIC
                 $censadosPorDia = $asicPersonnels
                     ->groupBy(function ($personnel) {
-                        return $personnel->updated_at->format('Y-m-d');
+                        return $personnel->census_date->format('Y-m-d');
                     })
                     ->map(function ($dayCensuses) {
                         return count($dayCensuses);
@@ -550,11 +570,9 @@ class PersonnelService
             ->values()
             ->toArray();
 
-        // Obtener la primera y última fecha del año con censos
-        $firstDate = $personnels->min('created_at');
-        $lastDate = $personnels->max('created_at');
+        $firstDate = $personnels->min('census_date');
+        $lastDate = $personnels->max('census_date');
 
-        // Generar array de días desde el primer censo hasta el último censo
         $days = [];
         $start = Carbon::parse($firstDate)->startOfDay();
         $end = Carbon::parse($lastDate)->startOfDay();
