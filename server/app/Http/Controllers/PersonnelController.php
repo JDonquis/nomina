@@ -173,4 +173,9 @@ class PersonnelController extends Controller
     {
         return $this->personnelService->importExcel($request);
     }
+
+    public function generateReport(Request $request)
+    {
+        return $this->personnelService->generateReport($request);
+    }
 }

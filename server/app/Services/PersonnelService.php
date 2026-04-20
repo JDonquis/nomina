@@ -21,6 +21,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Carbon\Carbon;
 
 class PersonnelService
 {
@@ -499,5 +500,76 @@ class PersonnelService
         }
 
         return $value;
+    }
+
+    public function generateReport()
+    {
+        Carbon::setLocale('es');
+
+        // Usar año actual si no se proporciona
+        $year = $year ?? now()->year;
+
+        // Obtener todos los censos válidos del año especificado
+        $personnels = Personnel::where('census_status', true)
+            ->whereYear('created_at', $year)
+            ->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service'])
+            ->get();
+
+        if ($personnels->isEmpty()) {
+            return response()->json([
+                'asics' => [],
+                'days' => []
+            ]);
+        }
+
+        // Generar array de ASICs con sus censos por día
+        $asics = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->asic->id ?? 'sin-asic';
+            })
+            ->map(function ($asicPersonnels, $asicId) {
+                $asic = $asicPersonnels->first()->asic;
+                $asicName = $asic->name ?? 'SIN ASIC';
+
+                // Agrupar censos por fecha para este ASIC
+                $censadosPorDia = $asicPersonnels
+                    ->groupBy(function ($personnel) {
+                        return $personnel->updated_at->format('Y-m-d');
+                    })
+                    ->map(function ($dayCensuses) {
+                        return count($dayCensuses);
+                    })
+                    ->toArray();
+
+                return [
+                    'id' => $asicId,
+                    'name' => $asicName,
+                    'censadosPorDia' => $censadosPorDia
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        // Obtener la primera y última fecha del año con censos
+        $firstDate = $personnels->min('created_at');
+        $lastDate = $personnels->max('created_at');
+
+        // Generar array de días desde el primer censo hasta el último censo
+        $days = [];
+        $start = Carbon::parse($firstDate)->startOfDay();
+        $end = Carbon::parse($lastDate)->startOfDay();
+
+        while ($start <= $end) {
+            $days[] = [
+                'id' => $start->format('Y-m-d'),
+                'label' => $start->format('d/m')
+            ];
+            $start->addDay();
+        }
+
+        return response()->json([
+            'asics' => $asics,
+            'days' => $days
+        ]);
     }
 }

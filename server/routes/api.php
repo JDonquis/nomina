@@ -32,12 +32,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::resource('users', UserController::class)->except(['edit', 'create'])
         ->middleware('admin');
 
+    Route::get('personnels/life_proof/generate_report', [PersonnelController::class, 'generateReport']);
     Route::get('personnels/life_proof', [PersonnelController::class, 'lifeProof']);
     Route::post('personnels/life_proof', [PersonnelController::class, 'store']);
     Route::get('personnels/life_proof/{personnel}', [PersonnelController::class, 'show']);
     Route::put('personnels/life_proof/{personnel}', [PersonnelController::class, 'update']);
     Route::post('personnels/life_proof/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
     Route::delete('personnels/life_proof/{personnel}', [PersonnelController::class, 'destroy']);
+
 
     Route::get('personnels/active/export-template', [PersonnelController::class, 'exportTemplate']);
     Route::get('personnels/active', [PersonnelController::class, 'active']);
