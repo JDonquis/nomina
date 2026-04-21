@@ -359,6 +359,8 @@ class PersonnelService
 
     public function importExcel(Request $request)
     {
+        set_time_limit(120);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls'
         ]);
