@@ -114,7 +114,10 @@ const work_status_options = [
   { value: "Permiso Gremial", label: "Permiso Gremial" },
   { value: "Permiso No Remunerado", label: "Permiso No Remunerado" },
   { value: "Permiso por Cuido", label: "Permiso por Cuido" },
-  { value: "Permiso por Cuido (Más de Tres Permisos)", label: "Permiso por Cuido (Más de Tres Permisos)" },
+  {
+    value: "Permiso por Cuido (Más de Tres Permisos)",
+    label: "Permiso por Cuido (Más de Tres Permisos)",
+  },
   { value: "Permiso Remunerado", label: "Permiso Remunerado" },
   { value: "Permiso Sindical", label: "Permiso Sindical" },
   { value: "Personal con 14-08", label: "Personal con 14-08" },
@@ -1085,45 +1088,64 @@ export default function PersonalActivoPage() {
         enableColumnFilter: false,
         enableSorting: true,
       },
+   
       {
-        accessorKey: "photo",
-        header: "Foto",
-        size: 90,
-        enableColumnFilter: false,
-        enableSorting: false,
-        Cell: ({ cell }) =>
-          cell.getValue() ? (
-            <img
-              src={API_URL + "/storage/" + cell.getValue()}
-              alt="Profile"
-              style={{
-                width: 45,
-                height: 45,
-                borderRadius: "4px",
-                objectFit: "cover",
-              }}
-              loading="lazy"
-            />
-          ) : (
-            <img
-              src={withoutPhoto}
-              alt="Profile"
-              style={{
-                width: 45,
-                height: 45,
-                borderRadius: "4px",
-                objectFit: "cover",
-              }}
-              loading="lazy"
-            />
-          ),
-      },
-      {
-        accessorKey: "full_name",
+        accessorKey: "census_status",
         header: "Nombre completo",
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
+        filterVariant: "select",
+        filterSelectOptions: [ "Censado", "No censado"
+        ],
+        Cell: ({ cell }) => {
+          // display the name and the census status badge
+          const fullName = cell.row.original.full_name
+          const isPhoto = cell.row.original.photo;
+          const isInCensus = cell.row.original.census_status;
+          return (
+            <div className="flex gap-3">
+              {isPhoto ? (
+                <img
+                  src={API_URL + "/storage/" + isPhoto}
+                  alt="Profile"
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: "4px",
+                    objectFit: "cover",
+                  }}
+                  loading="lazy"
+                />
+              ) : (
+                <img
+                  src={withoutPhoto}
+                  alt="Profile"
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: "4px",
+                    objectFit: "cover",
+                  }}
+                  loading="lazy"
+                />
+              )}
+              <div className="flex flex-col ">
+                {fullName}
+
+                {isInCensus ? (
+                  <span className="text-color2 w-min text-xs font-semibold bg-color4/30 px-2 py-1 rounded">
+                    Censado
+                  </span>
+                ) : (
+                  <span className="text-red-500 w-min text-xs bg-red-100 px-2 py-1 rounded">
+                    No censado
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "ci",
@@ -1134,7 +1156,7 @@ export default function PersonalActivoPage() {
         enableSorting: true,
         Cell: ({ cell }) => `${cell.row.original.nac}-${cell.getValue()}`,
       },
-    
+
       {
         accessorKey: "additional_data.job_title",
         header: "Cargo",
@@ -1159,28 +1181,7 @@ export default function PersonalActivoPage() {
         enableColumnFilter: true,
         enableSorting: true,
       },
-      {
-        accessorKey: "census_status",
-        header: "Estatus",
-        size: 100,
-        filterVariant: "select",
-        filterSelectOptions: [
-          { text: "Activo", value: 1 },
-          { text: "Inactivo", value: 0 },
-        ],
-        enableColumnFilter: true,
-        enableSorting: true,
-        Cell: ({ cell }) =>
-          cell.getValue() ? (
-            <span className="text-color2 text-xs font-semibold bg-color4/30 px-2 py-1 rounded">
-              Activo
-            </span>
-          ) : (
-            <span className="text-red-500 text-xs bg-red-100 px-2 py-1 rounded">
-              Inactivo
-            </span>
-          ),
-      },
+
       {
         accessorKey: "type_personnel.name",
         header: "Nómina",
@@ -1188,7 +1189,7 @@ export default function PersonalActivoPage() {
         filterVariant: "select",
         enableColumnFilter: true,
         enableSorting: true,
-        filterSelectOptions: nominasNames.map((n) =>  n.namesWithoutCode),
+        filterSelectOptions: nominasNames.map((n) => n.namesWithoutCode),
       },
       {
         accessorKey: "entry_date",
@@ -1921,7 +1922,10 @@ export default function PersonalActivoPage() {
               manualGlobalFilter
               initialState={{
                 density: "compact",
-                columnVisibility: { entry_date: false, "type_personnel.name": false },
+                columnVisibility: {
+                  entry_date: false,
+                  "type_personnel.name": false,
+                },
               }}
               state={{
                 pagination,
