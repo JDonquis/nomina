@@ -118,7 +118,6 @@ export default function FeDeVidaPage() {
   }, []);
   // Form configuration for ReusableForm
 
- 
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
@@ -433,8 +432,10 @@ export default function FeDeVidaPage() {
       label: "Nombre de la Otra Organización",
       type: "text",
       required: false,
-       className: `${
-        formData.receive_pension_from_another_organization_status ? "col-span-6" : "hidden"
+      className: `${
+        formData.receive_pension_from_another_organization_status
+          ? "col-span-6"
+          : "hidden"
       }`,
     },
     {
@@ -533,7 +534,7 @@ export default function FeDeVidaPage() {
         formData.pension_survivor_status ? "col-span-6" : "hidden"
       }`,
     },
-  ] , );
+  ]);
 
   const [submitString, setSubmitString] = useState("Registrar");
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -566,7 +567,8 @@ export default function FeDeVidaPage() {
         administrative_unit_id: formData.administrative_unit_id,
         department_id: formData.department_id,
         service_id: formData.service_id,
-        receive_pension_from_another_organization_status: formData.receive_pension_from_another_organization_status,
+        receive_pension_from_another_organization_status:
+          formData.receive_pension_from_another_organization_status,
         has_authorizations: formData.has_authorizations,
         pension_survivor_status: formData.pension_survivor_status,
         suspend_payment_status: formData.suspend_payment_status,
@@ -608,9 +610,14 @@ export default function FeDeVidaPage() {
           ...submitData,
           to_census: submitData.to_census ? "1" : "0",
           status: "inactive",
-          receive_pension_from_another_organization_status: submitData.receive_pension_from_another_organization_status ? "1" : "0",
+          receive_pension_from_another_organization_status:
+            submitData.receive_pension_from_another_organization_status
+              ? "1"
+              : "0",
           has_authorizations: submitData.has_authorizations ? "1" : "0",
-          pension_survivor_status: submitData.pension_survivor_status ? "1" : "0",
+          pension_survivor_status: submitData.pension_survivor_status
+            ? "1"
+            : "0",
           suspend_payment_status: submitData.suspend_payment_status ? "1" : "0",
           is_resident: submitData.is_resident ? "1" : "0",
         });
@@ -676,7 +683,10 @@ export default function FeDeVidaPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `censos_export_${new Date().toISOString().split("T")[0]}.json`);
+      link.setAttribute(
+        "download",
+        `censos_export_${new Date().toISOString().split("T")[0]}.json`,
+      );
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
@@ -704,7 +714,10 @@ export default function FeDeVidaPage() {
         fetchData();
         setIsOptionsModalOpen(false);
       } catch (error) {
-        showError("Error al importar datos: " + (error.response?.data?.message || error.message));
+        showError(
+          "Error al importar datos: " +
+            (error.response?.data?.message || error.message),
+        );
       } finally {
         setLoading(false);
         // Clear input
@@ -729,16 +742,14 @@ export default function FeDeVidaPage() {
   const getDetail = async (id, row) => {
     try {
       const res = await liveProofAPI.getDetailById(id);
-      console.log(res)
+      console.log(res);
       setPDFdata(res.personnel);
       setPDFmodal(true);
-
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
       showError(errorMessage);
     }
-
   };
 
   const importExcel = async (e) => {
@@ -767,51 +778,63 @@ export default function FeDeVidaPage() {
         enableColumnFilter: true,
         enableSorting: true,
       },
+
       {
-        accessorKey: "photo",
-        header: "Foto",
-        size: 110,
-        filterFn: "includesString",
-        enableColumnFilter: true,
-        enableSorting: true,
-        Cell: ({ cell }) =>
-          cell.getValue() ? (
-            <img
-              src={API_URL + "/storage/" + cell.getValue()}
-              alt="Profile"
-              style={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "4px",
-                objectFit: "cover",
-              }}
-              width={50}
-              height={50}
-              loading="lazy"
-            />
-          ) : (
-            <img
-              src={withoutPhoto}
-              alt="Profile"
-              style={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "4px",
-                objectFit: "cover",
-              }}
-              width={50}
-              height={50}
-              loading="lazy"
-            />
-          ),
-      },
-      {
-        accessorKey: "full_name",
+        accessorKey: "census_status",
         header: "Nombre completo",
 
-        filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
+        filterVariant: "select",
+        filterSelectOptions: ["Censado", "No censado"],
+        Cell: ({ cell }) => {
+          // display the name and the census status badge
+          const fullName = cell.row.original.full_name;
+          const isPhoto = cell.row.original.photo;
+          const isInCensus = cell.row.original.census_status;
+          return (
+            <div className="flex gap-3">
+              {isPhoto ? (
+                <img
+                  src={API_URL + "/storage/" + isPhoto}
+                  alt="Profile"
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: "40px",
+                    objectFit: "cover",
+                  }}
+                  loading="lazy"
+                />
+              ) : (
+                <img
+                  src={withoutPhoto}
+                  alt="Profile"
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: "40px",
+                    objectFit: "cover",
+                  }}
+                  loading="lazy"
+                />
+              )}
+              <div className="flex flex-col ">
+                {fullName}
+
+                {isInCensus ? (
+                  <span className="text-color2 w-min text-xs font-semibold bg-color4/30 px-2 py-1 rounded">
+                    Censado
+                  </span>
+                ) : (
+                  <span className="text-red-500 w-min text-xs bg-red-100 px-2 py-1 rounded">
+                    No censado
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "ci",
@@ -820,26 +843,6 @@ export default function FeDeVidaPage() {
         filterFn: "includesString",
         enableColumnFilter: true,
         enableSorting: true,
-      },
-      {
-        header: "Censado",
-        accessorKey: "census_status",
-        size: 100,
-        filterVariant: "select",
-        filterSelectOptions: ["CENSADO", "NO CENSADO"],
-        enableColumnFilter: true,
-        enableSorting: true,
-        Cell: ({ cell }) => 
-           cell.getValue() ? (
-            <span className="text-color2 text-xs font-semibold bg-color4/30 px-2 py-1 rounded">
-              Censado
-            </span>
-          ) : (
-            <span className="text-red-500 text-xs bg-red-100 px-2 py-1 rounded">
-              No censado
-            </span>
-          ),
-        
       },
 
       //   {
@@ -958,7 +961,6 @@ export default function FeDeVidaPage() {
               {cell.row.original.status ? (
                 <button
                   onClick={() => {
-
                     getDetail(cell.row.original.id, cell.row.original);
                   }}
                   className="text-0 p-1 rounded-full hover:bg-gray-300 hover:underline"
@@ -1142,8 +1144,8 @@ export default function FeDeVidaPage() {
             <FuturisticButton
               onClick={() => {
                 if (!user.is_admin) {
-                  showInfo("Solo los administradores pueden usar esta función")
-                  return
+                  showInfo("Solo los administradores pueden usar esta función");
+                  return;
                 }
                 setIsModalOpen(true);
                 if (submitString === "Actualizar") {

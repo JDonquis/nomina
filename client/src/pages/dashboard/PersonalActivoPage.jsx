@@ -1112,7 +1112,7 @@ export default function PersonalActivoPage() {
                   style={{
                     width: 45,
                     height: 45,
-                    borderRadius: "4px",
+                    borderRadius: "40px",
                     objectFit: "cover",
                   }}
                   loading="lazy"
@@ -1124,7 +1124,7 @@ export default function PersonalActivoPage() {
                   style={{
                     width: 45,
                     height: 45,
-                    borderRadius: "4px",
+                    borderRadius: "40px",
                     objectFit: "cover",
                   }}
                   loading="lazy"
@@ -1152,7 +1152,7 @@ export default function PersonalActivoPage() {
         header: "CI",
         size: 100,
         filterFn: "includesString",
-        enableColumnFilter: true,
+        enableColumnFilter: false,
         enableSorting: true,
         Cell: ({ cell }) => `${cell.row.original.nac}-${cell.getValue()}`,
       },
