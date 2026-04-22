@@ -36,6 +36,11 @@ class SyncController extends Controller
     public function import(Request $request)
     {
         try {
+
+            Log::info('Iniciando importación de datos', [
+                'request_data' => $request->all(),
+            ]);
+
             $result = $this->syncService->import($request);
 
             return response()->json([

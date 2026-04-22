@@ -84,7 +84,7 @@ export const liveProofAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   getDetailById: (id) => api.get(`/admin/personnels/life_proof/${id}`),
-  getReport: () => api.get("/admin/personnels/life_proof/generate/report"),
+  getReport: () => api.get("/admin/personnels/life_proof/generate_report"),
 };
 
 

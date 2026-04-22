@@ -21,6 +21,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Carbon\Carbon;
 
 class PersonnelService
 {
@@ -358,6 +359,8 @@ class PersonnelService
 
     public function importExcel(Request $request)
     {
+        set_time_limit(120);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls'
         ]);
@@ -499,5 +502,94 @@ class PersonnelService
         }
 
         return $value;
+    }
+
+    public function generateReport()
+    {
+        Carbon::setLocale('es');
+
+        $year = $year ?? now()->year;
+
+        $censusLogs = AuditLog::where('auditable_type', Personnel::class)
+            ->whereIn('action', ['create_and_census', 'update_and_census'])
+            ->whereYear('created_at', $year)
+            ->orderBy('created_at')
+            ->get()
+            ->groupBy('auditable_id')
+            ->map(function ($logs) {
+                return $logs->first()->created_at;
+            });
+
+        if ($censusLogs->isEmpty()) {
+            return response()->json([
+                'asics' => [],
+                'days' => []
+            ]);
+        }
+
+        $personnelIds = $censusLogs->keys()->toArray();
+
+        $personnels = Personnel::whereIn('id', $personnelIds)
+            ->where('census_status', true)
+            ->where('status', 'inactive')
+            ->with(['asic'])
+            ->get()
+            ->map(function ($personnel) use ($censusLogs) {
+                $personnel->census_date = $censusLogs->get($personnel->id);
+                return $personnel;
+            });
+
+        if ($personnels->isEmpty()) {
+            return response()->json([
+                'asics' => [],
+                'days' => []
+            ]);
+        }
+
+        $asics = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->asic->id ?? 'sin-asic';
+            })
+            ->map(function ($asicPersonnels, $asicId) {
+                $asic = $asicPersonnels->first()->asic;
+                $asicName = $asic->name ?? 'SIN ASIC';
+
+                $censadosPorDia = $asicPersonnels
+                    ->groupBy(function ($personnel) {
+                        return $personnel->census_date->format('Y-m-d');
+                    })
+                    ->map(function ($dayCensuses) {
+                        return count($dayCensuses);
+                    })
+                    ->toArray();
+
+                return [
+                    'id' => $asicId,
+                    'name' => $asicName,
+                    'censadosPorDia' => $censadosPorDia
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $firstDate = $personnels->min('census_date');
+        $lastDate = $personnels->max('census_date');
+
+        $days = [];
+        $start = Carbon::parse($firstDate)->startOfDay();
+        $end = Carbon::parse($lastDate)->startOfDay();
+
+        while ($start <= $end) {
+            $days[] = [
+                'id' => $start->format('Y-m-d'),
+                'label' => $start->format('d/m')
+            ];
+            $start->addDay();
+        }
+
+        return response()->json([
+            'asics' => $asics,
+            'days' => $days
+        ]);
     }
 }

@@ -104,7 +104,6 @@ const shiftOptions = [
 ];
 
 const work_status_options = [
-  { value: "Estatus", label: "Estatus" },
   { value: "Abandono", label: "Abandono" },
   { value: "Activo", label: "Activo" },
   { value: "Activo Jubilables", label: "Activo Jubilables" },

@@ -120,15 +120,21 @@ class SyncService
         ]);
     }
 
-    public function import(Request $request): array
+    public function import(Request $request)
     {
+
+
         $request->validate([
             'file' => 'required|file|mimes:json,txt',
         ]);
 
         $file = $request->file('file');
+
+
         $content = file_get_contents($file->getRealPath());
         $data = json_decode($content, true);
+
+
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Archivo JSON inválido');

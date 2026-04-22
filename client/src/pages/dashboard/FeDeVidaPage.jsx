@@ -747,7 +747,7 @@ export default function FeDeVidaPage() {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append("file", file);
-      const res = await life_proofAPI.importExcel(formData);
+      const res = await liveProofAPI.importExcel(formData);
       showSuccess(res.message);
       fetchData();
     } catch (error) {
@@ -1032,7 +1032,7 @@ export default function FeDeVidaPage() {
 
   const generateReport = async () => {
     try {
-      const res = await life_proofAPI.getReport();
+      const res = await liveProofAPI.getReport();
       console.log(res);
       setReportData(res);
       setIsReportModalOpen(true);
