@@ -1,6 +1,6 @@
 <?php
-
 namespace Database\Seeders;
+// ini_set('memory_limit', '1024M');
 
 use App\Models\ASIC;
 use App\Models\AuditLog;
@@ -20,43 +20,43 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        TypePersonnel::create([
-            'code' => 30,
-            'laboral_relationship' => 'Emolumentos',
-            'type_personal' => 'Sigedole',
-            'name' => 'Sigedole',
-            'source_budget' => 'Mpps'
-        ]);
+        // TypePersonnel::create([
+        //     'code' => 30,
+        //     'laboral_relationship' => 'Emolumentos',
+        //     'type_personal' => 'Sigedole',
+        //     'name' => 'Sigedole',
+        //     'source_budget' => 'Mpps'
+        // ]);
 
-        TypePersonnel::create([
-            'code' => 210,
-            'laboral_relationship' => 'Alto Nivel y Dirección',
-            'type_personal' => 'Comisión De Servicio',
-            'name' => 'Personal En Comisión De Servicio Por Encargaduria',
-            'source_budget' => 'Mpps - Falcón '
-        ]);
-
-
-        TypePersonnel::create([
-            'code' => 208,
-            'laboral_relationship' => 'Alto Nivel y Dirección',
-            'type_personal' => 'Personal Directivo',
-            'name' => 'Personal Directivo Gerencia Ejecutiva',
-            'source_budget' => 'Gobernación'
-        ]);
-
-        TypePersonnel::create([
-            'code' => 8,
-            'laboral_relationship' => 'Empleados Contratados',
-            'type_personal' => 'Sigedole',
-            'name' => 'Sigedole',
-            'source_budget' => 'Mpps'
-        ]);
+        // TypePersonnel::create([
+        //     'code' => 210,
+        //     'laboral_relationship' => 'Alto Nivel y Dirección',
+        //     'type_personal' => 'Comisión De Servicio',
+        //     'name' => 'Personal En Comisión De Servicio Por Encargaduria',
+        //     'source_budget' => 'Mpps - Falcón '
+        // ]);
 
 
+        // TypePersonnel::create([
+        //     'code' => 208,
+        //     'laboral_relationship' => 'Alto Nivel y Dirección',
+        //     'type_personal' => 'Personal Directivo',
+        //     'name' => 'Personal Directivo Gerencia Ejecutiva',
+        //     'source_budget' => 'Gobernación'
+        // ]);
+
+        // TypePersonnel::create([
+        //     'code' => 8,
+        //     'laboral_relationship' => 'Empleados Contratados',
+        //     'type_personal' => 'Sigedole',
+        //     'name' => 'Sigedole',
+        //     'source_budget' => 'Mpps'
+        // ]);
 
 
-        // $this->restartDatabase('20abril2026');
+
+
+        // $this->restartDatabase('22abril2026');
 
         // $this->call([
         //     TypePersonnelSeeder::class,
