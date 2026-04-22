@@ -29,6 +29,7 @@ import { useFeedback } from "../../context/FeedbackContext.jsx";
 import { MaterialReactTable } from "material-react-table";
 import debounce from "lodash.debounce";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
 
 const defaultFormData = {
@@ -1332,6 +1333,15 @@ export default function PersonalActivoPage() {
   const [columnFilters, setColumnFilters] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
+  const [columnVisibility, setColumnVisibility] = useTableVisibility(
+    "personal_activo_columns",
+    {
+      entry_date: false,
+      "type_personnel.name": false,
+      "work_status": false,
+    },
+  );
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -1931,11 +1941,6 @@ export default function PersonalActivoPage() {
               manualGlobalFilter
               initialState={{
                 density: "compact",
-                columnVisibility: {
-                  entry_date: false,
-                  "type_personnel.name": false,
-                  "work_status": false,
-                },
               }}
               state={{
                 pagination,
@@ -1943,11 +1948,13 @@ export default function PersonalActivoPage() {
                 columnFilters,
                 globalFilter,
                 isLoading,
+                columnVisibility,
               }}
               onPaginationChange={setPagination}
               onSortingChange={setSorting}
               onColumnFiltersChange={setColumnFilters}
               onGlobalFilterChange={(value) => debouncedGlobalFilter(value)}
+              onColumnVisibilityChange={setColumnVisibility}
               enableGlobalFilter={true}
               enableColumnFilters={true}
               enableSorting={true}

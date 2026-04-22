@@ -6,6 +6,7 @@ import {
   usersAPI,
 } from "../../services/api.js";
 import { MaterialReactTable } from "material-react-table";
+import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import { API_URL } from "../../config/env.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
 import { Icon } from "@iconify/react";
@@ -65,6 +66,13 @@ const defaultFormData = {
 };
 
 export default function MovimientosPage() {
+  const [columnVisibility, setColumnVisibility] = useTableVisibility(
+    "movimientos_columns",
+    {
+      "pay_sheet.phone_number": false,
+      "user.charge": false,
+    },
+  );
   const [administrativeLocations, setAdministrativeLocations] = useState([]);
   const [typePaySheets, setTypePaySheets] = useState([]);
   const [users, setUsers] = useState([]);
