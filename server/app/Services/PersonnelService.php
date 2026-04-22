@@ -2,26 +2,27 @@
 
 namespace App\Services;
 
-use App\Models\ASIC;
 use App\Models\AdministrativeUnit;
+use App\Models\ASIC;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Dependency;
 use App\Models\Personnel;
 use App\Models\Service;
 use App\Models\TypePersonnel;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Carbon\Carbon;
 
 class PersonnelService
 {
@@ -74,6 +75,8 @@ class PersonnelService
 
     public function get($params = [], $type = 'inactive')
     {
+        DB::enableQueryLog();
+
         $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
@@ -103,7 +106,7 @@ class PersonnelService
             }
 
             if (isset($filters['census_status'])) {
-                $censusStatus = $filters['census_status'] === 'Censado' || $filters['census_status'] === true;
+                $censusStatus = $filters['census_status'] === 'Censado' || $filters['census_status'] === true ? 1 : 0;
                 $query->where('census_status', $censusStatus);
             }
 
@@ -111,10 +114,6 @@ class PersonnelService
                 $query->where('type_personnel_id', $filters['type_personnel_id']);
             }
 
-            if (isset($filters['census_status'])) {
-                $censusStatus = $filters['census_status'] === 'CENSADO';
-                $query->where('census_status', $censusStatus);
-            }
 
             if (isset($filters['full_name'])) {
                 $query->where('full_name', 'LIKE', "%{$filters['full_name']}%");
@@ -132,8 +131,26 @@ class PersonnelService
                 $query->where('sex', $filters['sex']);
             }
 
-            if (isset($filters['asic_id'])) {
-                $query->where('asic_id', $filters['asic_id']);
+            if (isset($filters['asic.name'])) {
+                $query->whereHas('asic', function ($q) use ($filters) {
+                    $q->where('name', $filters['asic.name']);
+                });
+            }
+
+            if (isset($filters['department.name'])) {
+                $query->whereHas('department', function ($q) use ($filters) {
+                    $q->where('name', $filters['department.name']);
+                });
+            }
+
+            if (isset($filters['type_personnel.name'])) {
+                $query->whereHas('typePersonnel', function ($q) use ($filters) {
+                    $q->where('name', $filters['type_personnel.name']);
+                });
+            }
+
+            if (isset($filters['work_status'])) {
+                $query->where('work_status', $filters['work_status']);
             }
 
             if (isset($filters['dependency_id'])) {
@@ -148,7 +165,11 @@ class PersonnelService
         $perPage = $filters['per_page'] ?? 15;
         $perPage = max(1, min(100, $perPage));
 
-        return $query->paginate($perPage);
+        $results = $query->paginate($perPage);
+
+        Log::info('Eje este es el valor: ', DB::getQueryLog());
+
+        return $results;
     }
 
     public function show(Personnel $personnel)
