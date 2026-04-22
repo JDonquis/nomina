@@ -27,12 +27,6 @@ const links = [
   },
   {
     permission: "admin",
-    name: "Sincronización",
-    href: "/dashboard/sincronizacion",
-    icon: "mdi:sync"
-  },
-  {
-    permission: "admin",
     name: "Usuarios",
     href: "/dashboard/usuarios",
     icon: "meteor-icons:key"
