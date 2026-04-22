@@ -68,6 +68,7 @@ class PersonnelService
             'shirt_size',
             'pant_size',
             'shoe_size',
+            'job_title',
         ],
     ];
 
@@ -85,6 +86,11 @@ class PersonnelService
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'LIKE', "%{$search}%")
                     ->orWhere('ci', 'LIKE', "%{$search}%");
+
+                foreach ($this->fieldsWithoutCensus['additional_data'] as $jsonField) {
+                    // Laravel permite navegar en JSON usando la flecha ->
+                    $q->orWhere("additional_data->{$jsonField}", 'LIKE', "%{$search}%");
+                }
             });
         }
 
@@ -135,8 +141,8 @@ class PersonnelService
             }
         }
 
-        $sortField = $filters['sort_by'] ?? 'id';
-        $sortDirection = $filters['sort_direction'] ?? 'desc';
+        $sortField = $params['sortField'] ?? 'id';
+        $sortDirection = $params['sortOrder'] ?? 'desc';
         $query->orderBy($sortField, $sortDirection);
 
         $perPage = $filters['per_page'] ?? 15;
