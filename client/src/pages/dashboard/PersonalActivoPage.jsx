@@ -1192,6 +1192,15 @@ export default function PersonalActivoPage() {
         filterSelectOptions: nominasNames.map((n) => n.namesWithoutCode),
       },
       {
+        accessorKey: "work_status",
+        header: "Estatus Laboral",
+        size: 120,
+        filterVariant: "select",
+        enableColumnFilter: true,
+        enableSorting: true,
+        filterSelectOptions: work_status_options,
+      },
+      {
         accessorKey: "entry_date",
         header: "Fecha Ingreso",
         size: 120,
@@ -1925,6 +1934,7 @@ export default function PersonalActivoPage() {
                 columnVisibility: {
                   entry_date: false,
                   "type_personnel.name": false,
+                  "work_status": false,
                 },
               }}
               state={{
