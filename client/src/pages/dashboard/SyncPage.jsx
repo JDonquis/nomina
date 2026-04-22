@@ -126,7 +126,7 @@ export function SyncSection() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6  mx-auto">
       {lastSync && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
           <p className="text-sm text-gray-600">

@@ -214,6 +214,7 @@ export default function PersonalActivoPage() {
         value: nomina.id,
         label: `${nomina.code} | ${nomina.name} `,
         ...nomina,
+        namesWithoutCode: nomina.name,
       }));
       setNominasNames(formattedNominas);
     } catch (e) {
@@ -1082,7 +1083,7 @@ export default function PersonalActivoPage() {
         accessorKey: "id",
         header: "Cód",
         size: 60,
-        enableColumnFilter: true,
+        enableColumnFilter: false,
         enableSorting: true,
       },
       {
@@ -1134,15 +1135,7 @@ export default function PersonalActivoPage() {
         enableSorting: true,
         Cell: ({ cell }) => `${cell.row.original.nac}-${cell.getValue()}`,
       },
-      {
-        accessorKey: "residency_type",
-        header: "Tipo Residencia",
-        size: 120,
-        filterVariant: "select",
-        enableColumnFilter: true,
-        enableSorting: true,
-        Cell: ({ cell }) => cell.getValue() || "N/A",
-      },
+    
       {
         accessorKey: "additional_data.job_title",
         header: "Cargo",
@@ -1155,6 +1148,7 @@ export default function PersonalActivoPage() {
         header: "ASIC",
         size: 120,
         filterVariant: "select",
+        filterSelectOptions: asicOptions.map((a) => a.label),
         enableColumnFilter: true,
         enableSorting: true,
       },
@@ -1167,7 +1161,7 @@ export default function PersonalActivoPage() {
         enableSorting: true,
       },
       {
-        accessorKey: "status",
+        accessorKey: "census_status",
         header: "Estatus",
         size: 100,
         filterVariant: "select",
@@ -1187,6 +1181,15 @@ export default function PersonalActivoPage() {
               Inactivo
             </span>
           ),
+      },
+      {
+        accessorKey: "type_personnel.name",
+        header: "Nómina",
+        size: 120,
+        filterVariant: "select",
+        enableColumnFilter: true,
+        enableSorting: true,
+        filterSelectOptions: nominasNames.map((n) =>  n.namesWithoutCode),
       },
       {
         accessorKey: "entry_date",
@@ -1919,7 +1922,7 @@ export default function PersonalActivoPage() {
               manualGlobalFilter
               initialState={{
                 density: "compact",
-                columnVisibility: { entry_date: false },
+                columnVisibility: { entry_date: false, "type_personnel.name": false },
               }}
               state={{
                 pagination,
