@@ -6,6 +6,7 @@ import FuturisticButton from "../../components/FuturisticButton";
 import { MaterialReactTable } from "material-react-table";
 import { ReusableForm } from "../../components/forms";
 import { useFeedback } from "../../context/FeedbackContext";
+import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 
 // En las versiones más recientes, no necesitas registrar módulos para funcionalidades básicas
 // La versión Community ya incluye el ClientSideRowModel por defecto
@@ -13,6 +14,10 @@ import { useFeedback } from "../../context/FeedbackContext";
 // Función reutilizable para crear operadores de filtro para columnas de texto
 
 export default function UsuariosPage() {
+  const [columnVisibility, setColumnVisibility] = useTableVisibility(
+    "usuarios_columns",
+    {},
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const defaultFormData = {
     email: "",
@@ -325,6 +330,8 @@ export default function UsuariosPage() {
             enableSorting
             enablePagination
             initialState={{ pagination: { pageSize: 25 } }}
+            state={{ columnVisibility }}
+            onColumnVisibilityChange={setColumnVisibility}
             muiTablePaginationProps={{
               rowsPerPageOptions: [5, 10, 20, 25],
               showFirstButton: true,
