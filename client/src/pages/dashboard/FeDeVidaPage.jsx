@@ -957,7 +957,7 @@ export default function FeDeVidaPage() {
               ) : (
                 <div className="w-7"></div>
               )}
-
+ 
               {cell.row.original.census_status ? (
                 <button
                   onClick={() => {
