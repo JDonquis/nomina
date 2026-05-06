@@ -1280,7 +1280,7 @@ export default function PersonalActivoPage() {
             >
               <Icon icon="material-symbols:edit" width={18} height={18} />
             </button>
-            {cell.row.original.status ? (
+            {cell.row.original.census_status ? (
               <>
                 <button
                   onClick={() => {
