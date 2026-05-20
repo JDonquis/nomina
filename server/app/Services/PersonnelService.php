@@ -75,9 +75,14 @@ class PersonnelService
 
     public function get($params = [], $type = 'inactive')
     {
+        DB::enableQueryLog();
+
         $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
+
+
+
 
         if (!empty($params['search'])) {
             $search = $params['search'];
@@ -85,43 +90,30 @@ class PersonnelService
                 $q->where('full_name', 'LIKE', "%{$search}%")
                     ->orWhere('ci', 'LIKE', "%{$search}%");
 
-                $additionalFields = [
-                    'type_pension', 'last_charge', 'another_organization_name',
-                    'fullname_causative', 'job_title', 'payroll_dependency',
-                    'payroll_code', 'payroll_name', 'university', 'observation'
-                ];
-
-                foreach ($additionalFields as $jsonField) {
+                foreach ($this->fieldsWithoutCensus['additional_data'] as $jsonField) {
+                    // Laravel permite navegar en JSON usando la flecha ->
                     $q->orWhere("additional_data->{$jsonField}", 'LIKE', "%{$search}%");
                 }
             });
         }
 
+        $filters = [];
         if (!empty($params['filters'])) {
             $filters = is_string($params['filters']) ? json_decode($params['filters'], true) : $params['filters'];
-
-            if (isset($filters['id'])) {
-                $query->where('id', $filters['id']);
-            }
 
             if (isset($filters['status'])) {
                 $query->where('status', $filters['status']);
             }
 
             if (isset($filters['census_status'])) {
-                // Handling both boolean and specific string labels from frontend
-                if ($filters['census_status'] === 'Censado') {
-                    $query->where('census_status', true);
-                } elseif ($filters['census_status'] === 'No censado') {
-                    $query->where('census_status', false);
-                } else {
-                    $query->where('census_status', (bool)$filters['census_status']);
-                }
+                $censusStatus = $filters['census_status'] === 'Censado' || $filters['census_status'] === true ? 1 : 0;
+                $query->where('census_status', $censusStatus);
             }
 
             if (isset($filters['type_personnel_id'])) {
                 $query->where('type_personnel_id', $filters['type_personnel_id']);
             }
+
 
             if (isset($filters['full_name'])) {
                 $query->where('full_name', 'LIKE', "%{$filters['full_name']}%");
@@ -140,23 +132,15 @@ class PersonnelService
             }
 
             if (isset($filters['asic.name'])) {
-                if ($filters['asic.name'] === 'Sin asignar') {
-                    $query->whereNull('asic_id');
-                } else {
-                    $query->whereHas('asic', function ($q) use ($filters) {
-                        $q->where('name', $filters['asic.name']);
-                    });
-                }
+                $query->whereHas('asic', function ($q) use ($filters) {
+                    $q->where('name', $filters['asic.name']);
+                });
             }
 
             if (isset($filters['department.name'])) {
-                if ($filters['department.name'] === 'Sin asignar') {
-                    $query->whereNull('department_id');
-                } else {
-                    $query->whereHas('department', function ($q) use ($filters) {
-                        $q->where('name', $filters['department.name']);
-                    });
-                }
+                $query->whereHas('department', function ($q) use ($filters) {
+                    $q->where('name', $filters['department.name']);
+                });
             }
 
             if (isset($filters['type_personnel.name'])) {
@@ -172,51 +156,20 @@ class PersonnelService
             if (isset($filters['dependency_id'])) {
                 $query->where('dependency_id', $filters['dependency_id']);
             }
-
-            if (isset($filters['phone_number'])) {
-                $query->where('phone_number', 'LIKE', "%{$filters['phone_number']}%");
-            }
-
-            if (isset($filters['additional_data.job_title'])) {
-                $query->where('additional_data->job_title', 'LIKE', "%{$filters['additional_data.job_title']}%");
-            }
-
-            if (isset($filters['additional_data.entry_date'])) {
-                $query->where('additional_data->entry_date', $filters['additional_data.entry_date']);
-            }
-
-            // Generic handler for any other additional_data filters sent from frontend
-            foreach ($filters as $key => $value) {
-                if (str_starts_with($key, 'additional_data.') && !in_array($key, ['additional_data.job_title', 'additional_data.entry_date'])) {
-                    $jsonKey = str_replace('additional_data.', '', $key);
-                    $query->where("additional_data->{$jsonKey}", 'LIKE', "%{$value}%");
-                }
-            }
-
-            if (isset($filters['created_at'])) {
-                try {
-                    $date = Carbon::parse($filters['created_at'])->format('Y-m-d');
-                    $query->whereDate('created_at', $date);
-                } catch (\Exception $e) {
-                    // Ignore invalid date
-                }
-            }
         }
 
         $sortField = $params['sortField'] ?? 'id';
         $sortDirection = $params['sortOrder'] ?? 'desc';
+        $query->orderBy($sortField, $sortDirection);
 
-        if (str_contains($sortField, '.')) {
-            // Simple fallback for relationship sorting
-            $query->orderBy('id', $sortDirection);
-        } else {
-            $query->orderBy($sortField, $sortDirection);
-        }
+        $perPage = $filters['per_page'] ?? 15;
+        $perPage = max(1, min(100, $perPage));
 
-        $perPage = $params['per_page'] ?? 15;
-        $perPage = max(1, min(100, (int)$perPage));
+        $results = $query->paginate($perPage);
 
-        return $query->paginate($perPage);
+        Log::info('Eje este es el valor: ', DB::getQueryLog());
+
+        return $results;
     }
 
     public function show(Personnel $personnel)
@@ -581,6 +534,7 @@ class PersonnelService
         return $value;
     }
 
+    /*
     public function generateReport()
     {
         Carbon::setLocale('es');
@@ -651,6 +605,74 @@ class PersonnelService
 
         $firstDate = $personnels->min('census_date');
         $lastDate = $personnels->max('census_date');
+
+        $days = [];
+        $start = Carbon::parse($firstDate)->startOfDay();
+        $end = Carbon::parse($lastDate)->startOfDay();
+
+        while ($start <= $end) {
+            $days[] = [
+                'id' => $start->format('Y-m-d'),
+                'label' => $start->format('d/m')
+            ];
+            $start->addDay();
+        }
+
+        return response()->json([
+            'asics' => $asics,
+            'days' => $days
+        ]);
+    }
+    */
+
+    public function generateReport(Request $request)
+    {
+        Carbon::setLocale('es');
+        $year = $request->year ?? now()->year;
+
+        // Buscamos directamente en el personal inactivo (Fe de vida) que esté censado
+        $personnels = Personnel::where('census_status', true)
+            ->where('status', 'inactive')
+            ->whereYear('created_at', $year)
+            ->with(['asic'])
+            ->get();
+
+        if ($personnels->isEmpty()) {
+            return response()->json([
+                'asics' => [],
+                'days' => []
+            ]);
+        }
+
+        $asics = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->asic->id ?? 'sin-asic';
+            })
+            ->map(function ($asicPersonnels, $asicId) {
+                $asic = $asicPersonnels->first()->asic;
+                $asicName = $asic->name ?? 'SIN ASIC';
+
+                $censadosPorDia = $asicPersonnels
+                    ->groupBy(function ($personnel) {
+                        // Usamos created_at directamente del personal
+                        return $personnel->created_at->format('Y-m-d');
+                    })
+                    ->map(function ($dayCensuses) {
+                        return count($dayCensuses);
+                    })
+                    ->toArray();
+
+                return [
+                    'id' => $asicId,
+                    'name' => $asicName,
+                    'censadosPorDia' => $censadosPorDia
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $firstDate = $personnels->min('created_at');
+        $lastDate = $personnels->max('created_at');
 
         $days = [];
         $start = Carbon::parse($firstDate)->startOfDay();
