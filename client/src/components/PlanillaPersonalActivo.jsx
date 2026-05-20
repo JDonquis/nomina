@@ -517,7 +517,7 @@ const PlanillaPersonalActivo = (props) => {
 
   return (
     <div>
-      {props.data?.status && (
+      {props.data?.census_status && (
         <div className="flex justify-center mb-4">
           <FuturisticButton
             onClick={handlePrint}

@@ -957,8 +957,8 @@ export default function FeDeVidaPage() {
               ) : (
                 <div className="w-7"></div>
               )}
-
-              {cell.row.original.status ? (
+ 
+              {cell.row.original.census_status ? (
                 <button
                   onClick={() => {
                     getDetail(cell.row.original.id, cell.row.original);

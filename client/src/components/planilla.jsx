@@ -64,7 +64,7 @@ const PrintableContent = forwardRef((props, ref) => {
       <div className="flex mt-5">
         <div>
           <div className="flex justify-center items-center">
-            {props.data.status ? (
+            {props.data.census_status ? (
               <div className="min-h-7 items-center flex justify-center bg-color2 rounded-tl-md w-full text-center">
                 <p className="text-white font-bold">CENSADO</p>
               </div>
@@ -454,7 +454,7 @@ const PrintPage = (props) => {
 
   return (
     <div>
-      {props.data.status ? (
+      {props.data.census_status  ? (
         <div className="flex justify-center mb-4">
           <FuturisticButton
             onClick={handlePrint}
