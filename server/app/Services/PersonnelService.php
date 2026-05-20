@@ -75,14 +75,9 @@ class PersonnelService
 
     public function get($params = [], $type = 'inactive')
     {
-        DB::enableQueryLog();
-
         $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
-
-
-
 
         if (!empty($params['search'])) {
             $search = $params['search'];
@@ -90,30 +85,43 @@ class PersonnelService
                 $q->where('full_name', 'LIKE', "%{$search}%")
                     ->orWhere('ci', 'LIKE', "%{$search}%");
 
-                foreach ($this->fieldsWithoutCensus['additional_data'] as $jsonField) {
-                    // Laravel permite navegar en JSON usando la flecha ->
+                $additionalFields = [
+                    'type_pension', 'last_charge', 'another_organization_name',
+                    'fullname_causative', 'job_title', 'payroll_dependency',
+                    'payroll_code', 'payroll_name', 'university', 'observation'
+                ];
+
+                foreach ($additionalFields as $jsonField) {
                     $q->orWhere("additional_data->{$jsonField}", 'LIKE', "%{$search}%");
                 }
             });
         }
 
-        $filters = [];
         if (!empty($params['filters'])) {
             $filters = is_string($params['filters']) ? json_decode($params['filters'], true) : $params['filters'];
+
+            if (isset($filters['id'])) {
+                $query->where('id', $filters['id']);
+            }
 
             if (isset($filters['status'])) {
                 $query->where('status', $filters['status']);
             }
 
             if (isset($filters['census_status'])) {
-                $censusStatus = $filters['census_status'] === 'Censado' || $filters['census_status'] === true ? 1 : 0;
-                $query->where('census_status', $censusStatus);
+                // Handling both boolean and specific string labels from frontend
+                if ($filters['census_status'] === 'Censado') {
+                    $query->where('census_status', true);
+                } elseif ($filters['census_status'] === 'No censado') {
+                    $query->where('census_status', false);
+                } else {
+                    $query->where('census_status', (bool)$filters['census_status']);
+                }
             }
 
             if (isset($filters['type_personnel_id'])) {
                 $query->where('type_personnel_id', $filters['type_personnel_id']);
             }
-
 
             if (isset($filters['full_name'])) {
                 $query->where('full_name', 'LIKE', "%{$filters['full_name']}%");
@@ -132,15 +140,23 @@ class PersonnelService
             }
 
             if (isset($filters['asic.name'])) {
-                $query->whereHas('asic', function ($q) use ($filters) {
-                    $q->where('name', $filters['asic.name']);
-                });
+                if ($filters['asic.name'] === 'Sin asignar') {
+                    $query->whereNull('asic_id');
+                } else {
+                    $query->whereHas('asic', function ($q) use ($filters) {
+                        $q->where('name', $filters['asic.name']);
+                    });
+                }
             }
 
             if (isset($filters['department.name'])) {
-                $query->whereHas('department', function ($q) use ($filters) {
-                    $q->where('name', $filters['department.name']);
-                });
+                if ($filters['department.name'] === 'Sin asignar') {
+                    $query->whereNull('department_id');
+                } else {
+                    $query->whereHas('department', function ($q) use ($filters) {
+                        $q->where('name', $filters['department.name']);
+                    });
+                }
             }
 
             if (isset($filters['type_personnel.name'])) {
@@ -156,20 +172,51 @@ class PersonnelService
             if (isset($filters['dependency_id'])) {
                 $query->where('dependency_id', $filters['dependency_id']);
             }
+
+            if (isset($filters['phone_number'])) {
+                $query->where('phone_number', 'LIKE', "%{$filters['phone_number']}%");
+            }
+
+            if (isset($filters['additional_data.job_title'])) {
+                $query->where('additional_data->job_title', 'LIKE', "%{$filters['additional_data.job_title']}%");
+            }
+
+            if (isset($filters['additional_data.entry_date'])) {
+                $query->where('additional_data->entry_date', $filters['additional_data.entry_date']);
+            }
+
+            // Generic handler for any other additional_data filters sent from frontend
+            foreach ($filters as $key => $value) {
+                if (str_starts_with($key, 'additional_data.') && !in_array($key, ['additional_data.job_title', 'additional_data.entry_date'])) {
+                    $jsonKey = str_replace('additional_data.', '', $key);
+                    $query->where("additional_data->{$jsonKey}", 'LIKE', "%{$value}%");
+                }
+            }
+
+            if (isset($filters['created_at'])) {
+                try {
+                    $date = Carbon::parse($filters['created_at'])->format('Y-m-d');
+                    $query->whereDate('created_at', $date);
+                } catch (\Exception $e) {
+                    // Ignore invalid date
+                }
+            }
         }
 
         $sortField = $params['sortField'] ?? 'id';
         $sortDirection = $params['sortOrder'] ?? 'desc';
-        $query->orderBy($sortField, $sortDirection);
 
-        $perPage = $filters['per_page'] ?? 15;
-        $perPage = max(1, min(100, $perPage));
+        if (str_contains($sortField, '.')) {
+            // Simple fallback for relationship sorting
+            $query->orderBy('id', $sortDirection);
+        } else {
+            $query->orderBy($sortField, $sortDirection);
+        }
 
-        $results = $query->paginate($perPage);
+        $perPage = $params['per_page'] ?? 15;
+        $perPage = max(1, min(100, (int)$perPage));
 
-        Log::info('Eje este es el valor: ', DB::getQueryLog());
-
-        return $results;
+        return $query->paginate($perPage);
     }
 
     public function show(Personnel $personnel)
