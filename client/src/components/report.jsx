@@ -35,7 +35,7 @@ const PrintableContent = forwardRef((props, ref) => {
       className="w-full mx-auto bg-white relative"
       style={{
         padding: "3mm",
-        width: "320mm",
+        width: "full",
         paddingTop: "0mm !important",
       }}
     >
