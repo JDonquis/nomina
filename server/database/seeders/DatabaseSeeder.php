@@ -1,9 +1,11 @@
 <?php
+
 namespace Database\Seeders;
 // ini_set('memory_limit', '1024M');
 
 use App\Models\ASIC;
 use App\Models\AuditLog;
+use App\Models\Census;
 use App\Models\PaySheet;
 use App\Models\Personnel;
 use App\Models\TypePersonnel;
@@ -174,6 +176,69 @@ class DatabaseSeeder extends Seeder
         //         'updated_at' => $paySheetCreatedAt,
         //     ]);
         // }
+
+        // Verify dates
+
+        // $paySheets = PaySheet::get();
+
+        // foreach ($paySheets as $paySheet) {
+        //     $personnel = Personnel::where('ci', $paySheet->ci)->first();
+
+        //     if (!isset($personnel)) {
+        //         Log::info('No se encontró el personal con CI: ' . $paySheet->ci);
+        //         continue;
+        //     }
+
+        //     if ($paySheet->created_at == $personnel->created_at) {
+        //         Log::info('Las fechas coinciden para el personal con CI: ' . $paySheet->ci);
+        //     } else {
+        //         Log::warning('Las fechas NO coinciden para el personal con CI: ' . $paySheet->ci);
+        //         Log::warning('Fecha PaySheet: ' . $paySheet->created_at . ' - Fecha Personnel: ' . $personnel->created_at);
+        //     }
+        // }
+
+        $this->verifyCensusDates();
+    }
+
+    public function verifyCensusDates(): void
+    {
+        Log::info('Iniciando verificación de fechas de censos...');
+
+        $censuses = Census::with('paySheet')->get();
+        $discrepancyCount = 0;
+
+        foreach ($censuses as $census) {
+            $paySheet = $census->paySheet;
+
+            if (!$paySheet) {
+                Log::error('Censo ID ' . $census->id . ' no tiene un PaySheet asignado.');
+                continue;
+            }
+
+            // Buscamos el personal en la tabla personnels que coincida con la CI del paysheet
+            $personnel = Personnel::where('ci', $paySheet->ci)->first();
+
+            if (!$personnel) {
+                Log::warning('No se encontró personal en la tabla personnels para la CI: ' . $paySheet->ci . ' (Censo ID: ' . $census->id . ')');
+                continue;
+            }
+
+            // Comparamos la fecha de creación del censo con la fecha de creación del personal
+            if ($census->created_at != $personnel->created_at) {
+                $discrepancyCount++;
+                Log::warning('Discrepancia detectada en Censo ID: ' . $census->id);
+                Log::warning('CI: ' . $personnel->ci . ' | Fecha Censo: ' . $census->created_at . ' | Fecha Personnel: ' . $personnel->created_at);
+                
+                // Actualizamos la fecha del personal para que coincida con la del censo
+                $personnel->update(['created_at' => $census->created_at]);
+                Log::info('Fecha de Personnel (CI: ' . $personnel->ci . ') actualizada correctamente.');
+            } else {
+                Log::info('Censo ID ' . $census->id . ' coincide con la fecha del personal (CI: ' . $personnel->ci . ')');
+            }
+        }
+
+        Log::info('Verificación de fechas de censos completada.');
+        Log::info('Total de discrepancias encontradas: ' . $discrepancyCount);
     }
 
     private function restartDatabase($filename)
