@@ -625,14 +625,14 @@ class PersonnelService
     }
     */
 
-    public function generateReport(Request $request)
+    public function generateReport(Request $request, $status)
     {
         Carbon::setLocale('es');
         $year = $request->year ?? now()->year;
 
         // Buscamos directamente en el personal inactivo (Fe de vida) que esté censado
         $personnels = Personnel::where('census_status', true)
-            ->where('status', 'inactive')
+            ->where('status', $status)
             ->whereYear('created_at', $year)
             ->with(['asic'])
             ->get();

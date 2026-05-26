@@ -32,6 +32,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::resource('users', UserController::class)->except(['edit', 'create'])
         ->middleware('admin');
 
+    Route::get('personnels/generate_report/{status}', [PersonnelController::class, 'generateReport']);
+
+
     Route::get('personnels/life_proof/generate_report', [PersonnelController::class, 'generateReport']);
     Route::get('personnels/life_proof', [PersonnelController::class, 'lifeProof']);
     Route::post('personnels/life_proof', [PersonnelController::class, 'store']);
