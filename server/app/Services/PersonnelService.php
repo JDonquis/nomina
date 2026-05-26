@@ -633,7 +633,7 @@ class PersonnelService
         // Buscamos directamente en el personal inactivo (Fe de vida) que esté censado
         $personnels = Personnel::where('census_status', true)
             ->where('status', $status)
-            ->whereYear('created_at', $year)
+            ->whereYear('census_date', $year)
             ->with(['asic'])
             ->get();
 
@@ -655,7 +655,7 @@ class PersonnelService
                 $censadosPorDia = $asicPersonnels
                     ->groupBy(function ($personnel) {
                         // Usamos created_at directamente del personal
-                        return $personnel->created_at->format('Y-m-d');
+                        return $personnel->census_date->format('Y-m-d');
                     })
                     ->map(function ($dayCensuses) {
                         return count($dayCensuses);
@@ -671,8 +671,8 @@ class PersonnelService
             ->values()
             ->toArray();
 
-        $firstDate = $personnels->min('created_at');
-        $lastDate = $personnels->max('created_at');
+        $firstDate = $personnels->min('census_date');
+        $lastDate = $personnels->max('census_date');
 
         $days = [];
         $start = Carbon::parse($firstDate)->startOfDay();

@@ -49,6 +49,7 @@ class Personnel extends Model
         'suspend_payment_status' => 'boolean',
         'is_resident' => 'boolean',
         'additional_data' => 'array',
+        'census_date' => 'date',
     ];
 
     protected static function boot()
