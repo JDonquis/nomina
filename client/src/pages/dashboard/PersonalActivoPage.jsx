@@ -102,6 +102,7 @@ const shiftOptions = [
   { value: "7/1", label: "7/1" },
   { value: "1/7", label: "1/7" },
   { value: "7/7", label: "7/7" },
+  { value: "8/4", label: "8/4" },
 ];
 
 const work_status_options = [
@@ -623,7 +624,14 @@ export default function PersonalActivoPage() {
       {
         name: "shirt_size",
         label: "Camisa",
-        type: "text",
+        type: "select",
+        options: [
+          { value: "XS", label: "XS" },
+          { value: "S", label: "S" },
+          { value: "M", label: "M" },
+          { value: "L", label: "L" },
+          { value: "XL", label: "XL" },
+        ],
         required: false,
         className: "col-span-12 md:col-span-2",
       },
@@ -1265,7 +1273,7 @@ export default function PersonalActivoPage() {
                   ...row,
                   ...(row.additional_data || {}),
                   fotoChanged: false,
-                  labor_relationship:
+                  laboral_relationship:
                     row.type_personnel?.laboral_relationship || "",
                   personnel_type: row.type_personnel?.name || "",
                   budget: row.type_personnel?.source_budget || "",

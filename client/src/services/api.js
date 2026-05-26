@@ -84,7 +84,7 @@ export const liveProofAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   getDetailById: (id) => api.get(`/admin/personnels/life_proof/${id}`),
-  getReport: () => api.get("/admin/personnels/life_proof/generate_report"),
+  getReport: () => api.get("/admin/personnels/generate_report/inactive"),
 };
 
 
@@ -170,6 +170,8 @@ export const activePersonnelAPI = {
     headers: { "Content-Type": "multipart/form-data" },
   }),
   getDetailById: (id) => api.get(`/admin/personnels/active/${id}`),
+  getReport: () => api.get("/admin/personnels/generate_report/active"),
+
 };
 
 export default api;
