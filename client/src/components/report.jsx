@@ -35,7 +35,6 @@ const PrintableContent = forwardRef((props, ref) => {
       className="w-full mx-auto bg-white relative"
       style={{
         padding: "3mm",
-        width: "320mm",
         paddingTop: "0mm !important",
       }}
     >
@@ -100,7 +99,7 @@ const PrintableContent = forwardRef((props, ref) => {
         <tbody className="">
           {asicTotals.map((asic) => (
             <tr key={asic.id} className="odd:bg-white even:bg-gray-50">
-              <td className="p-1 px-2 border-r text-sm">{asic.name}</td>
+              <td className="p-1 px-2 border-r text-sm">{asic.name.replace("ASIC", "")}</td>
 
               {filteredDays.map((day) => (
                 <td

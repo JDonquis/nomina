@@ -75,6 +75,7 @@ const defaultFormData = {
   position_code: "",
   grade: "",
   residency_type: "",
+  hospital: "",
   fotoChanged: false,
   family_members: [],
 };
@@ -780,6 +781,16 @@ export default function PersonalActivoPage() {
         },
       },
       {
+        name: "hospital",
+        label: "Hospital",
+        type: "select",
+        /*options: hospitalOptions,*/
+        required:
+          formData.is_resident &&
+          formData.residency_type === "RAPCE",
+        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && formData.residency_type === "RAPCE") ? "hidden" : ""}`,
+      },
+      {
         name: "university",
         label: "Universidad",
         type: "select",
@@ -967,6 +978,7 @@ export default function PersonalActivoPage() {
           entry_date: formData.entry_date,
           job_title: formData.job_title,
           residency_type: formData.residency_type,
+          hospital: formData.hospital,
           university: formData.university,
           level: formData.level,
           job_code: formData.job_code,
@@ -988,6 +1000,7 @@ export default function PersonalActivoPage() {
           pant_size: formData.pant_size,
           shoe_size: formData.shoe_size,
           family_members: formData.family_members,
+
         },
       };
 
@@ -1384,7 +1397,7 @@ export default function PersonalActivoPage() {
       debounce((value) => {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-      }, 300),
+      }, 0),
     [],
   );
 
@@ -1608,6 +1621,7 @@ export default function PersonalActivoPage() {
                     f.name !== "job_title" &&
                     f.name !== "is_resident" &&
                     f.name !== "residency_type" &&
+                    f.name !== "hospital" &&
                     f.name !== "university" &&
                     f.name !== "level" &&
                     f.name !== "job_code" &&
@@ -1682,6 +1696,7 @@ export default function PersonalActivoPage() {
                             f.name === "job_title" ||
                             f.name === "is_resident" ||
                             f.name === "residency_type" ||
+                            f.name === "hospital" ||
                             f.name === "university" ||
                             f.name === "level" ||
                             f.name === "job_code" ||
