@@ -39,6 +39,7 @@ class Personnel extends Model
         'is_resident',
         'work_status',
         'additional_data',
+        'census_date',
     ];
 
     protected $casts = [

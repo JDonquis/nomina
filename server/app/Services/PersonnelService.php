@@ -232,6 +232,8 @@ class PersonnelService
         $censusStatus = $data['to_census'] ?? false;
         unset($data['to_census']);
 
+        $data['census_date'] = $censusStatus ? Carbon::now() : null;
+
         $allowedFields = $this->getAllowedFields($censusStatus);
         $data = $this->filterData($data, $allowedFields);
 
@@ -263,6 +265,8 @@ class PersonnelService
 
         $action = 'update';
         $censusStatus = $data['to_census'] ?? false;
+
+        $data['census_date'] = $censusStatus ? Carbon::now() : null;
 
 
         $oldValues = $personnel->toArray();
