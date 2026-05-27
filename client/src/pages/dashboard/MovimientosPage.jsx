@@ -111,7 +111,7 @@ export default function MovimientosPage() {
       debounce((value) => {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
-      }, 300),
+      }, 0),
     [],
   );
 

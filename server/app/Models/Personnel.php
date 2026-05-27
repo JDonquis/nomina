@@ -39,6 +39,7 @@ class Personnel extends Model
         'is_resident',
         'work_status',
         'additional_data',
+        'census_date',
     ];
 
     protected $casts = [
@@ -49,6 +50,7 @@ class Personnel extends Model
         'suspend_payment_status' => 'boolean',
         'is_resident' => 'boolean',
         'additional_data' => 'array',
+        'census_date' => 'date',
     ];
 
     protected static function boot()

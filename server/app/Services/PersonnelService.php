@@ -232,6 +232,8 @@ class PersonnelService
         $censusStatus = $data['to_census'] ?? false;
         unset($data['to_census']);
 
+        $data['census_date'] = $censusStatus ? Carbon::now() : null;
+
         $allowedFields = $this->getAllowedFields($censusStatus);
         $data = $this->filterData($data, $allowedFields);
 
@@ -263,6 +265,8 @@ class PersonnelService
 
         $action = 'update';
         $censusStatus = $data['to_census'] ?? false;
+
+        $data['census_date'] = $censusStatus ? Carbon::now() : null;
 
 
         $oldValues = $personnel->toArray();
@@ -625,15 +629,15 @@ class PersonnelService
     }
     */
 
-    public function generateReport(Request $request)
+    public function generateReport(Request $request, $status)
     {
         Carbon::setLocale('es');
         $year = $request->year ?? now()->year;
 
         // Buscamos directamente en el personal inactivo (Fe de vida) que esté censado
         $personnels = Personnel::where('census_status', true)
-            ->where('status', 'inactive')
-            ->whereYear('created_at', $year)
+            ->where('status', $status)
+            ->whereYear('census_date', $year)
             ->with(['asic'])
             ->get();
 
@@ -655,7 +659,7 @@ class PersonnelService
                 $censadosPorDia = $asicPersonnels
                     ->groupBy(function ($personnel) {
                         // Usamos created_at directamente del personal
-                        return $personnel->created_at->format('Y-m-d');
+                        return $personnel->census_date->format('Y-m-d');
                     })
                     ->map(function ($dayCensuses) {
                         return count($dayCensuses);
@@ -671,8 +675,8 @@ class PersonnelService
             ->values()
             ->toArray();
 
-        $firstDate = $personnels->min('created_at');
-        $lastDate = $personnels->max('created_at');
+        $firstDate = $personnels->min('census_date');
+        $lastDate = $personnels->max('census_date');
 
         $days = [];
         $start = Carbon::parse($firstDate)->startOfDay();

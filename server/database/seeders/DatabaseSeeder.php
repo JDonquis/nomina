@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
 
 
 
-        // $this->restartDatabase('22abril2026');
+        // $this->restartDatabase('26may2026');s
 
         // $this->call([
         //     TypePersonnelSeeder::class,
@@ -197,7 +197,27 @@ class DatabaseSeeder extends Seeder
         //     }
         // }
 
-        $this->verifyCensusDates();
+        // $this->verifyCensusDates();
+        $this->passCreatedAtToCensusDate();
+    }
+
+    public function passCreatedAtToCensusDate()
+    {
+        Personnel::whereNotNull('created_at')
+            ->where('census_status', 1)
+            ->chunk(100, function ($personnels) {
+                foreach ($personnels as $personnel) {
+                    $personnel->update(['census_date' => $personnel->created_at]);
+                }
+            });
+
+        Personnel::whereNotNull('created_at')
+            ->where('census_status', 0)
+            ->chunk(100, function ($personnels) {
+                foreach ($personnels as $personnel) {
+                    $personnel->update(['census_date' => null]);
+                }
+            });
     }
 
     public function verifyCensusDates(): void
@@ -228,7 +248,7 @@ class DatabaseSeeder extends Seeder
                 $discrepancyCount++;
                 Log::warning('Discrepancia detectada en Censo ID: ' . $census->id);
                 Log::warning('CI: ' . $personnel->ci . ' | Fecha Censo: ' . $census->created_at . ' | Fecha Personnel: ' . $personnel->created_at);
-                
+
                 // Actualizamos la fecha del personal para que coincida con la del censo
                 $personnel->update(['created_at' => $census->created_at]);
                 Log::info('Fecha de Personnel (CI: ' . $personnel->ci . ') actualizada correctamente.');

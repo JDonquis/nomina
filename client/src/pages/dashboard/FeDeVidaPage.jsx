@@ -1086,7 +1086,7 @@ export default function FeDeVidaPage() {
       debounce((value) => {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
-      }, 300),
+      }, 0),
     [],
   );
 

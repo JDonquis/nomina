@@ -31,6 +31,8 @@ import debounce from "lodash.debounce";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
+import PrintPage from "../../components/report.jsx";
+
 
 const defaultFormData = {
   nac: "V",
@@ -75,6 +77,7 @@ const defaultFormData = {
   position_code: "",
   grade: "",
   residency_type: "",
+  hospital: "",
   fotoChanged: false,
   family_members: [],
 };
@@ -128,23 +131,7 @@ const work_status_options = [
   { value: "Vacaciones", label: "Vacaciones" },
 ];
 
-const typePersonnelOptions = [
-  { value: "Médico", label: "Médico" },
-  { value: "Enfermero", label: "Enfermero" },
-  { value: "Administrativo", label: "Administrativo" },
-  { value: "Obrero", label: "Obrero" },
-];
 
-const budgetOptions = [
-  { value: "MPPS - Falcón", label: "MPPS - Falcón" },
-  { value: "MPPS - CCS", label: "MPPS - CCS" },
-  { value: "Gobernación", label: "Gobernación" },
-];
-
-const laborRelationshipOptions = [
-  { value: "Fijo", label: "Fijo" },
-  { value: "Contratado", label: "Contratado" },
-];
 
 const defaultFamilyMember = {
   ci: "",
@@ -206,6 +193,11 @@ export default function PersonalActivoPage() {
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Registrar");
   const [editingId, setEditingId] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportData, setReportData] = useState(null);
+
+  const [hospitalOptions, setHospitalOptions] = useState([]);
+
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -220,6 +212,12 @@ export default function PersonalActivoPage() {
         ...nomina,
         namesWithoutCode: nomina.name,
       }));
+
+      const hospitalsRes = await dependenciesAPI.getDependencies({ search: "hospital" });
+      setHospitalOptions(
+        hospitalsRes.map((hospital) => ({ value: hospital.id, label: hospital.name }))
+      );
+
       setNominasNames(formattedNominas);
     } catch (e) {
       console.error("Failed to fetch initial data", e);
@@ -780,6 +778,14 @@ export default function PersonalActivoPage() {
         },
       },
       {
+        name: "hospital",
+        label: "Hospital",
+        type: "select",
+        options: hospitalOptions,
+        required: formData.is_resident && formData.residency_type === "RAPCE",
+        className: `col-span-12 md:col-span-3 ${!(formData.is_resident && formData.residency_type === "RAPCE") ? "hidden" : ""}`,
+      },
+      {
         name: "university",
         label: "Universidad",
         type: "select",
@@ -967,6 +973,7 @@ export default function PersonalActivoPage() {
           entry_date: formData.entry_date,
           job_title: formData.job_title,
           residency_type: formData.residency_type,
+          hospital: formData.hospital,
           university: formData.university,
           level: formData.level,
           job_code: formData.job_code,
@@ -1097,7 +1104,7 @@ export default function PersonalActivoPage() {
         enableColumnFilter: false,
         enableSorting: true,
       },
-   
+
       {
         accessorKey: "census_status",
         header: "Nombre completo",
@@ -1105,11 +1112,10 @@ export default function PersonalActivoPage() {
         enableColumnFilter: true,
         enableSorting: true,
         filterVariant: "select",
-        filterSelectOptions: [ "Censado", "No censado"
-        ],
+        filterSelectOptions: ["Censado", "No censado"],
         Cell: ({ cell }) => {
           // display the name and the census status badge
-          const fullName = cell.row.original.full_name
+          const fullName = cell.row.original.full_name;
           const isPhoto = cell.row.original.photo;
           const isInCensus = cell.row.original.census_status;
           return (
@@ -1346,7 +1352,7 @@ export default function PersonalActivoPage() {
     {
       entry_date: false,
       "type_personnel.name": false,
-      "work_status": false,
+      work_status: false,
     },
   );
 
@@ -1384,7 +1390,7 @@ export default function PersonalActivoPage() {
       debounce((value) => {
         setGlobalFilter(value);
         setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-      }, 300),
+      }, 0),
     [],
   );
 
@@ -1500,6 +1506,19 @@ export default function PersonalActivoPage() {
     </Modal>
   );
 
+  const generateReport = async () => {
+      try {
+        const res = await activePersonnelAPI.getReport();
+        console.log(res);
+        setReportData(res);
+        setIsReportModalOpen(true);
+      } catch (error) {
+        const errorMessage =
+          error.response?.data?.message || error.message || "An error occurred";
+        showError(errorMessage);
+      }
+    };
+
   return (
     <>
       <title>Personal Activo - LabFalcón</title>
@@ -1608,6 +1627,7 @@ export default function PersonalActivoPage() {
                     f.name !== "job_title" &&
                     f.name !== "is_resident" &&
                     f.name !== "residency_type" &&
+                    f.name !== "hospital" &&
                     f.name !== "university" &&
                     f.name !== "level" &&
                     f.name !== "job_code" &&
@@ -1682,6 +1702,7 @@ export default function PersonalActivoPage() {
                             f.name === "job_title" ||
                             f.name === "is_resident" ||
                             f.name === "residency_type" ||
+                            f.name === "hospital" ||
                             f.name === "university" ||
                             f.name === "level" ||
                             f.name === "job_code" ||
@@ -1995,7 +2016,20 @@ export default function PersonalActivoPage() {
         size="md"
         onClose={() => setIsOptionsModalOpen(false)}
       >
-        <div className="px-4 flex flex-col">
+         <div
+            className={`px-4   z-50 top-12 w-full flex flex-col  rounded-md   ${
+              isOptionsModalOpen ? "block" : "hidden"
+            }`}
+          >
+        <button
+          className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+          onClick={generateReport}
+        >
+          <Icon icon="material-symbols:download" width={24} height={24} />
+          <span>Generar Reporte de Censados por ASIC </span>
+          <Icon icon="tabler:pdf" width={24} height={24} />
+        </button>
+        <div className="mt-4 flex flex-col">
           <label
             htmlFor="importExcelPersonnel"
             className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold ${
@@ -2056,7 +2090,17 @@ export default function PersonalActivoPage() {
             </div>
           )}
         </div>
+        </div>
       </Modal>
+
+      <Modal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                title="Reporte de Censados por ASIC"
+                size="full"
+              >
+                <PrintPage data={reportData} year={new Date().getFullYear()} />
+              </Modal>
     </>
   );
 }
