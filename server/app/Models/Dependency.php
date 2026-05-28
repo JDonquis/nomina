@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class Dependency extends Model
 {
-    protected $fillable = ['name', 'asic_id', 'sync_id', 'coordinates'];
+    protected $fillable = ['name', 'asic_id', 'sync_id', 'coordinates', 'address', 'url'];
 
     protected static function boot()
     {

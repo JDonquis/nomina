@@ -31,6 +31,8 @@ class DependencyController extends Controller
             'name' => 'required|string|max:255',
             'asic_id' => 'required|exists:asics,id',
             'coordinates' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
         ]);
 
         $dependency = Dependency::create($validated);
@@ -52,6 +54,8 @@ class DependencyController extends Controller
             'name' => 'required|string|max:255',
             'asic_id' => 'required|exists:asics,id',
             'coordinates' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
         ]);
 
         $dependency->update($validated);
