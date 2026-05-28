@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\ASICController;
-use App\Http\Controllers\DependencyController;
 use App\Http\Controllers\AdministrativeUnitController;
+use App\Http\Controllers\ASICController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\TypePersonnelController;
+use App\Http\Controllers\DependencyController;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PersonnelController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SyncController;
+use App\Http\Controllers\TypePersonnelController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken']);
@@ -52,6 +53,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
     Route::post('personnels/active/import-excel', [PersonnelController::class, 'importExcel']);
     Route::delete('personnels/active/{personnel}', [PersonnelController::class, 'destroy']);
+
+    Route::get('activities', [AuditLogController::class, 'index']);
+
 
     Route::prefix('sync')->group(function () {
         Route::get('export', [SyncController::class, 'export']);
