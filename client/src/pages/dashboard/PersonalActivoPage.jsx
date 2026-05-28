@@ -33,7 +33,6 @@ import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
 import PrintPage from "../../components/report.jsx";
 
-
 const defaultFormData = {
   nac: "V",
   ci: "",
@@ -131,8 +130,6 @@ const work_status_options = [
   { value: "Vacaciones", label: "Vacaciones" },
 ];
 
-
-
 const defaultFamilyMember = {
   ci: "",
   full_name: "",
@@ -198,7 +195,6 @@ export default function PersonalActivoPage() {
 
   const [hospitalOptions, setHospitalOptions] = useState([]);
 
-
   const fetchInitialData = useCallback(async () => {
     try {
       const asicRes = await ASICAPI.getASIC();
@@ -213,9 +209,14 @@ export default function PersonalActivoPage() {
         namesWithoutCode: nomina.name,
       }));
 
-      const hospitalsRes = await dependenciesAPI.getDependencies({ search: "hospital" });
+      const hospitalsRes = await dependenciesAPI.getDependencies({
+        search: "hospital",
+      });
       setHospitalOptions(
-        hospitalsRes.map((hospital) => ({ value: hospital.id, label: hospital.name }))
+        hospitalsRes.map((hospital) => ({
+          value: hospital.id,
+          label: hospital.name,
+        })),
       );
 
       setNominasNames(formattedNominas);
@@ -1507,17 +1508,17 @@ export default function PersonalActivoPage() {
   );
 
   const generateReport = async () => {
-      try {
-        const res = await activePersonnelAPI.getReport();
-        console.log(res);
-        setReportData(res);
-        setIsReportModalOpen(true);
-      } catch (error) {
-        const errorMessage =
-          error.response?.data?.message || error.message || "An error occurred";
-        showError(errorMessage);
-      }
-    };
+    try {
+      const res = await activePersonnelAPI.getReport();
+      console.log(res);
+      setReportData(res);
+      setIsReportModalOpen(true);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      showError(errorMessage);
+    }
+  };
 
   return (
     <>
@@ -2016,91 +2017,91 @@ export default function PersonalActivoPage() {
         size="md"
         onClose={() => setIsOptionsModalOpen(false)}
       >
-         <div
-            className={`px-4   z-50 top-12 w-full flex flex-col  rounded-md   ${
-              isOptionsModalOpen ? "block" : "hidden"
-            }`}
-          >
-        <button
-          className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
-          onClick={generateReport}
+        <div
+          className={`px-4   z-50 top-12 w-full flex flex-col  rounded-md   ${
+            isOptionsModalOpen ? "block" : "hidden"
+          }`}
         >
-          <Icon icon="material-symbols:download" width={24} height={24} />
-          <span>Generar Reporte de Censados por ASIC </span>
-          <Icon icon="tabler:pdf" width={24} height={24} />
-        </button>
-        <div className="mt-4 flex flex-col">
-          <label
-            htmlFor="importExcelPersonnel"
-            className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold ${
-              loading
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700 text-white"
-            }`}
+          <button
+            className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            onClick={generateReport}
           >
-            {loading ? (
-              <>
+            <Icon icon="material-symbols:download" width={24} height={24} />
+            <span>Generar Reporte de Censados por ASIC </span>
+            <Icon icon="tabler:pdf" width={24} height={24} />
+          </button>
+          <div className="mt-4 flex flex-col">
+            <label
+              htmlFor="importExcelPersonnel"
+              className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-semibold ${
+                loading
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 text-white"
+              }`}
+            >
+              {loading ? (
+                <>
+                  <Icon
+                    icon="eos-icons:loading"
+                    width={20}
+                    height={20}
+                    className="animate-spin"
+                  />
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <Icon
+                    icon="vscode-icons:file-type-excel"
+                    width={20}
+                    height={20}
+                  />
+                  Importar personal activo desde Excel
+                </>
+              )}
+              <input
+                type="file"
+                name="importExcelPersonnel"
+                id="importExcelPersonnel"
+                className="hidden"
+                disabled={loading}
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                onChange={(e) => {
+                  if (
+                    e.target.files[0] &&
+                    window.confirm(
+                      e.target.files[0].name +
+                        " — ¿Desea importar los datos de este Excel?",
+                    )
+                  ) {
+                    importExcel(e);
+                  }
+                }}
+              />
+            </label>
+            {loading && (
+              <div className="flex w-full items-center gap-2 p-2">
                 <Icon
                   icon="eos-icons:loading"
-                  width={20}
-                  height={20}
+                  width={24}
+                  height={24}
                   className="animate-spin"
                 />
-                Importando...
-              </>
-            ) : (
-              <>
-                <Icon
-                  icon="vscode-icons:file-type-excel"
-                  width={20}
-                  height={20}
-                />
-                Importar personal activo desde Excel
-              </>
+                <span>Subiendo...</span>
+              </div>
             )}
-            <input
-              type="file"
-              name="importExcelPersonnel"
-              id="importExcelPersonnel"
-              className="hidden"
-              disabled={loading}
-              accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-              onChange={(e) => {
-                if (
-                  e.target.files[0] &&
-                  window.confirm(
-                    e.target.files[0].name +
-                      " — ¿Desea importar los datos de este Excel?",
-                  )
-                ) {
-                  importExcel(e);
-                }
-              }}
-            />
-          </label>
-          {loading && (
-            <div className="flex w-full items-center gap-2 p-2">
-              <Icon
-                icon="eos-icons:loading"
-                width={24}
-                height={24}
-                className="animate-spin"
-              />
-              <span>Subiendo...</span>
-            </div>
-          )}
-        </div>
+          </div>
         </div>
       </Modal>
 
       <Modal
-                isOpen={isReportModalOpen}
-                onClose={() => setIsReportModalOpen(false)}
-                title="Reporte de Censados por ASIC"
-                size="full"
-              >
-                <PrintPage data={reportData} year={new Date().getFullYear()} />
-              </Modal>
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        title="Reporte de Censados por ASIC"
+        size="full"
+      >
+        <PrintPage data={reportData} year={new Date().getFullYear()} />
+      </Modal>
     </>
   );
 }
