@@ -7,7 +7,7 @@ import FormField from "../forms/FormField.jsx";
 
 const fields = [
   {
-    name: "coordenadas",
+    name: "coordinates",
     label: "Coordenadas (latitud,longitud)",
     type: "coordenadas",
     placeholder: "Ej: 10.1234,-66.5678",
@@ -15,7 +15,7 @@ const fields = [
     fullWidth: true,
   },
   {
-    name: "adress",
+    name: "address",
     label: "Dirección",
     type: "text",
     required: false,
@@ -57,7 +57,7 @@ const DependencyRow = React.memo(function DependencyRow({
   const [loading, setLoading] = useState(false);
   const [locationData, setLocationData] = useState({
     coordinates: dependency.coordinates || "",
-    adress: dependency.adress || "",
+    address: dependency.address || "",
     url: dependency.url || "",
   });
 
@@ -80,7 +80,7 @@ const DependencyRow = React.memo(function DependencyRow({
     setLocalName(dependency.name);
     setLocationData({
       coordinates: dependency.coordinates || "",
-      adress: dependency.adress || "",
+      address: dependency.address || "",
       url: dependency.url || "",
     });
   }, [dependency.name]);
@@ -141,7 +141,7 @@ const DependencyRow = React.memo(function DependencyRow({
     setLoading(true);
     onUpdateDependency(dependency.id, {
       name: localName,
-      adress: locationData.adress,
+      address: locationData.address,
       url: locationData.url,
       coordinates: locationData.coordinates,
       asic_id: asicId,
