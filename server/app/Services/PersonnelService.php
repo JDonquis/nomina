@@ -656,6 +656,10 @@ class PersonnelService
                 $asic = $asicPersonnels->first()->asic;
                 $asicName = $asic->name ?? 'SIN ASIC';
 
+                if ($asicName == 'SIN ASIC') {
+                    Log::warning("ASIC no encontrado para personal id " . $asicPersonnels->first()->id);
+                }
+
                 $censadosPorDia = $asicPersonnels
                     ->groupBy(function ($personnel) {
                         // Usamos created_at directamente del personal
@@ -692,6 +696,115 @@ class PersonnelService
 
         return response()->json([
             'asics' => $asics,
+            'days' => $days
+        ]);
+    }
+
+    public function generateReportWithHospital(Request $request, $status)
+    {
+        Carbon::setLocale('es');
+        $year = $request->year ?? now()->year;
+
+        $personnels = Personnel::where('census_status', true)
+            ->where('status', $status)
+            ->whereYear('census_date', $year)
+            ->with(['asic', 'dependency'])
+            ->get();
+
+        if ($personnels->isEmpty()) {
+            return response()->json([
+                'asics' => [],
+                'hospitals' => [],
+                'days' => []
+            ]);
+        }
+
+        $asics = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->asic->id ?? 'sin-asic';
+            })
+            ->map(function ($asicPersonnels, $asicId) {
+                $asic = $asicPersonnels->first()->asic;
+                $asicName = $asic->name ?? 'SIN ASIC';
+
+                if ($asicName == 'SIN ASIC') {
+                    Log::warning("ASIC no encontrado para personal id " . $asicPersonnels->first()->id);
+                }
+
+                $censadosPorDia = $asicPersonnels
+                    ->groupBy(function ($personnel) {
+                        return $personnel->census_date->format('Y-m-d');
+                    })
+                    ->map(function ($dayCensuses) {
+                        return count($dayCensuses);
+                    })
+                    ->toArray();
+
+                return [
+                    'id' => $asicId,
+                    'name' => $asicName,
+                    'censadosPorDia' => $censadosPorDia
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $hospitals = $personnels
+            ->filter(function ($personnel) {
+                if (!$personnel->dependency) {
+                    return false;
+                }
+
+                $name = mb_strtolower($personnel->dependency->name);
+
+                return str_contains($name, 'hospital') ||
+                    str_contains($name, 'mision sonrisa') ||
+                    str_contains($name, 'misión sonrisa') ||
+                    str_contains($name, 'secretaria de salud') ||
+                    str_contains($name, 'secretaría de salud');
+            })
+            ->groupBy(function ($personnel) {
+                return $personnel->dependency->id;
+            })
+            ->map(function ($hospitalPersonnels, $hospitalId) {
+                $hospitalName = $hospitalPersonnels->first()->dependency->name;
+
+                $censadosPorDia = $hospitalPersonnels
+                    ->groupBy(function ($personnel) {
+                        return $personnel->census_date->format('Y-m-d');
+                    })
+                    ->map(function ($dayCensuses) {
+                        return count($dayCensuses);
+                    })
+                    ->toArray();
+
+                return [
+                    'id' => $hospitalId,
+                    'name' => $hospitalName,
+                    'censadosPorDia' => $censadosPorDia
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $firstDate = $personnels->min('census_date');
+        $lastDate = $personnels->max('census_date');
+
+        $days = [];
+        $start = Carbon::parse($firstDate)->startOfDay();
+        $end = Carbon::parse($lastDate)->startOfDay();
+
+        while ($start <= $end) {
+            $days[] = [
+                'id' => $start->format('Y-m-d'),
+                'label' => $start->format('d/m')
+            ];
+            $start->addDay();
+        }
+
+        return response()->json([
+            'asics' => $asics,
+            'hospitals' => $hospitals,
             'days' => $days
         ]);
     }

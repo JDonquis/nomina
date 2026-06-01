@@ -34,6 +34,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         ->middleware('admin');
 
     Route::get('personnels/generate_report/{status}', [PersonnelController::class, 'generateReport']);
+    Route::get('personnels/generate_report/hospital/{status}', [PersonnelController::class, 'generateReportWithHospital']);
+
 
 
     Route::get('personnels/life_proof/generate_report', [PersonnelController::class, 'generateReport']);
