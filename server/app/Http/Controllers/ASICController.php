@@ -35,7 +35,14 @@ class ASICController extends Controller
 
     public function show(ASIC $asic): JsonResponse
     {
-        $asic->load('dependencies.administrativeUnits.departments.services');
+        $asic->load([
+            'dependencies' => function ($query) {
+                $query->withCount(['personnels as active_censused_count' => function ($q) {
+                    $q->where('status', 'active')->where('census_status', true);
+                }]);
+            },
+            'dependencies.administrativeUnits.departments.services'
+        ]);
 
         return response()->json($asic);
     }

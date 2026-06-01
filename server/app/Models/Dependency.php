@@ -30,4 +30,9 @@ class Dependency extends Model
     {
         return $this->hasMany(AdministrativeUnit::class);
     }
+
+    public function personnels(): HasMany
+    {
+        return $this->hasMany(Personnel::class);
+    }
 }
