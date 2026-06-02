@@ -31,7 +31,7 @@ import debounce from "lodash.debounce";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
-import PrintPage from "../../components/report.jsx";
+import PrintPage from "../../components/PersonalActivoReport.jsx";
 
 const defaultFormData = {
   nac: "V",
@@ -1509,8 +1509,9 @@ export default function PersonalActivoPage() {
 
   const generateReport = async () => {
     try {
-      const res = await activePersonnelAPI.getReport();
-      console.log(res);
+      const res = await activePersonnelAPI.getHospitalizedReport();
+      const hospitalsRes = 2
+      console.log({res, hospitalsRes});
       setReportData(res);
       setIsReportModalOpen(true);
     } catch (error) {

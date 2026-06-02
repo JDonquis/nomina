@@ -30,7 +30,7 @@ import withoutPhoto from "../../assets/withoutPhoto.webp";
 import { cities } from "../../constants/cities.js";
 import municipalitiesWithParishes from "../../constants/municipalitiesWithParishes.js";
 import typePensions from "../../constants/type_pensions.js";
-import PrintPage from "../../components/report.jsx";
+import PrintPage from "../../components/FeDeVidaReport.jsx";
 
 let isThereLocalStorageFormData = localStorage.getItem("formData")
   ? true

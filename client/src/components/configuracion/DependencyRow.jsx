@@ -67,7 +67,7 @@ const DependencyRow = React.memo(function DependencyRow({
       ...prev,
       [name]: value,
     }));
-  }
+  };
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const submitLocation = (data) => {
@@ -192,8 +192,9 @@ const DependencyRow = React.memo(function DependencyRow({
           </div>
 
           <div className="hidden md:flex items-center gap-1 mr-3 text-xs text-gray-500">
-            <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded">
-              {dependency.administrative_units?.length || 0} unid.
+            <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded flex text-color2" title="Cantidad personal activo censado">
+              {dependency.active_censused_count}
+              <Icon icon="ci:wavy-check" className="ml-1 text-gray-500" width={12} height={12} />
             </span>
 
             <button
@@ -278,16 +279,20 @@ const DependencyRow = React.memo(function DependencyRow({
         onClose={() => setIsModalOpen(false)}
         title="Úbicación"
       >
-        <form id="locationForm"  onSubmit={handleLocationSubmit}>
+        <form id="locationForm" onSubmit={handleLocationSubmit}>
           <div className="space-y-3">
             {fields.map((field) => (
-              <FormField key={field.name} {...field} value={locationData[field.name]} onChange={handleLocationChange} />
+              <FormField
+                key={field.name}
+                {...field}
+                value={locationData[field.name]}
+                onChange={handleLocationChange}
+              />
             ))}
           </div>
 
           <button
             type="submit"
-
             disabled={loading}
             className={`px-12 py-3 rounded-md font-semibold bg-color1 text-white w-full mt-5 ${
               loading ? "opacity-50 cursor-not-allowed" : ""

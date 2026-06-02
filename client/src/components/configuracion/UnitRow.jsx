@@ -132,13 +132,6 @@ const UnitRow = React.memo(function UnitRow({
           />
         </div>
 
-        <div className="hidden md:flex items-center gap-2 text-xs ">
-          <span
-            className={`${unit.departments.length < 1 ? "text-red-500" : "text-gray-500"} bg-gray-200 px-2 mr-2 py-0.5 rounded`}
-          >
-            {unit.departments?.length || 0} dep.
-          </span>
-        </div>
 
         <button
           type="button"

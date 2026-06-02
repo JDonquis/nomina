@@ -171,6 +171,7 @@ export const activePersonnelAPI = {
   }),
   getDetailById: (id) => api.get(`/admin/personnels/active/${id}`),
   getReport: () => api.get("/admin/personnels/generate_report/active"),
+  getHospitalizedReport: () => api.get("/admin/personnels/generate_report/hospital/active"),
 
 };
 

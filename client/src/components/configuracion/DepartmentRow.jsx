@@ -158,11 +158,7 @@ const DepartmentRow = React.memo(function DepartmentRow({
           />
         </div>
 
-        <div className="hidden md:flex items-center gap-2 text-xs ">
-          <span className={`${department.services.length  < 1 ? "text-red-500" : "text-gray-500"} bg-gray-200 px-2 mr-2 py-0.5 rounded`}>
-            {department.services?.length || 0} ser.
-          </span>
-        </div>
+     
 
         <button
           type="button"

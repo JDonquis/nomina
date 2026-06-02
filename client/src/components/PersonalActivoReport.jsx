@@ -8,7 +8,8 @@ import FuturisticButton from "./FuturisticButton";
 
 const PrintableContent = forwardRef((props, ref) => {
   const { data, year } = props;
-  const { asics, days } = data;
+  const { asics, days, hospitals } = data;
+
 
   // compute some aggregates once so the render loops are cheap
   const [filteredDays, dayTotals] = React.useMemo(() => {
@@ -28,6 +29,27 @@ const PrintableContent = forwardRef((props, ref) => {
       total: Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0),
     }));
   }, [asics]);
+
+
+  const [filteredHospitals, dayHospitalTotals] = React.useMemo(() => {
+    const totals = {};
+    hospitals.forEach(hospital => {
+      days.forEach(day => {
+        totals[day.id] = (totals[day.id] || 0) + (hospital.censadosPorDia[day.id] || 0);
+      });
+    });
+    const filtered = days.filter(day => totals[day.id] > 0);
+    return [filtered, totals];
+  }, [hospitals, days]);
+
+  console.log({filteredDays, dayTotals, filteredHospitals, dayHospitalTotals});
+
+  const hospitalTotals = React.useMemo(() => {
+    return hospitals.map(hospital => ({
+      ...hospital,
+      total: Object.values(hospital.censadosPorDia).reduce((a, b) => a + b, 0),
+    }));
+  }, [hospitals]);
 
   return (
     <div
@@ -53,12 +75,16 @@ const PrintableContent = forwardRef((props, ref) => {
           loading="eager"
         />
         <div className="-ml-10">
-          <h3 className="text-center font-bold  gap-3 my-3  mt-4 text-color1">
-            REPORTE DE CENSADOS POR CADA ASIC DURANTE EL PERIODO DE CENSO {year}
+          <h3 className="text-center font-bold mt-4 text-color1">
+            PERSONAL ACTIVO
+          </h3>
+          <h3 className="text-center font-bold  gap-3 my-3 mt-0 text-color1">
+            CENSADOS POR ASIC DURANTE EL PERIODO DE CENSO {year}
           </h3>
           <h4 className="text-center font-bold  gap-3 my-3  -mt-3 text-gray-600">
             OFICINA DE RECURSOS HUMANOS
           </h4>
+          <p className="text-center text-sm -mt-2 text-gray-600" >Generado el {new Date().toLocaleDateString()} a las {new Date().toLocaleTimeString()}</p>
         </div>
         <img
           src={secretaria_logo}
@@ -124,6 +150,76 @@ const PrintableContent = forwardRef((props, ref) => {
             ))}
             <td className="p-1 px-2 text-right">
               {asicTotals.reduce((t, a) => t + a.total, 0)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+
+         <div className="-ml-10">
+          <h3 className="text-center mb-2 font-bold mt-12 text-color1">
+            HOSPITALES
+          </h3>
+        </div>
+
+
+        <table className="border text-left rounded-md w-full">
+        <thead>
+          <tr>
+            <th rowSpan={2} className="px-2 p-1" style={{ width: "300px" }}>
+              Hospitales
+            </th>
+
+            <th
+              className=" bg-gray-200 text-center px-2 p-1 "
+              colSpan={filteredHospitals.length}
+            >
+              DIA
+            </th>
+            <th className=" bg-gray-50  px-2 p-1 text-right" rowSpan={2}>
+              TOTAL
+            </th>
+          </tr>
+
+        
+          <tr className="bg-gray-100 text-sm ">
+            {filteredDays.map((day) => (
+              <th className="p-1 px-2 w-[37px] font-semibold" key={day.id}>
+                {day.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody className="">
+          {hospitalTotals.map((asic) => (
+            <tr key={asic.id} className="odd:bg-white even:bg-gray-50">
+              <td className="p-1 px-2 border-r text-sm">{asic.name.replace("ASIC", "")}</td>
+
+              {filteredHospitals.map((hospital) => (
+                <td
+                  className="p-1 px-2 w-[37px] text-right border-r"
+                  key={hospital.id}
+                >
+                  {asic.censadosPorDia[hospital.id] ?? "-"}
+                </td>
+              ))}
+              <td className="p-1 px-2 text-right">{asic.total}</td>
+            </tr>
+          ))}
+         
+          <tr className="bg-gray-100 text-sm text-right font-bold">
+            <td className="p-1 px-2 border-r text-left text-sm ">TOTAL</td>
+            {filteredHospitals.map((hospital) => (
+              <td
+                className="p-1 px-2 w-[37px] text-right border-r"
+                key={hospital.id}
+              >
+                {dayHospitalTotals[hospital.id] || 0}
+              </td>
+            ))}
+            <td className="p-1 px-2 text-right">
+              {hospitalTotals.reduce((t, a) => t + a.total, 0)}
             </td>
           </tr>
         </tbody>
