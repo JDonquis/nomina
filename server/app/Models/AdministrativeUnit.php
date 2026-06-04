@@ -30,4 +30,9 @@ class AdministrativeUnit extends Model
     {
         return $this->hasMany(Department::class);
     }
+
+    public function personnels(): HasMany
+    {
+        return $this->hasMany(Personnel::class, 'administrative_unit_id');
+    }
 }

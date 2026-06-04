@@ -25,4 +25,9 @@ class ASIC extends Model
     {
         return $this->hasMany(Dependency::class, 'asic_id');
     }
+
+    public function personnels(): HasMany
+    {
+        return $this->hasMany(Personnel::class, 'asic_id');
+    }
 }

@@ -30,4 +30,9 @@ class Department extends Model
     {
         return $this->hasMany(Service::class);
     }
+
+    public function personnels(): HasMany
+    {
+        return $this->hasMany(Personnel::class, 'department_id');
+    }
 }
