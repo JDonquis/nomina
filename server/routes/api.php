@@ -22,7 +22,13 @@ Route::post('forgot-password', [LoginController::class, 'forgotPassword'])->name
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
     Route::get('asics/report/{asic}', [ASICController::class, 'report']);
+    Route::get('dependencies/report/{dependency}', [DependencyController::class, 'report']);
+    Route::get('administrative-units/report/{administrativeUnit}', [AdministrativeUnitController::class, 'report']);
+    Route::get('departments/report/{department}', [DepartmentController::class, 'report']);
+    Route::get('services/report/{service}', [ServiceController::class, 'report']);
+
     Route::resource('asics', ASICController::class)->except(['edit', 'create']);
     Route::resource('dependencies', DependencyController::class)->except(['edit', 'create']);
     Route::resource('administrative-units', AdministrativeUnitController::class)->except(['edit', 'create']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\Personnel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -63,5 +64,16 @@ class DepartmentController extends Controller
         $department->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function report(Department $department): JsonResponse
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('department_id', $department->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
     }
 }
