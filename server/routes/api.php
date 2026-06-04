@@ -22,7 +22,7 @@ Route::post('forgot-password', [LoginController::class, 'forgotPassword'])->name
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
+    Route::get('asics/report/{asic}', [ASICController::class, 'report']);
     Route::resource('asics', ASICController::class)->except(['edit', 'create']);
     Route::resource('dependencies', DependencyController::class)->except(['edit', 'create']);
     Route::resource('administrative-units', AdministrativeUnitController::class)->except(['edit', 'create']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ASIC;
+use App\Models\Personnel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -64,5 +65,16 @@ class ASICController extends Controller
         $asic->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function report(ASIC $asic): JsonResponse
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('asic_id', $asic->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
     }
 }
