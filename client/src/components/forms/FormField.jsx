@@ -49,7 +49,6 @@ const FormField = React.memo(function FormField({
   ...props
 }) {
 
-  console.log({readOnly})
   // Configurar sx para eliminar el outline
   const textFieldSx = disableOutline
     ? {

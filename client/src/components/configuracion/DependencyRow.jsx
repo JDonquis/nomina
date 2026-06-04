@@ -34,6 +34,7 @@ const DependencyRow = React.memo(function DependencyRow({
   dependency,
   index,
   asicId,
+  asicName,
   onUpdateDependency,
   onDeleteDependency,
   onCreateUnit,
@@ -49,6 +50,7 @@ const DependencyRow = React.memo(function DependencyRow({
   setFormData,
   isLoading,
   objPosiblesNames,
+  onGetReportActiveCensus,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(dependency.name);
@@ -192,10 +194,21 @@ const DependencyRow = React.memo(function DependencyRow({
           </div>
 
           <div className="hidden md:flex items-center gap-1 mr-3 text-xs text-gray-500">
-            <span className="bg-gray-200 px-2 mr-2 py-0.5 rounded flex text-color2" title="Cantidad personal activo censado">
+            <button
+              className=" bg-color2/10 px-2 mr-2  py-0.5 rounded flex text-color2"
+              title="Cantidad personal activo censado"
+              onClick={() =>
+                onGetReportActiveCensus(dependency.id, "Dependencia", { asicName, dependencyName: dependency.name })
+              }
+            >
               {dependency.active_censused_count}
-              <Icon icon="ci:wavy-check" className="ml-1 text-gray-500" width={12} height={12} />
-            </span>
+              <Icon
+                icon="ci:wavy-check"
+                className="ml-1 text-gray-500"
+                width={12}
+                height={12}
+              />
+            </button>
 
             <button
               type="button"
@@ -224,6 +237,8 @@ const DependencyRow = React.memo(function DependencyRow({
             {dependency.administrative_units?.map((unit, uIndex) => (
               <UnitRow
                 key={unit.id}
+                asicName={asicName}
+                dependencyName={dependency.name}
                 unit={unit}
                 index={uIndex}
                 dependencyId={dependency.id}
@@ -238,6 +253,7 @@ const DependencyRow = React.memo(function DependencyRow({
                 formData={formData}
                 setFormData={setFormData}
                 isLoading={isLoading}
+                onGetReportActiveCensus={onGetReportActiveCensus}
               />
             ))}
 
