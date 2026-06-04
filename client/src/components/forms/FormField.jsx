@@ -45,8 +45,11 @@ const FormField = React.memo(function FormField({
   options,
   labels,
   disableOutline = false, // Nueva prop
+  readOnly = false,
   ...props
 }) {
+
+  console.log({readOnly})
   // Configurar sx para eliminar el outline
   const textFieldSx = disableOutline
     ? {
@@ -127,6 +130,7 @@ const FormField = React.memo(function FormField({
             disabled={disabled}
             required={required}
             {...props}
+            inputProps={{ readOnly: readOnly }} 
           >
             {options?.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -155,9 +159,10 @@ const FormField = React.memo(function FormField({
           fullWidth={fullWidth}
           size="small"
           variant={variant}
+          readOnly={readOnly}
           InputProps={{
             endAdornment: unit && (
-              <InputAdornment position="end">{unit}</InputAdornment>
+              <InputAdornment readOnly={readOnly} position="end">{unit}</InputAdornment>
             ),
           }}
           inputProps={{
@@ -191,7 +196,10 @@ const FormField = React.memo(function FormField({
         isOptionEqualToValue={(option, val) => option.value === val.value}
         size="small"
         fullWidth={fullWidth}
-        renderInput={(params) => <TextField {...params} label={label} />}
+        renderInput={(params) => <TextField slotProps={{
+            input: { readOnly: readOnly }
+          }} {...params} label={label} />}
+        readOnly={readOnly}
       />
     );
   }
@@ -210,6 +218,7 @@ const FormField = React.memo(function FormField({
         }
         onChange={onChange}
         error={!!error}
+        readOnly={readOnly}
         helperText={error || helperText}
         required={required}
         disabled={disabled}
@@ -221,9 +230,11 @@ const FormField = React.memo(function FormField({
         sx={textFieldSx} // Aplicar estilos
         InputLabelProps={type === "date" ? { shrink: true } : undefined}
         InputProps={{
+          readOnly: readOnly,
           onWheel: type === "number" ? (e) => e.target.blur() : undefined,
           endAdornment: unit && (
-            <InputAdornment position="end">{unit}</InputAdornment>
+        
+            <InputAdornment readOnly={readOnly} position="end">{unit}</InputAdornment>
           ),
         }}
         inputProps={{
