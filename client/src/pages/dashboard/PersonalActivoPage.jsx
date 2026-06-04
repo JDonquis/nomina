@@ -262,17 +262,7 @@ export default function PersonalActivoPage() {
             .flatMap((dept) => dept.services || [])
             .map((s) => ({ value: s.id, label: s.name })),
         );
-        console.log("Relations loaded for edit:", {
-          deps,
-          units: res.dependencies.flatMap((d) => d.administrative_units || []),
-          departments: res.dependencies
-            .flatMap((d) => d.administrative_units || [])
-            .flatMap((u) => u.departments || []),
-          services: res.dependencies
-            .flatMap((d) => d.administrative_units || [])
-            .flatMap((u) => u.departments || [])
-            .flatMap((dept) => dept.services || []),
-        });
+
       } else {
         setUnitOptions([]);
         setDepartmentOptions([]);
@@ -750,6 +740,7 @@ export default function PersonalActivoPage() {
         type: "text",
         required: false,
         className: "col-span-12 md:col-span-6",
+        readOnly: !user?.is_admin && submitString === "Actualizar",
       },
       {
         name: "is_resident",
@@ -892,7 +883,6 @@ export default function PersonalActivoPage() {
     );
   };
 
-  console.log("Form data updated:", formData);
 
   const handleFieldChange = useCallback((e, field) => {
     if (field?.onChangeCustom) {
@@ -1320,7 +1310,7 @@ export default function PersonalActivoPage() {
                 </button>
               </>
             ) : null}
-            {user?.is_admin && (
+            {user?.is_admin ? (
               <button
                 onClick={() => handleDelete(cell.row.original.id)}
                 className="text-red-500 p-1.5 rounded-full hover:bg-gray-200"
@@ -1332,7 +1322,7 @@ export default function PersonalActivoPage() {
                   height={18}
                 />
               </button>
-            )}
+            ) : null}
           </div>
         ),
       },
@@ -1511,7 +1501,6 @@ export default function PersonalActivoPage() {
     try {
       const res = await activePersonnelAPI.getHospitalizedReport();
       const hospitalsRes = 2
-      console.log({res, hospitalsRes});
       setReportData(res);
       setIsReportModalOpen(true);
     } catch (error) {

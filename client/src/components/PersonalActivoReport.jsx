@@ -65,12 +65,12 @@ const PrintableContent = forwardRef((props, ref) => {
           marginBlock: "12px !important",
           marginBottom: "12px !important",
         }}
-        className="my-2  mb-0 relative flex  justify-between items-center py-4"
+        className="my-2  mb-0 relative flex  justify-between  py-4"
       >
         <img
           src={cintilloCorto}
           alt=""
-          className="w-36 h-auto"
+          className="w-36 h-min"
           width={288}
           loading="eager"
         />
@@ -79,17 +79,17 @@ const PrintableContent = forwardRef((props, ref) => {
             PERSONAL ACTIVO
           </h3>
           <h3 className="text-center font-bold  gap-3 my-3 mt-0 text-color1">
-            CENSADOS POR ASIC DURANTE EL PERIODO DE CENSO {year}
+            CENSO {year}
           </h3>
-          <h4 className="text-center font-bold  gap-3 my-3  -mt-3 text-gray-600">
+          <h4 className="text-center font-bold text-sm gap-3 my-3  -mt-3 text-gray-600">
             OFICINA DE RECURSOS HUMANOS
           </h4>
-          <p className="text-center text-sm -mt-2 text-gray-600" >Generado el {new Date().toLocaleDateString()} a las {new Date().toLocaleTimeString()}</p>
+          <p className="text-center text-sm -mt-3 text-gray-600" >Generado el {new Date().toLocaleDateString()} a las {new Date().toLocaleTimeString()}</p>
         </div>
         <img
           src={secretaria_logo}
           alt=""
-          className="w-12 h-auto"
+          className="w-12 h-min "
           width={48}
           loading="eager"
         />
@@ -98,7 +98,7 @@ const PrintableContent = forwardRef((props, ref) => {
       <table className="border text-left rounded-md w-full">
         <thead>
           <tr>
-            <th rowSpan={2} className="px-2 p-1" style={{ width: "300px" }}>
+            <th rowSpan={2} className="px-2 p-1" style={{ width: "170px" }}>
               ASIC
             </th>
 
@@ -156,18 +156,13 @@ const PrintableContent = forwardRef((props, ref) => {
       </table>
 
 
-         <div className="-ml-10">
-          <h3 className="text-center mb-2 font-bold mt-12 text-color1">
-            HOSPITALES
-          </h3>
-        </div>
 
 
-        <table className="border text-left rounded-md w-full">
+        <table className="border text-left rounded-md w-full mt-14">
         <thead>
           <tr>
-            <th rowSpan={2} className="px-2 p-1" style={{ width: "300px" }}>
-              Hospitales
+            <th rowSpan={2} className="px-2 p-1 text-sm" style={{ width: "170px" }}>
+              Hospitales / Secreatria de Salud
             </th>
 
             <th
