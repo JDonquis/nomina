@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dependency;
+use App\Models\Personnel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -69,5 +70,16 @@ class DependencyController extends Controller
         $dependency->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function report(Dependency $dependency): JsonResponse
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('dependency_id', $dependency->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
     }
 }

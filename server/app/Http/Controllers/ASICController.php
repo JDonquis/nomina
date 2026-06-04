@@ -36,11 +36,15 @@ class ASICController extends Controller
 
     public function show(ASIC $asic): JsonResponse
     {
-        // 1. Definimos el filtro del censo en una variable para no repetir código (DRY)
+
+
+
         $censusedPersonnelFilter = function ($query) {
             $query->where('status', 'active')
                 ->where('census_status', true);
         };
+
+        $asic->loadCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
 
         // 2. Cargamos el árbol de relaciones con sus respectivos conteos
         $asic->load([
