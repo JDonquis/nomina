@@ -74,7 +74,8 @@ const crossProduct = (a, b, c) => {
 };
 
 // Componente principal preparado para recibir un arreglo de ASICs
-const MapComponent = ({ asicsList }) => {
+const MapComponent = ({ asicsList, selectedAsic, handlers }) => {
+  console.log({selectedAsic})
   const defaultPosition = [11.4045, -69.6775]; // Coro por defecto
   
   // Tomamos el centro del primer ASIC de la lista para enfocar el mapa al cargar

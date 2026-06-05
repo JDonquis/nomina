@@ -749,7 +749,7 @@ export default function ConfiguracionPage() {
               <>
 
                 
-                <DynamicMap selectedAsic={selectedAsic} asicsList={asicData} />
+                <DynamicMap selectedAsic={selectedAsic} handlers={handlers} asicsList={asicData} />
               </>
             ) : (
               <ASICDetailPanel
