@@ -22,51 +22,34 @@ import { SyncSection } from "./SyncPage";
 import DynamicMap from "../../components/configuracion/DynamicMap";
 
 // Ejemplo del formato de datos que deberías traer de tu BD
-const mockSitiosDesdeBD = [
+const listaAsicsDesdeBD = [
   {
     id: 1,
-    nombre: "Hospital Universitario Alfredo Van Grieken",
-    direccion: "Av. El Tenis, Coro, Falcón",
-    latitud: "11.4135",
-    longitud: "-69.6698",
-    google_maps_url: "https://maps.google.com/?q=11.4135,-69.6698",
-    type: "Dependencia",
-  },
-  {
-    id: 2,
-    nombre: "Consultorio Popular Tipo III La Velita",
-    direccion: "Sector La Velita, Coro",
-    latitud: "11.3980",
-    longitud: "-69.6920",
-    google_maps_url: "https://maps.google.com/?q=11.3980,-69.6920",
-    type: "Dependencia",
-  },
-   {
-    id: 2,
-    nombre: "Consultorio Popular Tipo III La Velita",
-    direccion: "Sector La Velita, Coro",
-    latitud: "11.3980",
-    longitud: "-69.6920",
-    google_maps_url: "https://maps.google.com/?q=11.3980,-69.6920",
-    type: "Dependencia",
-  },
-  {
-    id: 3,
-    nombre: "ASIC Alirio Navarro Aleman",
-    direccion: "Sede Principal, Sector La Velita, Coro",
-    latitud: "11.3980",
-    longitud: "-69.6920",
-    google_maps_url: "https://maps.google.com/?q=11.3980,-69.6920",
-    type: "ASIC",
-    // 🗺️ Coordenadas que dibujan el polígono del territorio del ASIC en el mapa
-    territorio: [
-      [11.4050, -69.7020], // Esquina Noroeste
-      [11.4070, -69.6850], // Esquina Noreste
-      [11.3920, -69.6820], // Esquina Sureste
-      [11.3900, -69.6990], // Esquina Suroeste
+    name: "ASIC Carlina Luchon",
+    address: "Sector Centro, Coro, Falcón",
+    coordinates: "11.4110, -69.6730", 
+    url: "https://maps.google.com/?q=11.4110,-69.6730",
+    dependencies: [
+      { id: 170, name: "Consultorio M I", coordinates: "11.4160, -69.6810", address: "Calle Falcón", url: "https://maps.google.com" },
+      { id: 171, name: "Consultorio M II", coordinates: "11.4020, -69.6650", address: "Av. Manaure", url: "https://maps.google.com" },
+      { id: 172, name: "Consultorio M III", coordinates: "11.3950, -69.6790", address: "Sector Tres Platos", url: null }
     ]
   },
+  {
+    id: 2,
+    name: "ASIC Secundino Urbina",
+    address: "Urb. La Velita, Coro, Falcón",
+    coordinates: "11.3980, -69.6920",
+    url: "https://maps.google.com/?q=11.3980,-69.6920",
+    dependencies: [
+      { id: 250, name: "Consultorio La Velita IV", coordinates: "11.4030, -69.6990", address: "Bloque 12 La Velita", url: null },
+      { id: 251, name: "Consultorio Sector Ampíes", coordinates: "11.4010, -69.6870", address: "Calle Ampíes tras el estadium", url: "https://maps.google.com" },
+      { id: 252, name: "Consultorio Urbanización Aristides Calvani", coordinates: "11.3910, -69.6940", address: "Sector Calvani", url: null }
+    ]
+  }
 ];
+
+
 export default function ConfiguracionPage() {
   const { showError, showSuccess } = useFeedback();
 
@@ -679,7 +662,7 @@ export default function ConfiguracionPage() {
   useEffect(() => {
     // Aquí harías tu peticion fetch / axios a tu base de datos
     // const data = await censoAPI.get('/sitios');
-    setSitios(mockSitiosDesdeBD);
+    setSitios(listaAsicsDesdeBD); // Usamos el ejemplo de datos que definimos arriba
   }, []);
 
   return (
@@ -688,7 +671,7 @@ export default function ConfiguracionPage() {
       <div className="p-6  mx-auto">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Mapa de Cobertura Geográfica</h2>
       
-      <DynamicMap locations={sitios} />
+      <DynamicMap asicsList={listaAsicsDesdeBD} />
     </div>
 
       <nav className="w-full flex mb-4">
