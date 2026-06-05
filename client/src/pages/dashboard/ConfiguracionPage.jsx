@@ -11,9 +11,9 @@ import {
 import debounce from "lodash.debounce";
 import { produce } from "immer";
 import { Icon } from "@iconify/react";
-
+import Modal from "../../components/Modal";
+import PrintPage from "../../components/configuracion/ReportActiveCensusPerLocation";
 import { useFeedback } from "../../context/FeedbackContext";
-import { FormField } from "../../components/forms";
 import {
   SidebarASICList,
   ASICDetailPanel,
@@ -25,8 +25,9 @@ export default function ConfiguracionPage() {
 
   const [activeTab, setActiveTab] = useState("estructura");
   const [asicData, setAsicData] = useState([]);
-  const [selectedAsicId, setSelectedAsicId] = useState(null);
+  const [selectedAsic, setSelectedAsic] = useState(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     asicName: "",
@@ -54,7 +55,8 @@ export default function ConfiguracionPage() {
         dependencies: response.dependencies || [],
         newDependenceName: "",
       });
-      setSelectedAsicId(id);
+      console.log({ response }); // Debugging line to check the response from getASICRelations
+      setSelectedAsic(response);
     } catch (error) {
       console.error("Error fetching ASIC relations:", error);
       const errorMessage =
@@ -91,10 +93,10 @@ export default function ConfiguracionPage() {
   };
 
   const updateAsic = async (name) => {
-    if (!selectedAsicId || !name.trim()) return;
+    if (!selectedAsic?.id || !name.trim()) return;
 
     try {
-      await ASICAPI.updateASIC(selectedAsicId, { name: name });
+      await ASICAPI.updateASIC(selectedAsic.id, { name: name });
       getASIC();
     } catch (error) {
       console.error("Error updating ASIC:", error);
@@ -107,12 +109,12 @@ export default function ConfiguracionPage() {
   };
 
   const deleteAsic = async () => {
-    if (!selectedAsicId) return;
+    if (!selectedAsic?.id) return;
 
     try {
-      await ASICAPI.deleteASIC(selectedAsicId);
+      await ASICAPI.deleteASIC(selectedAsic.id);
       showSuccess("ASIC eliminado exitosamente");
-      setSelectedAsicId(null);
+      setSelectedAsic(null);
       setFormData({
         asicName: "",
         asicId: null,
@@ -132,12 +134,12 @@ export default function ConfiguracionPage() {
 
   const addNewDependency = async () => {
     const depName = formData.newDependenceName;
-    if (!depName || !selectedAsicId) return;
+    if (!depName || !selectedAsic?.id) return;
 
     setIsLoadingForm(true);
     const newDependence = {
       name: depName,
-      asic_id: selectedAsicId,
+      asic_id: selectedAsic.id,
     };
 
     try {
@@ -533,11 +535,60 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const selectedAsic = asicData.find((a) => a.id === selectedAsicId);
+  const [reportData, setReportData] = useState(null);
+
+  const getReportActiveCensus = async (id, type, dataType) => {
+    try {
+      let response;
+      switch (type) {
+        case "ASIC": {
+          response = await ASICAPI.getReportActiveCensus(id);
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte por ubicación
+          break;
+        }
+
+        case "Dependencia":
+          response = await dependenciesAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+
+        case "Unidad Administrativa": // <-- Corregido (estaba case:)
+          response = await administrativeUnitsAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+
+        case "Departamento": // <-- Corregido (estaba case:)
+          response = await departmentAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+        case "Servicio": // <-- Corregido (estaba case:)
+          response = await servicesAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+
+        default:
+          break;
+      }
+      // Aquí puedes manejar la respuesta del reporte, como descargar un archivo o mostrar datos
+      console.log("Reporte de censo activo:", response);
+      setIsModalOpen(true);
+      setReportData({data:response, type, dataType});
+    } catch (error) {
+      console.error("Error fetching active census report:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    }
+  };
+
+
+  console.log({ selectedAsic }); // Debugging line to check the values of selectedAsic and formData
 
   const handlers = React.useMemo(
     () => ({
-      asicId: selectedAsicId,
+      asicId: selectedAsic?.id,
       asicName: formData.asicName,
       onUpdateAsic: updateAsic,
       onDeleteAsic: deleteAsic,
@@ -553,9 +604,10 @@ export default function ConfiguracionPage() {
       onCreateService: createService,
       onUpdateService: debouncedUpdateService,
       onDeleteService: deleteService,
+      onGetReportActiveCensus: getReportActiveCensus,
     }),
     [
-      selectedAsicId,
+      selectedAsic?.id,
       formData.asicName,
       updateAsic,
       deleteAsic,
@@ -571,6 +623,7 @@ export default function ConfiguracionPage() {
       createService,
       debouncedUpdateService,
       deleteService,
+      getReportActiveCensus,
     ],
   );
 
@@ -580,7 +633,9 @@ export default function ConfiguracionPage() {
         <button
           onClick={() => setActiveTab("estructura")}
           className={`px-10 py-3 hover:bg-gray-200 ${
-            activeTab === "estructura" ? "border-b-2 border-blue-500 font-semibold" : ""
+            activeTab === "estructura"
+              ? "border-b-2 border-blue-500 font-semibold"
+              : ""
           }`}
         >
           Estructura ASIC
@@ -588,32 +643,48 @@ export default function ConfiguracionPage() {
         <button
           onClick={() => setActiveTab("sincronizacion")}
           className={`px-10 py-3 hover:bg-gray-200 ${
-            activeTab === "sincronizacion" ? "border-b-2 border-blue-500 font-semibold" : ""
+            activeTab === "sincronizacion"
+              ? "border-b-2 border-blue-500 font-semibold"
+              : ""
           }`}
         >
           Sincronización
         </button>
       </nav>
       {activeTab === "estructura" ? (
-        <div className="md:flex h-full">
-          <SidebarASICList
-            asics={asicData}
-            selectedAsicId={selectedAsicId}
-            onSelectAsic={getAsicRelations}
-            newAsicName={newAsicName}
-            onNewAsicNameChange={setNewAsicName}
-            onCreateAsic={createASIC}
-            isCreating={isLoadingForm}
-          />
-          <ASICDetailPanel
-            asic={selectedAsic}
-            objPosiblesNames={objPosiblesNames}
-            formData={formData}
-            setFormData={setFormData}
-            handlers={handlers}
-            isLoading={isLoadingForm}
-          />
-        </div>
+        <>
+          <div className="md:flex h-full">
+            <SidebarASICList
+              asics={asicData}
+              selectedAsicId={selectedAsic?.id}
+              onSelectAsic={getAsicRelations}
+              newAsicName={newAsicName}
+              onNewAsicNameChange={setNewAsicName}
+              onCreateAsic={createASIC}
+              isCreating={isLoadingForm}
+            />
+            <ASICDetailPanel
+              asic={selectedAsic}
+              objPosiblesNames={objPosiblesNames}
+              formData={formData}
+              setFormData={setFormData}
+              handlers={handlers}
+              isLoading={isLoadingForm}
+            />
+          </div>
+
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              // Opcional: también limpiar localStorage aquí si quieres
+            }}
+            title={"ueje"}
+            size="xl"
+          >
+            <PrintPage data={reportData} />
+          </Modal>
+        </>
       ) : (
         <SyncSection />
       )}

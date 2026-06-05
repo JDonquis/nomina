@@ -111,6 +111,7 @@ export const ASICAPI = {
   getASICRelations: (id) => api.get(`/admin/asics/${id}`),
   updateASIC: (id, asicData) => api.put(`/admin/asics/${id}`, asicData),
   deleteASIC: (id) => api.delete(`/admin/asics/${id}`),
+  getReportActiveCensus: (id) => api.get(`/admin/asics/report/${id}`),
 };
 
 export const dependenciesAPI = {
@@ -118,6 +119,7 @@ export const dependenciesAPI = {
   createDependency: (dependencyData) => api.post("/admin/dependencies", dependencyData),
   updateDependency: (id, dependencyData) => api.put(`/admin/dependencies/${id}`, dependencyData),
   deleteDependency: (id) => api.delete(`/admin/dependencies/${id}`),
+  getReportActiveCensus: (id) => api.get(`/admin/dependencies/report/${id}`),
 };
 
 export const administrativeUnitsAPI = {
@@ -125,6 +127,7 @@ export const administrativeUnitsAPI = {
   createUnit: (unitData) => api.post("/admin/administrative-units", unitData),
   updateUnit: (id, unitData) => api.put(`/admin/administrative-units/${id}`, unitData),
   deleteUnit: (id) => api.delete(`/admin/administrative-units/${id}`),
+  getReportActiveCensus: (id) => api.get(`/admin/administrative-units/report/${id}`),
 };
 
 export const departmentAPI = {
@@ -132,6 +135,7 @@ export const departmentAPI = {
   createDepartment: (departmentData) => api.post("/admin/departments", departmentData),
   updateDepartment: (id, departmentData) => api.put(`/admin/departments/${id}`, departmentData),
   deleteDepartment: (id) => api.delete(`/admin/departments/${id}`),
+  getReportActiveCensus: (id) => api.get(`/admin/departments/report/${id}`),
 };
 
 export const servicesAPI = {
@@ -139,6 +143,7 @@ export const servicesAPI = {
   createService: (serviceData) => api.post("/admin/services", serviceData),
   updateService: (id, serviceData) => api.put(`/admin/services/${id}`, serviceData),
   deleteService: (id) => api.delete(`/admin/services/${id}`),
+  getReportActiveCensus: (id) => api.get(`/admin/services/report/${id}`),
 };
 
 export const syncAPI = {

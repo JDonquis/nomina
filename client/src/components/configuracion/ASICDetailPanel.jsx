@@ -11,12 +11,16 @@ export default function ASICDetailPanel({
   isLoading,
   objPosiblesNames,
 }) {
+
+  console.log({asic}); // Debugging line to check the values of asic and formData
   if (!asic) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400">
         <div className="text-center">
           <Icon icon="mdi:database-off" className="text-6xl mb-4" />
-          <p className="text-lg">Selecciona un ASIC para ver su configuración</p>
+          <p className="text-lg">
+            Selecciona un ASIC para ver su configuración
+          </p>
         </div>
       </div>
     );
@@ -39,7 +43,7 @@ export default function ASICDetailPanel({
     onCreateService,
     onUpdateService,
     onDeleteService,
-
+    onGetReportActiveCensus,
   } = handlers;
 
   const handleUpdateDependency = (id, data) => {
@@ -81,7 +85,6 @@ export default function ASICDetailPanel({
     }));
   };
 
-
   return (
     <div className="flex-1 bg-white overflow-y-auto md:p-6 ">
       <div className=" mx-auto">
@@ -100,9 +103,19 @@ export default function ASICDetailPanel({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                {formData.dependencies?.length || 0} dependencias 
-              </span>
+              <button
+                className="bg-gray-200 px-2 mr-2  py-0.5 rounded flex text-color2"
+                title="Cantidad personal activo censado"
+                onClick={() => onGetReportActiveCensus(asicId, "ASIC", {asicName})}
+              >
+                {asic.active_censused_count}
+                <Icon
+                  icon="ci:wavy-check"
+                  className="ml-1 text-gray-500"
+                  width={12}
+                  height={12}
+                />
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -123,15 +136,19 @@ export default function ASICDetailPanel({
           <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
             <Icon icon="mdi:folder-outline" />
             Dependencias
-            <button className="text-sm bg-gray-100 p-2 rounded "
-            title="Crear nueva Dependencia"
-            onClick={() => {
-              //focus on the new dependency input
-              const input = document.querySelector(`input[name="${newDepKey}"]`);
-              if (input) {
-                input.focus();
-              }
-            }}>
+            <button
+              className="text-sm bg-gray-100 p-2 rounded "
+              title="Crear nueva Dependencia"
+              onClick={() => {
+                //focus on the new dependency input
+                const input = document.querySelector(
+                  `input[name="${newDepKey}"]`,
+                );
+                if (input) {
+                  input.focus();
+                }
+              }}
+            >
               <Icon icon="mdi:plus" className="text-color1" />
             </button>
           </h3>
@@ -143,6 +160,7 @@ export default function ASICDetailPanel({
             dependency={dep}
             index={index}
             asicId={asicId}
+            asicName={asicName}
             onUpdateDependency={handleUpdateDependency}
             onDeleteDependency={onDeleteDependency}
             onCreateUnit={onCreateUnit}
@@ -158,6 +176,7 @@ export default function ASICDetailPanel({
             setFormData={setFormData}
             isLoading={isLoading}
             objPosiblesNames={objPosiblesNames}
+            onGetReportActiveCensus={onGetReportActiveCensus}
           />
         ))}
 

@@ -16,6 +16,10 @@ const DepartmentRow = React.memo(function DepartmentRow({
   formData,
   setFormData,
   isLoading,
+  onGetReportActiveCensus,
+  asicName,
+  dependencyName,
+  unitName,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(department.name);
@@ -158,7 +162,26 @@ const DepartmentRow = React.memo(function DepartmentRow({
           />
         </div>
 
-     
+        <button
+          className="bg-color4/50 px-2 mr-2  py-0.5 rounded flex text-color1/50"
+          title="Cantidad personal activo censado"
+          onClick={() =>
+            onGetReportActiveCensus(department.id, "Departamento", {
+              asicName,
+              dependencyName,
+              unitName,
+              departmentName: department.name,
+            })
+          }
+        >
+          {department.active_censused_count}
+          <Icon
+            icon="ci:wavy-check"
+            className="ml-1 text-color1/50"
+            width={12}
+            height={12}
+          />
+        </button>
 
         <button
           type="button"
@@ -182,6 +205,11 @@ const DepartmentRow = React.memo(function DepartmentRow({
                 onDeleteService(serviceId, unitId, department.id)
               }
               setFormData={setFormData}
+              onGetReportActiveCensus={onGetReportActiveCensus}
+              asicName={asicName}
+              dependencyName={dependencyName}
+              unitName={unitName}
+              departmentName={department.name}  
             />
           ))}
 

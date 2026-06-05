@@ -9,6 +9,11 @@ const ServiceRow = React.memo(function ServiceRow({
   onUpdateService,
   onDeleteService,
   setFormData,
+  onGetReportActiveCensus,
+  asicName,
+  dependencyName,
+  unitName,
+  departmentName,
 }) {
   const [localName, setLocalName] = useState(service.name);
 
@@ -25,23 +30,71 @@ const ServiceRow = React.memo(function ServiceRow({
         for (const dep of updated.dependencies || []) {
           for (const unit of dep.administrative_units || []) {
             for (const dept of unit.departments || []) {
-              const svcIndex = dept.services?.findIndex((s) => s.id === service.id);
+              const svcIndex = dept.services?.findIndex(
+                (s) => s.id === service.id,
+              );
               if (svcIndex !== -1) {
                 updated.dependencies = [...updated.dependencies];
-                const depIndex = updated.dependencies.findIndex((d) => d.id === dep.id);
+                const depIndex = updated.dependencies.findIndex(
+                  (d) => d.id === dep.id,
+                );
                 if (depIndex !== -1) {
-                  updated.dependencies[depIndex] = { ...updated.dependencies[depIndex], administrative_units: [...(updated.dependencies[depIndex].administrative_units || [])] };
-                  const unitIndex = updated.dependencies[depIndex].administrative_units.findIndex((u) => u.id === unit.id);
+                  updated.dependencies[depIndex] = {
+                    ...updated.dependencies[depIndex],
+                    administrative_units: [
+                      ...(updated.dependencies[depIndex].administrative_units ||
+                        []),
+                    ],
+                  };
+                  const unitIndex = updated.dependencies[
+                    depIndex
+                  ].administrative_units.findIndex((u) => u.id === unit.id);
                   if (unitIndex !== -1) {
-                    updated.dependencies[depIndex].administrative_units[unitIndex] = { ...updated.dependencies[depIndex].administrative_units[unitIndex], departments: [...(updated.dependencies[depIndex].administrative_units[unitIndex].departments || [])] };
-                    const deptIndex = updated.dependencies[depIndex].administrative_units[unitIndex].departments.findIndex((d) => d.id === dept.id);
+                    updated.dependencies[depIndex].administrative_units[
+                      unitIndex
+                    ] = {
+                      ...updated.dependencies[depIndex].administrative_units[
+                        unitIndex
+                      ],
+                      departments: [
+                        ...(updated.dependencies[depIndex].administrative_units[
+                          unitIndex
+                        ].departments || []),
+                      ],
+                    };
+                    const deptIndex = updated.dependencies[
+                      depIndex
+                    ].administrative_units[unitIndex].departments.findIndex(
+                      (d) => d.id === dept.id,
+                    );
                     if (deptIndex !== -1) {
-                      updated.dependencies[depIndex].administrative_units[unitIndex].departments[deptIndex] = { ...updated.dependencies[depIndex].administrative_units[unitIndex].departments[deptIndex], services: [...(updated.dependencies[depIndex].administrative_units[unitIndex].departments[deptIndex].services || [])] };
-                      const sIndex = updated.dependencies[depIndex].administrative_units[unitIndex].departments[deptIndex].services.findIndex((s) => s.id === service.id);
+                      updated.dependencies[depIndex].administrative_units[
+                        unitIndex
+                      ].departments[deptIndex] = {
+                        ...updated.dependencies[depIndex].administrative_units[
+                          unitIndex
+                        ].departments[deptIndex],
+                        services: [
+                          ...(updated.dependencies[depIndex]
+                            .administrative_units[unitIndex].departments[
+                            deptIndex
+                          ].services || []),
+                        ],
+                      };
+                      const sIndex = updated.dependencies[
+                        depIndex
+                      ].administrative_units[unitIndex].departments[
+                        deptIndex
+                      ].services.findIndex((s) => s.id === service.id);
                       if (sIndex !== -1) {
-                        updated.dependencies[depIndex].administrative_units[unitIndex].departments[deptIndex].services[sIndex] = {
-                          ...updated.dependencies[depIndex].administrative_units[unitIndex].departments[deptIndex].services[sIndex],
-                          name: newValue
+                        updated.dependencies[depIndex].administrative_units[
+                          unitIndex
+                        ].departments[deptIndex].services[sIndex] = {
+                          ...updated.dependencies[depIndex]
+                            .administrative_units[unitIndex].departments[
+                            deptIndex
+                          ].services[sIndex],
+                          name: newValue,
                         };
                       }
                     }
@@ -55,18 +108,21 @@ const ServiceRow = React.memo(function ServiceRow({
         return updated;
       });
     }, 500),
-    [service.id, setFormData]
+    [service.id, setFormData],
   );
 
   const handleChange = (e) => {
     const newValue = e.target.value;
     setLocalName(newValue);
     debouncedSetFormData(newValue);
-    onUpdateService(service.id, { name: newValue, department_id: service.department_id });
+    onUpdateService(service.id, {
+      name: newValue,
+      department_id: service.department_id,
+    });
   };
 
   return (
-    <div className="flex ml-6 bg-purple-100/60 items-center  py-0.5 pl-4 group hover:bg-purple-200/60 rounded">
+    <div className="flex ml-6 bg-purple-100/60 items-center  py-0.5 pl-4 group  rounded">
       <span className="text-xs text-gray-400 w-5">{index + 1}.</span>
       <div className="flex-1">
         <FormField
@@ -77,6 +133,29 @@ const ServiceRow = React.memo(function ServiceRow({
           onChange={handleChange}
         />
       </div>
+
+      <button
+        className="bg-purple-100 px-2 mr-2  py-0.5 rounded flex text-purple-400"
+        title="Cantidad personal activo censado"
+        onClick={() =>
+          onGetReportActiveCensus(service.id, "Servicio", {
+            asicName,
+            dependencyName,
+            unitName,
+            departmentName,
+            serviceName: service.name,
+          })
+        }
+      >
+        {service.active_censused_count}
+        <Icon
+          icon="ci:wavy-check"
+          className="ml-1 "
+          width={12}
+          height={12}
+        />
+      </button>
+
       <button
         type="button"
         onClick={() => onDeleteService(service.id)}
