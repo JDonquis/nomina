@@ -27,13 +27,31 @@ const listaAsicsDesdeBD = [
     id: 1,
     name: "ASIC Carlina Luchon",
     address: "Sector Centro, Coro, Falcón",
-    coordinates: "11.4110, -69.6730", 
+    coordinates: "11.4110, -69.6730",
     url: "https://maps.google.com/?q=11.4110,-69.6730",
     dependencies: [
-      { id: 170, name: "Consultorio M I", coordinates: "11.4160, -69.6810", address: "Calle Falcón", url: "https://maps.google.com" },
-      { id: 171, name: "Consultorio M II", coordinates: "11.4020, -69.6650", address: "Av. Manaure", url: "https://maps.google.com" },
-      { id: 172, name: "Consultorio M III", coordinates: "11.3950, -69.6790", address: "Sector Tres Platos", url: null }
-    ]
+      {
+        id: 170,
+        name: "Consultorio M I",
+        coordinates: "11.4160, -69.6810",
+        address: "Calle Falcón",
+        url: "https://maps.google.com",
+      },
+      {
+        id: 171,
+        name: "Consultorio M II",
+        coordinates: "11.4020, -69.6650",
+        address: "Av. Manaure",
+        url: "https://maps.google.com",
+      },
+      {
+        id: 172,
+        name: "Consultorio M III",
+        coordinates: "11.3950, -69.6790",
+        address: "Sector Tres Platos",
+        url: null,
+      },
+    ],
   },
   {
     id: 2,
@@ -42,13 +60,30 @@ const listaAsicsDesdeBD = [
     coordinates: "11.3980, -69.6920",
     url: "https://maps.google.com/?q=11.3980,-69.6920",
     dependencies: [
-      { id: 250, name: "Consultorio La Velita IV", coordinates: "11.4030, -69.6990", address: "Bloque 12 La Velita", url: null },
-      { id: 251, name: "Consultorio Sector Ampíes", coordinates: "11.4010, -69.6870", address: "Calle Ampíes tras el estadium", url: "https://maps.google.com" },
-      { id: 252, name: "Consultorio Urbanización Aristides Calvani", coordinates: "11.3910, -69.6940", address: "Sector Calvani", url: null }
-    ]
-  }
+      {
+        id: 250,
+        name: "Consultorio La Velita IV",
+        coordinates: "11.4030, -69.6990",
+        address: "Bloque 12 La Velita",
+        url: null,
+      },
+      {
+        id: 251,
+        name: "Consultorio Sector Ampíes",
+        coordinates: "11.4010, -69.6870",
+        address: "Calle Ampíes tras el estadium",
+        url: "https://maps.google.com",
+      },
+      {
+        id: 252,
+        name: "Consultorio Urbanización Aristides Calvani",
+        coordinates: "11.3910, -69.6940",
+        address: "Sector Calvani",
+        url: null,
+      },
+    ],
+  },
 ];
-
 
 export default function ConfiguracionPage() {
   const { showError, showSuccess } = useFeedback();
@@ -126,7 +161,7 @@ export default function ConfiguracionPage() {
     if (!selectedAsic?.id) return;
 
     try {
-      await ASICAPI.updateASIC(selectedAsic.id,  data);
+      await ASICAPI.updateASIC(selectedAsic.id, data);
       getASIC();
     } catch (error) {
       console.error("Error updating ASIC:", error);
@@ -594,7 +629,7 @@ export default function ConfiguracionPage() {
           break;
         case "Servicio": // <-- Corregido (estaba case:)
           response = await servicesAPI.getReportActiveCensus(id);
-          // Tu lógica aquí
+        // Tu lógica aquí
 
         default:
           break;
@@ -602,7 +637,7 @@ export default function ConfiguracionPage() {
       // Aquí puedes manejar la respuesta del reporte, como descargar un archivo o mostrar datos
       console.log("Reporte de censo activo:", response);
       setIsModalOpen(true);
-      setReportData({data:response, type, dataType});
+      setReportData({ data: response, type, dataType });
     } catch (error) {
       console.error("Error fetching active census report:", error);
       const errorMessage =
@@ -612,7 +647,6 @@ export default function ConfiguracionPage() {
       showError(errorMessage);
     }
   };
-
 
   console.log({ selectedAsic }); // Debugging line to check the values of selectedAsic and formData
 
@@ -635,6 +669,7 @@ export default function ConfiguracionPage() {
       onUpdateService: debouncedUpdateService,
       onDeleteService: deleteService,
       onGetReportActiveCensus: getReportActiveCensus,
+      
     }),
     [
       selectedAsic?.id,
@@ -658,6 +693,13 @@ export default function ConfiguracionPage() {
   );
 
   const [sitios, setSitios] = useState([]);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+
+  const toggleMap = () => {
+    setIsMapOpen((prev) => !prev);
+    setSelectedAsic(null);
+    
+  };
 
   useEffect(() => {
     // Aquí harías tu peticion fetch / axios a tu base de datos
@@ -667,13 +709,6 @@ export default function ConfiguracionPage() {
 
   return (
     <div>
-
-      <div className="p-6  mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Mapa de Cobertura Geográfica</h2>
-      
-      <DynamicMap asicsList={listaAsicsDesdeBD} />
-    </div>
-
       <nav className="w-full flex mb-4">
         <button
           onClick={() => setActiveTab("estructura")}
@@ -707,15 +742,25 @@ export default function ConfiguracionPage() {
               onNewAsicNameChange={setNewAsicName}
               onCreateAsic={createASIC}
               isCreating={isLoadingForm}
+              onToggleMap={toggleMap}
+              isMapOpen={isMapOpen} 
             />
-            <ASICDetailPanel
-              asic={selectedAsic}
-              objPosiblesNames={objPosiblesNames}
-              formData={formData}
-              setFormData={setFormData}
-              handlers={handlers}
-              isLoading={isLoadingForm}
-            />
+            {isMapOpen ? (
+              <>
+
+                
+                <DynamicMap selectedAsic={selectedAsic} asicsList={asicData} />
+              </>
+            ) : (
+              <ASICDetailPanel
+                asic={selectedAsic}
+                objPosiblesNames={objPosiblesNames}
+                formData={formData}
+                setFormData={setFormData}
+                handlers={handlers}
+                isLoading={isLoadingForm}
+              />
+            )}
           </div>
 
           <Modal

@@ -175,7 +175,7 @@ const MapComponent = ({ asicsList }) => {
                             href={dep.url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-1.5 text-xs text-white font-medium py-1.5 px-2.5 rounded transition-colors no-underline mt-2 bg-[#397373] hover:bg-[#397373]/90"
+                            className="inline-flex items-center justify-center gap-1.5 text-xs text-white font-medium py-1.5 px-2.5 rounded transition-colors no-underline mt-2 "
                           >
                             <Icon icon="logos:google-maps" className="w-3.5 h-3.5" />
                             Ir a Google Maps
