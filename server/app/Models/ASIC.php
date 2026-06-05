@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class ASIC extends Model
 {
     protected $table = 'asics';
-    protected $fillable = ['name', 'sync_id'];
+    protected $fillable = ['name', 'sync_id', 'coordinates', 'address', 'url'];
 
     protected static function boot()
     {

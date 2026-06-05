@@ -26,6 +26,9 @@ class ASICController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'coordinates' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
         ]);
 
         $asic = ASIC::create($validated);
@@ -80,6 +83,9 @@ class ASICController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'coordinates' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
         ]);
 
         $asic->update($validated);
