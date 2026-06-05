@@ -1,5 +1,5 @@
+import 'leaflet/dist/leaflet.css';
 import { useState, useRef, useCallback } from 'react';
-
 import { Outlet } from "react-router-dom";
 
 import Sidebar from "./SideNav";

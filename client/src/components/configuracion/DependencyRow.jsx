@@ -72,11 +72,6 @@ const DependencyRow = React.memo(function DependencyRow({
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const submitLocation = (data) => {
-    console.log("Location submitted:", data);
-    // Aquí puedes agregar la lógica para manejar la ubicación enviada desde el formulario
-    setIsModalOpen(false);
-  };
 
   useEffect(() => {
     setLocalName(dependency.name);
@@ -85,7 +80,7 @@ const DependencyRow = React.memo(function DependencyRow({
       address: dependency.address || "",
       url: dependency.url || "",
     });
-  }, [dependency.name]);
+  }, [dependency]);
 
   const debouncedSetFormData = useCallback(
     debounce((newValue) => {

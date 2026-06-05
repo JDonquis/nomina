@@ -19,7 +19,54 @@ import {
   ASICDetailPanel,
 } from "../../components/configuracion";
 import { SyncSection } from "./SyncPage";
+import DynamicMap from "../../components/configuracion/DynamicMap";
 
+// Ejemplo del formato de datos que deberías traer de tu BD
+const mockSitiosDesdeBD = [
+  {
+    id: 1,
+    nombre: "Hospital Universitario Alfredo Van Grieken",
+    direccion: "Av. El Tenis, Coro, Falcón",
+    latitud: "11.4135",
+    longitud: "-69.6698",
+    google_maps_url: "https://maps.google.com/?q=11.4135,-69.6698",
+    type: "Dependencia",
+  },
+  {
+    id: 2,
+    nombre: "Consultorio Popular Tipo III La Velita",
+    direccion: "Sector La Velita, Coro",
+    latitud: "11.3980",
+    longitud: "-69.6920",
+    google_maps_url: "https://maps.google.com/?q=11.3980,-69.6920",
+    type: "Dependencia",
+  },
+   {
+    id: 2,
+    nombre: "Consultorio Popular Tipo III La Velita",
+    direccion: "Sector La Velita, Coro",
+    latitud: "11.3980",
+    longitud: "-69.6920",
+    google_maps_url: "https://maps.google.com/?q=11.3980,-69.6920",
+    type: "Dependencia",
+  },
+  {
+    id: 3,
+    nombre: "ASIC Alirio Navarro Aleman",
+    direccion: "Sede Principal, Sector La Velita, Coro",
+    latitud: "11.3980",
+    longitud: "-69.6920",
+    google_maps_url: "https://maps.google.com/?q=11.3980,-69.6920",
+    type: "ASIC",
+    // 🗺️ Coordenadas que dibujan el polígono del territorio del ASIC en el mapa
+    territorio: [
+      [11.4050, -69.7020], // Esquina Noroeste
+      [11.4070, -69.6850], // Esquina Noreste
+      [11.3920, -69.6820], // Esquina Sureste
+      [11.3900, -69.6990], // Esquina Suroeste
+    ]
+  },
+];
 export default function ConfiguracionPage() {
   const { showError, showSuccess } = useFeedback();
 
@@ -92,11 +139,11 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const updateAsic = async (name) => {
-    if (!selectedAsic?.id || !name.trim()) return;
+  const updateAsic = async (data) => {
+    if (!selectedAsic?.id) return;
 
     try {
-      await ASICAPI.updateASIC(selectedAsic.id, { name: name });
+      await ASICAPI.updateASIC(selectedAsic.id,  data);
       getASIC();
     } catch (error) {
       console.error("Error updating ASIC:", error);
@@ -627,14 +674,29 @@ export default function ConfiguracionPage() {
     ],
   );
 
+  const [sitios, setSitios] = useState([]);
+
+  useEffect(() => {
+    // Aquí harías tu peticion fetch / axios a tu base de datos
+    // const data = await censoAPI.get('/sitios');
+    setSitios(mockSitiosDesdeBD);
+  }, []);
+
   return (
     <div>
+
+      <div className="p-6  mx-auto">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Mapa de Cobertura Geográfica</h2>
+      
+      <DynamicMap locations={sitios} />
+    </div>
+
       <nav className="w-full flex mb-4">
         <button
           onClick={() => setActiveTab("estructura")}
           className={`px-10 py-3 hover:bg-gray-200 ${
             activeTab === "estructura"
-              ? "border-b-2 border-blue-500 font-semibold"
+              ? "border-b-2 border-color1 font-semibold"
               : ""
           }`}
         >
@@ -644,7 +706,7 @@ export default function ConfiguracionPage() {
           onClick={() => setActiveTab("sincronizacion")}
           className={`px-10 py-3 hover:bg-gray-200 ${
             activeTab === "sincronizacion"
-              ? "border-b-2 border-blue-500 font-semibold"
+              ? "border-b-2 border-color1 font-semibold"
               : ""
           }`}
         >
