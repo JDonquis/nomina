@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\ASICController;
-use App\Http\Controllers\DependencyController;
 use App\Http\Controllers\AdministrativeUnitController;
+use App\Http\Controllers\ASICController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\TypePersonnelController;
+use App\Http\Controllers\DependencyController;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PersonnelController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SyncController;
+use App\Http\Controllers\TypePersonnelController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
 Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken']);
@@ -21,6 +22,12 @@ Route::post('forgot-password', [LoginController::class, 'forgotPassword'])->name
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+    Route::get('asics/report/{asic}', [ASICController::class, 'report']);
+    Route::get('dependencies/report/{dependency}', [DependencyController::class, 'report']);
+    Route::get('administrative-units/report/{administrativeUnit}', [AdministrativeUnitController::class, 'report']);
+    Route::get('departments/report/{department}', [DepartmentController::class, 'report']);
+    Route::get('services/report/{service}', [ServiceController::class, 'report']);
 
     Route::resource('asics', ASICController::class)->except(['edit', 'create']);
     Route::resource('dependencies', DependencyController::class)->except(['edit', 'create']);
@@ -33,6 +40,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         ->middleware('admin');
 
     Route::get('personnels/generate_report/{status}', [PersonnelController::class, 'generateReport']);
+    Route::get('personnels/generate_report/hospital/{status}', [PersonnelController::class, 'generateReportWithHospital']);
+
 
 
     Route::get('personnels/life_proof/generate_report', [PersonnelController::class, 'generateReport']);
@@ -52,6 +61,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
     Route::post('personnels/active/import-excel', [PersonnelController::class, 'importExcel']);
     Route::delete('personnels/active/{personnel}', [PersonnelController::class, 'destroy']);
+
+    Route::get('activities', [AuditLogController::class, 'index']);
+
 
     Route::prefix('sync')->group(function () {
         Route::get('export', [SyncController::class, 'export']);

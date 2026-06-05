@@ -19,6 +19,9 @@ const UnitRow = React.memo(function UnitRow({
   formData,
   setFormData,
   isLoading,
+  onGetReportActiveCensus,
+  asicName,
+  dependencyName,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(unit.name);
@@ -132,13 +135,25 @@ const UnitRow = React.memo(function UnitRow({
           />
         </div>
 
-        <div className="hidden md:flex items-center gap-2 text-xs ">
-          <span
-            className={`${unit.departments.length < 1 ? "text-red-500" : "text-gray-500"} bg-gray-200 px-2 mr-2 py-0.5 rounded`}
-          >
-            {unit.departments?.length || 0} dep.
-          </span>
-        </div>
+        <button
+          className="bg-black/5 text-sm px-2 mr-2  py-0.5 rounded flex text-color3"
+          title="Cantidad personal activo censado"
+          onClick={() =>
+            onGetReportActiveCensus(unit.id, "Unidad Administrativa", {
+              asicName,
+              dependencyName: dependencyName,
+              unitName: unit.name,
+            })
+          }
+        >
+          {unit.active_censused_count}
+          <Icon
+            icon="ci:wavy-check"
+            className="ml-1 text-color3"
+            width={12}
+            height={12}
+          />
+        </button>
 
         <button
           type="button"
@@ -166,6 +181,10 @@ const UnitRow = React.memo(function UnitRow({
               formData={formData}
               setFormData={setFormData}
               isLoading={isLoading}
+              onGetReportActiveCensus={onGetReportActiveCensus}
+              asicName={asicName}
+              dependencyName={dependencyName}
+              unitName={unit.name}
             />
           ))}
 

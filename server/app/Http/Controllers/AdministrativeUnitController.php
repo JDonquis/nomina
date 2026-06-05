@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdministrativeUnit;
 use App\Models\Department;
+use App\Models\Personnel;
 use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -81,5 +82,16 @@ class AdministrativeUnitController extends Controller
         $administrativeUnit->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function report(AdministrativeUnit $administrativeUnit): JsonResponse
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('administrative_unit_id', $administrativeUnit->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ASIC;
+use App\Models\Personnel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,6 +26,9 @@ class ASICController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'coordinates' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
         ]);
 
         $asic = ASIC::create($validated);
@@ -35,7 +39,42 @@ class ASICController extends Controller
 
     public function show(ASIC $asic): JsonResponse
     {
-        $asic->load('dependencies.administrativeUnits.departments.services');
+
+
+
+        $censusedPersonnelFilter = function ($query) {
+            $query->where('status', 'active')
+                ->where('census_status', true);
+        };
+
+        $asic->loadCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
+
+        // 2. Cargamos el árbol de relaciones con sus respectivos conteos
+        $asic->load([
+            // Nivel 1: Dependencias y su conteo de censados
+            'dependencies' => function ($query) use ($censusedPersonnelFilter) {
+                $query->select(['id', 'asic_id', 'name'])
+                    ->withCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
+            },
+
+            // Nivel 2: Unidades Administrativas y su propio conteo de censados
+            'dependencies.administrativeUnits' => function ($query) use ($censusedPersonnelFilter) {
+                $query->select(['id', 'dependency_id', 'name'])
+                    ->withCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
+            },
+
+            // Nivel 3: Departamentos y su propio conteo de censados
+            'dependencies.administrativeUnits.departments' => function ($query) use ($censusedPersonnelFilter) {
+                $query->select(['id', 'administrative_unit_id', 'name'])
+                    ->withCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
+            },
+
+            // Nivel 4: Servicios y su propio conteo de censados
+            'dependencies.administrativeUnits.departments.services' => function ($query) use ($censusedPersonnelFilter) {
+                $query->select(['id', 'department_id', 'name'])
+                    ->withCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
+            }
+        ]);
 
         return response()->json($asic);
     }
@@ -44,6 +83,9 @@ class ASICController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'coordinates' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
         ]);
 
         $asic->update($validated);
@@ -57,5 +99,16 @@ class ASICController extends Controller
         $asic->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function report(ASIC $asic): JsonResponse
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('asic_id', $asic->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
     }
 }

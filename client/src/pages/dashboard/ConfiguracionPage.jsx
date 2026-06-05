@@ -11,22 +11,88 @@ import {
 import debounce from "lodash.debounce";
 import { produce } from "immer";
 import { Icon } from "@iconify/react";
-
+import Modal from "../../components/Modal";
+import PrintPage from "../../components/configuracion/ReportActiveCensusPerLocation";
 import { useFeedback } from "../../context/FeedbackContext";
-import { FormField } from "../../components/forms";
 import {
   SidebarASICList,
   ASICDetailPanel,
 } from "../../components/configuracion";
 import { SyncSection } from "./SyncPage";
+import DynamicMap from "../../components/configuracion/DynamicMap";
+
+// Ejemplo del formato de datos que deberías traer de tu BD
+const listaAsicsDesdeBD = [
+  {
+    id: 1,
+    name: "ASIC Carlina Luchon",
+    address: "Sector Centro, Coro, Falcón",
+    coordinates: "11.4110, -69.6730",
+    url: "https://maps.google.com/?q=11.4110,-69.6730",
+    dependencies: [
+      {
+        id: 170,
+        name: "Consultorio M I",
+        coordinates: "11.4160, -69.6810",
+        address: "Calle Falcón",
+        url: "https://maps.google.com",
+      },
+      {
+        id: 171,
+        name: "Consultorio M II",
+        coordinates: "11.4020, -69.6650",
+        address: "Av. Manaure",
+        url: "https://maps.google.com",
+      },
+      {
+        id: 172,
+        name: "Consultorio M III",
+        coordinates: "11.3950, -69.6790",
+        address: "Sector Tres Platos",
+        url: null,
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "ASIC Secundino Urbina",
+    address: "Urb. La Velita, Coro, Falcón",
+    coordinates: "11.3980, -69.6920",
+    url: "https://maps.google.com/?q=11.3980,-69.6920",
+    dependencies: [
+      {
+        id: 250,
+        name: "Consultorio La Velita IV",
+        coordinates: "11.4030, -69.6990",
+        address: "Bloque 12 La Velita",
+        url: null,
+      },
+      {
+        id: 251,
+        name: "Consultorio Sector Ampíes",
+        coordinates: "11.4010, -69.6870",
+        address: "Calle Ampíes tras el estadium",
+        url: "https://maps.google.com",
+      },
+      {
+        id: 252,
+        name: "Consultorio Urbanización Aristides Calvani",
+        coordinates: "11.3910, -69.6940",
+        address: "Sector Calvani",
+        url: null,
+      },
+    ],
+  },
+];
 
 export default function ConfiguracionPage() {
   const { showError, showSuccess } = useFeedback();
 
   const [activeTab, setActiveTab] = useState("estructura");
   const [asicData, setAsicData] = useState([]);
-  const [selectedAsicId, setSelectedAsicId] = useState(null);
+  const [selectedAsic, setSelectedAsic] = useState(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     asicName: "",
@@ -54,7 +120,8 @@ export default function ConfiguracionPage() {
         dependencies: response.dependencies || [],
         newDependenceName: "",
       });
-      setSelectedAsicId(id);
+      console.log({ response }); // Debugging line to check the response from getASICRelations
+      setSelectedAsic(response);
     } catch (error) {
       console.error("Error fetching ASIC relations:", error);
       const errorMessage =
@@ -90,11 +157,11 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const updateAsic = async (name) => {
-    if (!selectedAsicId || !name.trim()) return;
+  const updateAsic = async (data) => {
+    if (!selectedAsic?.id) return;
 
     try {
-      await ASICAPI.updateASIC(selectedAsicId, { name: name });
+      await ASICAPI.updateASIC(selectedAsic.id, data);
       getASIC();
     } catch (error) {
       console.error("Error updating ASIC:", error);
@@ -107,12 +174,12 @@ export default function ConfiguracionPage() {
   };
 
   const deleteAsic = async () => {
-    if (!selectedAsicId) return;
+    if (!selectedAsic?.id) return;
 
     try {
-      await ASICAPI.deleteASIC(selectedAsicId);
+      await ASICAPI.deleteASIC(selectedAsic.id);
       showSuccess("ASIC eliminado exitosamente");
-      setSelectedAsicId(null);
+      setSelectedAsic(null);
       setFormData({
         asicName: "",
         asicId: null,
@@ -132,12 +199,12 @@ export default function ConfiguracionPage() {
 
   const addNewDependency = async () => {
     const depName = formData.newDependenceName;
-    if (!depName || !selectedAsicId) return;
+    if (!depName || !selectedAsic?.id) return;
 
     setIsLoadingForm(true);
     const newDependence = {
       name: depName,
-      asic_id: selectedAsicId,
+      asic_id: selectedAsic.id,
     };
 
     try {
@@ -533,11 +600,59 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const selectedAsic = asicData.find((a) => a.id === selectedAsicId);
+  const [reportData, setReportData] = useState(null);
+
+  const getReportActiveCensus = async (id, type, dataType) => {
+    try {
+      let response;
+      switch (type) {
+        case "ASIC": {
+          response = await ASICAPI.getReportActiveCensus(id);
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte por ubicación
+          break;
+        }
+
+        case "Dependencia":
+          response = await dependenciesAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+
+        case "Unidad Administrativa": // <-- Corregido (estaba case:)
+          response = await administrativeUnitsAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+
+        case "Departamento": // <-- Corregido (estaba case:)
+          response = await departmentAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+        case "Servicio": // <-- Corregido (estaba case:)
+          response = await servicesAPI.getReportActiveCensus(id);
+        // Tu lógica aquí
+
+        default:
+          break;
+      }
+      // Aquí puedes manejar la respuesta del reporte, como descargar un archivo o mostrar datos
+      console.log("Reporte de censo activo:", response);
+      setIsModalOpen(true);
+      setReportData({ data: response, type, dataType });
+    } catch (error) {
+      console.error("Error fetching active census report:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    }
+  };
+
+  console.log({ selectedAsic }); // Debugging line to check the values of selectedAsic and formData
 
   const handlers = React.useMemo(
     () => ({
-      asicId: selectedAsicId,
+      asicId: selectedAsic?.id,
       asicName: formData.asicName,
       onUpdateAsic: updateAsic,
       onDeleteAsic: deleteAsic,
@@ -553,9 +668,11 @@ export default function ConfiguracionPage() {
       onCreateService: createService,
       onUpdateService: debouncedUpdateService,
       onDeleteService: deleteService,
+      onGetReportActiveCensus: getReportActiveCensus,
+      
     }),
     [
-      selectedAsicId,
+      selectedAsic?.id,
       formData.asicName,
       updateAsic,
       deleteAsic,
@@ -571,8 +688,24 @@ export default function ConfiguracionPage() {
       createService,
       debouncedUpdateService,
       deleteService,
+      getReportActiveCensus,
     ],
   );
+
+  const [sitios, setSitios] = useState([]);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+
+  const toggleMap = () => {
+    setIsMapOpen((prev) => !prev);
+    setSelectedAsic(null);
+    
+  };
+
+  useEffect(() => {
+    // Aquí harías tu peticion fetch / axios a tu base de datos
+    // const data = await censoAPI.get('/sitios');
+    setSitios(listaAsicsDesdeBD); // Usamos el ejemplo de datos que definimos arriba
+  }, []);
 
   return (
     <div>
@@ -580,7 +713,9 @@ export default function ConfiguracionPage() {
         <button
           onClick={() => setActiveTab("estructura")}
           className={`px-10 py-3 hover:bg-gray-200 ${
-            activeTab === "estructura" ? "border-b-2 border-blue-500 font-semibold" : ""
+            activeTab === "estructura"
+              ? "border-b-2 border-color1 font-semibold"
+              : ""
           }`}
         >
           Estructura ASIC
@@ -588,32 +723,58 @@ export default function ConfiguracionPage() {
         <button
           onClick={() => setActiveTab("sincronizacion")}
           className={`px-10 py-3 hover:bg-gray-200 ${
-            activeTab === "sincronizacion" ? "border-b-2 border-blue-500 font-semibold" : ""
+            activeTab === "sincronizacion"
+              ? "border-b-2 border-color1 font-semibold"
+              : ""
           }`}
         >
           Sincronización
         </button>
       </nav>
       {activeTab === "estructura" ? (
-        <div className="md:flex h-full">
-          <SidebarASICList
-            asics={asicData}
-            selectedAsicId={selectedAsicId}
-            onSelectAsic={getAsicRelations}
-            newAsicName={newAsicName}
-            onNewAsicNameChange={setNewAsicName}
-            onCreateAsic={createASIC}
-            isCreating={isLoadingForm}
-          />
-          <ASICDetailPanel
-            asic={selectedAsic}
-            objPosiblesNames={objPosiblesNames}
-            formData={formData}
-            setFormData={setFormData}
-            handlers={handlers}
-            isLoading={isLoadingForm}
-          />
-        </div>
+        <>
+          <div className="md:flex h-full">
+            <SidebarASICList
+              asics={asicData}
+              selectedAsicId={selectedAsic?.id}
+              onSelectAsic={getAsicRelations}
+              newAsicName={newAsicName}
+              onNewAsicNameChange={setNewAsicName}
+              onCreateAsic={createASIC}
+              isCreating={isLoadingForm}
+              onToggleMap={toggleMap}
+              isMapOpen={isMapOpen} 
+            />
+            {isMapOpen ? (
+              <>
+
+                
+                <DynamicMap selectedAsic={selectedAsic} handlers={handlers} asicsList={asicData} />
+              </>
+            ) : (
+              <ASICDetailPanel
+                asic={selectedAsic}
+                objPosiblesNames={objPosiblesNames}
+                formData={formData}
+                setFormData={setFormData}
+                handlers={handlers}
+                isLoading={isLoadingForm}
+              />
+            )}
+          </div>
+
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              // Opcional: también limpiar localStorage aquí si quieres
+            }}
+            title={"ueje"}
+            size="xl"
+          >
+            <PrintPage data={reportData} />
+          </Modal>
+        </>
       ) : (
         <SyncSection />
       )}

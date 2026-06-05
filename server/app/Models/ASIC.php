@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class ASIC extends Model
 {
     protected $table = 'asics';
-    protected $fillable = ['name', 'sync_id'];
+    protected $fillable = ['name', 'sync_id', 'coordinates', 'address', 'url'];
 
     protected static function boot()
     {
@@ -24,5 +24,10 @@ class ASIC extends Model
     public function dependencies(): HasMany
     {
         return $this->hasMany(Dependency::class, 'asic_id');
+    }
+
+    public function personnels(): HasMany
+    {
+        return $this->hasMany(Personnel::class, 'asic_id');
     }
 }

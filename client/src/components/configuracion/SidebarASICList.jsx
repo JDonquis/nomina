@@ -10,6 +10,8 @@ export default function SidebarASICList({
   onNewAsicNameChange,
   onCreateAsic,
   isCreating,
+  onToggleMap,
+  isMapOpen,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && newAsicName.trim()) {
@@ -19,9 +21,11 @@ export default function SidebarASICList({
 
   return (
     <div className="w-80   bg-white border-r border-gray-200 h-96 md:h-full flex flex-col">
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800">ASICs</h2>
+      <button onClick={onToggleMap} className="text-sm flex items-center gap-2 p-1 hover:bg-slate-200" > {isMapOpen ? "Ocultar Mapa" : "Ver Mapa"} <Icon icon="mdi:map" /> </button>
       </div>
+
       
       <div className="flex-1 overflow-y-auto">
         {asics?.map((asic, index) => (

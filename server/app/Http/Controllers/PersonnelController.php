@@ -178,4 +178,9 @@ class PersonnelController extends Controller
     {
         return $this->personnelService->generateReport($request, $status);
     }
+
+    public function generateReportWithHospital(Request $request, $status)
+    {
+        return $this->personnelService->generateReportWithHospital($request, $status);
+    }
 }
