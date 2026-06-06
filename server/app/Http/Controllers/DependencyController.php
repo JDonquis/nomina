@@ -82,4 +82,14 @@ class DependencyController extends Controller
 
         return response()->json($personnels);
     }
+
+    public function censused(Dependency $dependency)
+    {
+        $personnels = Personnel::where('dependency_id', $dependency->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->count();
+
+        return response()->json($personnels);
+    }
 }

@@ -17,7 +17,7 @@ class ASICController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $asics = $query->with('dependencies:id,name,asic_id')->orderBy('name', 'asc')->get();
+        $asics = $query->with('dependencies')->orderBy('name', 'asc')->get();
 
         return response()->json($asics);
     }
@@ -32,7 +32,7 @@ class ASICController extends Controller
         ]);
 
         $asic = ASIC::create($validated);
-        $asic->load('dependencies:id,name,asic_id');
+        $asic->load('dependencies');
 
         return response()->json($asic, 201);
     }
@@ -53,7 +53,7 @@ class ASICController extends Controller
         $asic->load([
             // Nivel 1: Dependencias y su conteo de censados
             'dependencies' => function ($query) use ($censusedPersonnelFilter) {
-                $query->select(['id', 'asic_id', 'name'])
+                $query->select(['id', 'asic_id', 'name', 'coordinates', 'address', 'url'])
                     ->withCount(['personnels as active_censused_count' => $censusedPersonnelFilter]);
             },
 
