@@ -91,6 +91,7 @@ export default function ConfiguracionPage() {
   const [activeTab, setActiveTab] = useState("estructura");
   const [asicData, setAsicData] = useState([]);
   const [selectedAsic, setSelectedAsic] = useState(null);
+  const [totalActiveCensusedInDependency, setTotalActiveCensusedInDependency] = useState(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -124,6 +125,20 @@ export default function ConfiguracionPage() {
       setSelectedAsic(response);
     } catch (error) {
       console.error("Error fetching ASIC relations:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    }
+  };
+
+  const getTotalActiveCensusedInDependency = async (id) => {
+    try {
+      const response = await dependenciesAPI.getTotalActiveCensused(id);
+      setTotalActiveCensusedInDependency(response);
+    } catch (error) {
+      console.error("Error fetching total active censused in dependency:", error);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -669,7 +684,6 @@ export default function ConfiguracionPage() {
       onUpdateService: debouncedUpdateService,
       onDeleteService: deleteService,
       onGetReportActiveCensus: getReportActiveCensus,
-      
     }),
     [
       selectedAsic?.id,
@@ -698,7 +712,6 @@ export default function ConfiguracionPage() {
   const toggleMap = () => {
     setIsMapOpen((prev) => !prev);
     setSelectedAsic(null);
-    
   };
 
   useEffect(() => {
@@ -743,13 +756,18 @@ export default function ConfiguracionPage() {
               onCreateAsic={createASIC}
               isCreating={isLoadingForm}
               onToggleMap={toggleMap}
-              isMapOpen={isMapOpen} 
+              isMapOpen={isMapOpen}
             />
             {isMapOpen ? (
               <>
-
-                
-                <DynamicMap selectedAsic={selectedAsic} handlers={handlers} asicsList={asicData} />
+                <DynamicMap
+                  selectedAsic={selectedAsic}
+                  handlers={handlers}
+                  asicsList={asicData}
+                  onSelectAsic={getAsicRelations}
+                  totalActiveCensusedInDependency={totalActiveCensusedInDependency}
+                  getTotalActiveCensusedInDependency={getTotalActiveCensusedInDependency}
+                />
               </>
             ) : (
               <ASICDetailPanel

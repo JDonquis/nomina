@@ -11,7 +11,8 @@ const PrintableContent = forwardRef((props, ref) => {
   console.log({ props });
 
   // Desestructuración para un código más limpio
-  const { asicName, dependencyName, unitName, departmentName, serviceName } = props.data.dataType;
+  const { asicName, dependencyName, unitName, departmentName, serviceName } =
+    props.data.dataType;
 
   // Filtrar los niveles existentes para renderizarlos limpiamente
   const levels = [
@@ -19,7 +20,7 @@ const PrintableContent = forwardRef((props, ref) => {
     dependencyName,
     unitName,
     departmentName,
-    serviceName
+    serviceName,
   ].filter(Boolean);
 
   return (
@@ -46,9 +47,7 @@ const PrintableContent = forwardRef((props, ref) => {
           <h3 className="font-bold text-lg tracking-wide text-color1 uppercase">
             Personal Activo
           </h3>
-          <h3 className="font-bold text-base  text-color1">
-            CENSO {year}
-          </h3>
+          <h3 className="font-bold text-base  text-color1">CENSO {year}</h3>
 
           {/* Diseño optimizado para los niveles de la estructura */}
           <div className="flex flex-wrap justify-center items-center gap-1.5 my-3 max-w-2xl mx-auto w-full">
@@ -58,9 +57,9 @@ const PrintableContent = forwardRef((props, ref) => {
                   {level}
                 </span>
                 {index < levels.length - 1 && (
-                  <Icon 
-                    icon="tabler:chevron-right" 
-                    className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" 
+                  <Icon
+                    icon="tabler:chevron-right"
+                    className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"
                   />
                 )}
               </React.Fragment>
@@ -92,20 +91,36 @@ const PrintableContent = forwardRef((props, ref) => {
       <table className="min-w-full border-collapse border border-gray-300 text-left text-sm rounded-md overflow-hidden">
         <thead>
           <tr className="bg-gray-50 text-gray-700 border-b border-gray-300">
-            <th className="py-2 px-3 font-semibold border-r border-gray-300">Nombre completo</th>
-            <th className="py-2 px-3 font-semibold border-r border-gray-300">C.I</th>
-            <th className="py-2 px-3 font-semibold border-r border-gray-300">Cargo</th>
+            <th className="py-2 px-3 font-semibold border-r border-gray-300">
+              Nombre completo
+            </th>
+            <th className="py-2 px-3 font-semibold border-r border-gray-300">
+              C.I
+            </th>
+            <th className="py-2 px-3 font-semibold border-r border-gray-300">
+              Cargo
+            </th>
             <th className="py-2 px-3 font-semibold">Nómina</th>
+            <th className="py-2 px-3 font-semibold border-r border-gray-300">
+              Status laboral
+            </th>
           </tr>
         </thead>
 
         <tbody className="divide-y divide-gray-200 text-gray-800">
           {props.data.data.map((item, index) => (
             <tr key={index} className="hover:bg-gray-50/50">
-              <td className="py-2 px-3 border-r border-gray-200">{item.full_name}</td>
+              <td className="py-2 px-3 border-r border-gray-200">
+                {item.full_name}
+              </td>
               <td className="py-2 px-3 border-r border-gray-200">{item.ci}</td>
-              <td className="py-2 px-3 border-r border-gray-200">{item.additional_data.job_title}</td>
-              <td className="py-2 px-3">{item.additional_data.personnel_type}</td>
+              <td className="py-2 px-3 border-r border-gray-200">
+                {item.additional_data.job_title}
+              </td>
+              <td className="py-2 px-3">
+                {item.additional_data.personnel_type}
+              </td>
+              <td className="py-2 px-3">{item.additional_data.work_status}</td>
             </tr>
           ))}
         </tbody>
@@ -114,7 +129,12 @@ const PrintableContent = forwardRef((props, ref) => {
       {/* Sección de Firma */}
       <div className="mt-12 text-center max-w-xs mx-auto border-t border-gray-400 pt-2">
         <p className="text-xs font-semibold text-gray-700 uppercase">
-          Firma del jefe {props.data.type === "ASIC" || props.data.type === "Servicio" || props.data.type === "Departamento" ? "del" : "de la"}{" "}
+          Firma del jefe{" "}
+          {props.data.type === "ASIC" ||
+          props.data.type === "Servicio" ||
+          props.data.type === "Departamento"
+            ? "del"
+            : "de la"}{" "}
           <span className="font-bold">{props.data.type}</span>
         </p>
       </div>
@@ -129,7 +149,7 @@ const PrintPage = (props) => {
     documentTitle: `Reporte_${props.year}`,
     pageStyle: `
       @page {
-        size: legal;
+        size: legal landscape;
         margin: 4mm;
       }
       body {
