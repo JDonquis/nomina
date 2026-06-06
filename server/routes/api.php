@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::get('asics/report/{asic}', [ASICController::class, 'report']);
     Route::get('dependencies/report/{dependency}', [DependencyController::class, 'report']);
+    Route::get('dependencies/censused/{dependency}', [DependencyController::class, 'censused']);
     Route::get('administrative-units/report/{administrativeUnit}', [AdministrativeUnitController::class, 'report']);
     Route::get('departments/report/{department}', [DepartmentController::class, 'report']);
     Route::get('services/report/{service}', [ServiceController::class, 'report']);
