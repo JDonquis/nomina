@@ -1356,12 +1356,12 @@ export default function PersonalActivoPage() {
         sortField: sorting[0]?.id || "id",
         sortOrder: sorting[0]?.desc ? "desc" : "asc",
         search: globalFilter,
-        filters: JSON.stringify(
-          columnFilters.reduce((acc, curr) => {
-            acc[curr.id] = curr.value;
-            return acc;
-          }, {}),
-        ),
+        // filters: JSON.stringify(
+        //   columnFilters.reduce((acc, curr) => {
+        //     acc[curr.id] = curr.value;
+        //     return acc;
+        //   }, {}),
+        // ),
       });
       setData(res.personnels.data);
       setRowCount(res.personnels.total);

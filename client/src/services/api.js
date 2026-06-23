@@ -120,6 +120,7 @@ export const dependenciesAPI = {
   updateDependency: (id, dependencyData) => api.put(`/admin/dependencies/${id}`, dependencyData),
   deleteDependency: (id) => api.delete(`/admin/dependencies/${id}`),
   getReportActiveCensus: (id) => api.get(`/admin/dependencies/report/${id}`),
+  getTotalActiveCensused: (id) => api.get(`/admin/dependencies/censused/${id}`),
 };
 
 export const administrativeUnitsAPI = {
