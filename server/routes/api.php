@@ -5,6 +5,7 @@ use App\Http\Controllers\ASICController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DependencyController;
+use App\Http\Controllers\JobPositionController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PersonnelController;
 use App\Http\Controllers\ServiceController;
@@ -24,12 +25,16 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('asics/report/{asic}', [ASICController::class, 'report']);
+    Route::get('asics/report-per-job/{asic}', [ASICController::class, 'reportPerJob']);
+    Route::get('asics/all/report', [ASICController::class, 'reportAllDetailed']);
+
     Route::get('dependencies/report/{dependency}', [DependencyController::class, 'report']);
     Route::get('dependencies/censused/{dependency}', [DependencyController::class, 'censused']);
     Route::get('administrative-units/report/{administrativeUnit}', [AdministrativeUnitController::class, 'report']);
     Route::get('departments/report/{department}', [DepartmentController::class, 'report']);
     Route::get('services/report/{service}', [ServiceController::class, 'report']);
 
+    Route::get('job-positions', [JobPositionController::class, 'index']);
     Route::resource('asics', ASICController::class)->except(['edit', 'create']);
     Route::resource('dependencies', DependencyController::class)->except(['edit', 'create']);
     Route::resource('administrative-units', AdministrativeUnitController::class)->except(['edit', 'create']);

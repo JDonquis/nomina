@@ -112,7 +112,14 @@ export const ASICAPI = {
   updateASIC: (id, asicData) => api.put(`/admin/asics/${id}`, asicData),
   deleteASIC: (id) => api.delete(`/admin/asics/${id}`),
   getReportActiveCensus: (id) => api.get(`/admin/asics/report/${id}`),
+  getTotalActiveCensused: (id) => api.get(`/admin/asics/all/report`),
+  reportPerJob: (id) => api.get(`/admin/asics/report-per-job/${id}`),
 };
+
+export const jobsAPI = {
+  getJobs: (params) => api.get("/admin/job-positions"),
+};
+
 
 export const dependenciesAPI = {
   getDependencies: (params) => api.get("/admin/dependencies", { params }),

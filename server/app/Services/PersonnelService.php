@@ -7,6 +7,7 @@ use App\Models\ASIC;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Dependency;
+use App\Models\JobPosition;
 use App\Models\Personnel;
 use App\Models\Service;
 use App\Models\TypePersonnel;
@@ -91,7 +92,6 @@ class PersonnelService
                     ->orWhere('ci', 'LIKE', "%{$search}%");
 
                 foreach ($this->fieldsWithoutCensus['additional_data'] as $jsonField) {
-                    // Laravel permite navegar en JSON usando la flecha ->
                     $q->orWhere("additional_data->{$jsonField}", 'LIKE', "%{$search}%");
                 }
             });
@@ -537,6 +537,7 @@ class PersonnelService
 
         return $value;
     }
+
 
     /*
     public function generateReport()

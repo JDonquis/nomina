@@ -621,6 +621,12 @@ export default function ConfiguracionPage() {
     try {
       let response;
       switch (type) {
+        case "Estado Falcón": {
+          response = await ASICAPI.getTotalActiveCensused();
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte total
+          break;
+        }
         case "ASIC": {
           response = await ASICAPI.getReportActiveCensus(id);
           // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
@@ -703,6 +709,7 @@ export default function ConfiguracionPage() {
       debouncedUpdateService,
       deleteService,
       getReportActiveCensus,
+      
     ],
   );
 
@@ -757,6 +764,7 @@ export default function ConfiguracionPage() {
               isCreating={isLoadingForm}
               onToggleMap={toggleMap}
               isMapOpen={isMapOpen}
+              onGetReportActiveCensus={getReportActiveCensus}
             />
             {isMapOpen ? (
               <>

@@ -97,10 +97,16 @@ const PrintableContent = forwardRef((props, ref) => {
             <th className="py-2 px-3 font-semibold border-r border-gray-300">
               C.I
             </th>
+            {props.data.type === "Estado Falcón" && (
+              <th className="py-2 px-3 font-semibold border-r border-gray-300">
+                ASIC
+              </th>
+            )}
+
             <th className="py-2 px-3 font-semibold border-r border-gray-300">
               Cargo
             </th>
-            <th className="py-2 px-3 font-semibold">Nómina</th>
+            <th className="py-2 px-3 font-semibold border-r">Nómina</th>
             <th className="py-2 px-3 font-semibold border-r border-gray-300">
               Status laboral
             </th>
@@ -114,10 +120,13 @@ const PrintableContent = forwardRef((props, ref) => {
                 {item.full_name}
               </td>
               <td className="py-2 px-3 border-r border-gray-200">{item.ci}</td>
+              {props.data.type === "Estado Falcón" && (
+                <td className="py-2 px-3 border-r border-gray-200">{item.asic.name.replace("ASIC", "")}</td>
+              )}
               <td className="py-2 px-3 border-r border-gray-200">
                 {item.additional_data.job_title}
               </td>
-              <td className="py-2 px-3">
+              <td className="py-2 px-3 border-r">
                 {item.additional_data.personnel_type}
               </td>
               <td className="py-2 px-3">{item.additional_data.work_status}</td>

@@ -37,7 +37,7 @@ class PersonnelController extends Controller
 
         return response()->json([
             'message' => 'OK',
-            'personnels' => $personnels
+            'personnels' => $personnels,
         ]);
     }
 

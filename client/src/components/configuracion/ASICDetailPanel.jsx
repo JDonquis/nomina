@@ -3,6 +3,7 @@ import { Icon } from "@iconify/react";
 import DependencyRow from "./DependencyRow";
 import Modal from "../Modal";
 import FormField from "../forms/FormField.jsx";
+import {ASICAPI} from "../../services/api";
 
 const fields = [
   {
@@ -44,6 +45,9 @@ export default function ASICDetailPanel({
     url: asic?.url || "",
   });
 
+
+  
+
   const handleLocationChange = (e) => {
     const { name, value } = e.target;
     setLocationData((prev) => ({
@@ -52,8 +56,21 @@ export default function ASICDetailPanel({
     }));
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [asicNameInput, setAsicName] = useState(asic?.name || "");
+  const [isModalChargeOpen, setIsModalChargeOpen] = useState(false);
 
+  const reportPerJob = async () => {
+    try {
+      const response = await ASICAPI.reportPerJob(asic.id);
+      console.log("Reporte de cargos censados:", response.data);
+      // Aquí puedes manejar la respuesta, por ejemplo, mostrarla en un modal o guardarla en el estado
+    } catch (error) {
+      console.error("Error al generar el reporte de cargos censados:", error);
+    }
+  };
+
+
+  const [asicNameInput, setAsicName] = useState(asic?.name || "");
+ 
   useEffect(() => {
     setAsicName(asic?.name || "");
     setLocationData({
@@ -194,6 +211,17 @@ export default function ASICDetailPanel({
 
                 <button
                   type="button"
+                  onClick={() => {
+                    reportPerJob(asicId);
+                    setIsModalChargeOpen(true)}}
+                  title="Generar reporte de cargos censados"
+                  className=" bg-color1/10 px-2 mr-2  py-0.5 text-xs rounded flex text-color1 hover:text-color1/90 hover:"
+                >
+                  cargos
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setIsModalOpen(true)}
                   title="Ver ubicación"
                 >
@@ -324,6 +352,14 @@ export default function ASICDetailPanel({
             {loading ? <CircularProgress size={20} /> : "Guardar"}
           </button>
         </form>
+      </Modal>
+
+       <Modal
+        isOpen={isModalChargeOpen}
+        onClose={() => setIsModalChargeOpen(false)}
+        title="Cargos censados"
+      >
+        
       </Modal>
     </>
   );

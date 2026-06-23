@@ -6,6 +6,7 @@ use App\Models\ASIC;
 use App\Models\Personnel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ASICController extends Controller
 {
@@ -110,5 +111,33 @@ class ASICController extends Controller
             ->get();
 
         return response()->json($personnels);
+    }
+
+    public function reportAllDetailed()
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
+    }
+
+    public function reportPerJob(ASIC $asic): JsonResponse
+    {
+        $personnels = Personnel::where('asic_id', $asic->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        $report = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->additional_data['job_title'] ?? 'Sin Cargo Asignado';
+            })
+            ->map(function ($group) {
+                return $group->count();
+            });
+
+        return response()->json($report);
     }
 }

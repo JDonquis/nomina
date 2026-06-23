@@ -12,6 +12,7 @@ export default function SidebarASICList({
   isCreating,
   onToggleMap,
   isMapOpen,
+  onGetReportActiveCensus,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && newAsicName.trim()) {
@@ -24,28 +25,34 @@ export default function SidebarASICList({
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800">ASICs</h2>
 
-
-        <div className="flex items-center gap-2">
+        <div className="flex">
           <button
-                        className=" bg-color2/10 px-2 mr-2  py-0.5 rounded flex text-color2"
-                        title="Cantidad personal activo censado"
-                        onClick={() =>
-                          onGetReportActiveCensus(dependency.id, "Dependencia", { asicName, dependencyName: dependency.name })
-                        }
-                      >
-                        
-                        <Icon
-                          icon="ci:wavy-check"
-                          className="ml-1 text-gray-500"
-                          width={12}
-                          height={12}
-                        />
-                      </button>
-            <button onClick={onToggleMap} className="text-sm flex items-center gap-2 p-1 hover:bg-slate-200" > {isMapOpen ? "Ocultar Mapa" : "Ver Mapa"} <Icon icon="mdi:map" /> </button>
+            className=" bg-color2/10 px-2 mr-2 items-center py-0.5 rounded flex text-color2 hover:text-green-500"
+            title="Cantidad personal activo censado"
+            onClick={() =>
+              onGetReportActiveCensus(null, "Estado Falcón", { asicName: "Estado Falcón" })
+            }
+          >
+            
+            <Icon
+              icon="ci:wavy-check"
+              className="ml-1 text-gray-500"
+              width={12}
+              height={12}
+            />
+          </button>
+
+          <button
+            onClick={onToggleMap}
+            className="text-sm flex items-center gap-2 p-1 hover:bg-slate-200"
+          >
+            {" "}
+            {isMapOpen ? "Ocultar Mapa" : "Ver Mapa"}{" "}
+            <Icon icon="mdi:map" />{" "}
+          </button>
         </div>
       </div>
 
-      
       <div className="flex-1 overflow-y-auto">
         {asics?.map((asic, index) => (
           <div
@@ -58,9 +65,7 @@ export default function SidebarASICList({
             }`}
           >
             <div className="flex items-center gap-2">
-              <div className="text-sm text-gray-400">
-                {index + 1}.
-              </div>
+              <div className="text-sm text-gray-400">{index + 1}.</div>
               <span
                 className={`text-sm font-medium ${
                   selectedAsicId === asic.id ? "text-color1" : "text-gray-700"

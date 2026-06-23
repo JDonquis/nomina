@@ -9,6 +9,7 @@ use App\Models\Census;
 use App\Models\PaySheet;
 use App\Models\Personnel;
 use App\Models\TypePersonnel;
+use App\Models\JobPosition;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
@@ -198,7 +199,31 @@ class DatabaseSeeder extends Seeder
         // }
 
         // $this->verifyCensusDates();
-        $this->passCreatedAtToCensusDate();
+        // $this->passCreatedAtToCensusDate();
+        $this->importJobPositionsFromPersonnel();
+    }
+
+    public function importJobPositionsFromPersonnel(): void
+    {
+        $jobTitles = [];
+
+        Personnel::where('status', 'active')
+            ->whereNotNull('additional_data')
+            ->chunk(100, function ($personnels) use (&$jobTitles) {
+                foreach ($personnels as $personnel) {
+                    $additionalData = $personnel->additional_data;
+                    if (is_array($additionalData) && isset($additionalData['job_title'])) {
+                        $jobTitle = trim($additionalData['job_title']);
+                        if (!empty($jobTitle)) {
+                            $jobTitles[$jobTitle] = true;
+                        }
+                    }
+                }
+            });
+
+        foreach (array_keys($jobTitles) as $name) {
+            JobPosition::firstOrCreate(['name' => $name]);
+        }
     }
 
     public function passCreatedAtToCensusDate()
