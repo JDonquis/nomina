@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('asics/report/{asic}', [ASICController::class, 'report']);
+    Route::get('asics/report-per-job/{asic}', [ASICController::class, 'reportPerJob']);
     Route::get('asics/all/report', [ASICController::class, 'reportAllDetailed']);
 
     Route::get('dependencies/report/{dependency}', [DependencyController::class, 'report']);
