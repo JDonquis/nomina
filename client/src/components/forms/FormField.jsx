@@ -174,31 +174,48 @@ const FormField = React.memo(function FormField({
       </div>
     );
   } else if (type === "autocomplete") {
+    console.log(options)
     return (
       <Autocomplete
-        disablePortal
         className={className}
         options={options || []}
         value={options?.find((opt) => opt.value === value) || null}
         onChange={(event, newValue) => {
-          // Create a synthetic event for handleFieldChange
           const syntheticEvent = {
             target: {
               name,
               value: newValue?.value ?? "",
               type: "autocomplete",
-              selectedOption: newValue, // Pass the full object
+              selectedOption: newValue,
             },
           };
           if (onChange) onChange(syntheticEvent);
         }}
-        isOptionEqualToValue={(option, val) => option.value === val.value}
+        getOptionLabel={(option) =>
+          typeof option === "string"
+            ? option
+            : option?.label ?? option?.value ?? ""
+        }
+        isOptionEqualToValue={(option, val) => option?.value === val?.value}
+        openOnFocus
+        disabled={disabled}
         size="small"
         fullWidth={fullWidth}
-        renderInput={(params) => <TextField slotProps={{
-            input: { readOnly: readOnly }
-          }} {...params} label={label} />}
-        readOnly={readOnly}
+        renderOption={(props, option) => (
+          <li {...props}>{option.label ?? option.value}</li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            InputProps={{
+              ...params.InputProps,
+              readOnly: readOnly,
+            }}
+          />
+        )}
+        disablePortal={false}
+        {...props}
       />
     );
   }

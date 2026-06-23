@@ -18,6 +18,7 @@ import {
   servicesAPI,
   censusAPI,
   nominaNamesAPI,
+  jobsAPI,
 } from "../../services/api.js";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal.jsx";
@@ -62,6 +63,7 @@ const defaultFormData = {
   payroll_name: "",
   entry_date: "",
   job_title: "",
+  job_id: "",
   is_resident: false,
   level: "",
   university: "",
@@ -186,6 +188,7 @@ export default function PersonalActivoPage() {
   const [censusStatus, setCensusStatus] = useState(true);
   const [serviceOptions, setServiceOptions] = useState([]);
   const [nominasNames, setNominasNames] = useState([]);
+  const [jobs, setJobs] = useState([])
 
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Registrar");
@@ -212,6 +215,16 @@ export default function PersonalActivoPage() {
       const hospitalsRes = await dependenciesAPI.getDependencies({
         search: "hospital",
       });
+
+      const jobsResponse = await jobsAPI.getJobs();
+      const formattedJobs = (jobsResponse?.job_positions || jobsResponse || []).map((job) => ({
+        value: job.id,
+        label: job.title || job.name || job.position || job.label || "",
+        ...job,
+      }));
+
+      setJobs(formattedJobs);
+
       setHospitalOptions(
         hospitalsRes.map((hospital) => ({
           value: hospital.id,
@@ -735,9 +748,10 @@ export default function PersonalActivoPage() {
         className: "col-span-12 md:col-span-6",
       },
       {
-        name: "job_title",
+        name: "job_id",
         label: "Título del Cargo",
-        type: "text",
+        type: "autocomplete",
+        options: jobs,
         required: false,
         className: "col-span-12 md:col-span-6",
         readOnly: !user?.is_admin && submitString === "Actualizar",
@@ -859,6 +873,7 @@ export default function PersonalActivoPage() {
       unitOptions,
       departmentOptions,
       serviceOptions,
+      jobs,
       handleASICChange,
       handleDependencyChange,
       handleUnitChange,
@@ -911,6 +926,10 @@ export default function PersonalActivoPage() {
               selectedOption.laboral_relationship || "";
             updated.budget = selectedOption.source_budget || "";
           }
+          // When selecting a job, also save its title
+          if (name === "job_id") {
+            updated.job_title = selectedOption?.label || selectedOption?.title || "";
+          }
           return updated;
         });
       } else {
@@ -962,6 +981,7 @@ export default function PersonalActivoPage() {
           payroll_code: formData.payroll_code,
           payroll_name: formData.payroll_name,
           entry_date: formData.entry_date,
+          job_id: formData.job_id,
           job_title: formData.job_title,
           residency_type: formData.residency_type,
           hospital: formData.hospital,
@@ -1615,7 +1635,7 @@ export default function PersonalActivoPage() {
                     f.name !== "payroll_code" &&
                     f.name !== "type_personnel_id" &&
                     f.name !== "entry_date" &&
-                    f.name !== "job_title" &&
+                    f.name !== "job_id" &&
                     f.name !== "is_resident" &&
                     f.name !== "residency_type" &&
                     f.name !== "hospital" &&
@@ -1690,7 +1710,7 @@ export default function PersonalActivoPage() {
                             f.name === "payroll_code" ||
                             f.name === "type_personnel_id" ||
                             f.name === "entry_date" ||
-                            f.name === "job_title" ||
+                            f.name === "job_id" ||
                             f.name === "is_resident" ||
                             f.name === "residency_type" ||
                             f.name === "hospital" ||
