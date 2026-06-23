@@ -14,6 +14,6 @@ class JobPositionService
             $query->where('name', 'like', "%{$search}%");
         }
 
-        return $query->limit(15)->get();
+        return $query->get();
     }
 }
