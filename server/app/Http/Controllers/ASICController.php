@@ -111,4 +111,14 @@ class ASICController extends Controller
 
         return response()->json($personnels);
     }
+
+    public function reportAllDetailed()
+    {
+        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        return response()->json($personnels);
+    }
 }
