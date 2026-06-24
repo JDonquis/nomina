@@ -174,7 +174,6 @@ const FormField = React.memo(function FormField({
       </div>
     );
   } else if (type === "autocomplete") {
-    console.log(options)
     return (
       <Autocomplete
         className={className}

@@ -4,6 +4,9 @@ import DependencyRow from "./DependencyRow";
 import Modal from "../Modal";
 import FormField from "../forms/FormField.jsx";
 import {ASICAPI} from "../../services/api";
+import CargosReport from "./CargosReport.jsx";
+
+const current_year = new Date().getFullYear();
 
 const fields = [
   {
@@ -57,10 +60,14 @@ export default function ASICDetailPanel({
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalChargeOpen, setIsModalChargeOpen] = useState(false);
+  const [jobsData, setJobsData] = useState([])
 
   const reportPerJob = async () => {
     try {
       const response = await ASICAPI.reportPerJob(asic.id);
+      setJobsData(response)
+      setIsModalChargeOpen(true)
+
       console.log("Reporte de cargos censados:", response.data);
       // Aquí puedes manejar la respuesta, por ejemplo, mostrarla en un modal o guardarla en el estado
     } catch (error) {
@@ -171,6 +178,7 @@ export default function ASICDetailPanel({
 
 
 
+
   return (
     <>
       <div className="flex-1 bg-white overflow-y-auto md:p-6 ">
@@ -194,7 +202,7 @@ export default function ASICDetailPanel({
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  className="bg-color1/90 px-2 mr-2  py-0.5 rounded flex text-white"
+                  className="bg-color1/20 px-2 mr-2  py-0.5 rounded flex text-dark"
                   title="Cantidad personal activo censado"
                   onClick={() =>
                     onGetReportActiveCensus(asicId, "ASIC", { asicName })
@@ -203,7 +211,7 @@ export default function ASICDetailPanel({
                   {asic.active_censused_count}
                   <Icon
                     icon="ci:wavy-check"
-                    className="ml-1 text-white"
+                    className="ml-1 text-dark"
                     width={12}
                     height={12}
                   />
@@ -212,10 +220,10 @@ export default function ASICDetailPanel({
                 <button
                   type="button"
                   onClick={() => {
-                    reportPerJob(asicId);
-                    setIsModalChargeOpen(true)}}
+                    reportPerJob(asicId)
+                  }}
                   title="Generar reporte de cargos censados"
-                  className=" bg-color1/10 px-2 mr-2  py-0.5 text-xs rounded flex text-color1 hover:text-color1/90 hover:"
+                  className=" bg-color1/10 px-2 mr-2  py-1.5 text-xs rounded flex text-color1 hover:text-color1/90 hover:"
                 >
                   cargos
                 </button>
@@ -360,6 +368,7 @@ export default function ASICDetailPanel({
         title="Cargos censados"
       >
         
+        <CargosReport  data={jobsData}/>
       </Modal>
     </>
   );

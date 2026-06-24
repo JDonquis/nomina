@@ -117,7 +117,7 @@ export const ASICAPI = {
 };
 
 export const jobsAPI = {
-  getJobs: (params) => api.get("/admin/job-positions"),
+  getJobs: (params) => api.get("/admin/job-positions", {search: ""}),
 };
 
 

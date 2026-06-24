@@ -795,7 +795,7 @@ export default function ConfiguracionPage() {
               setIsModalOpen(false);
               // Opcional: también limpiar localStorage aquí si quieres
             }}
-            title={"ueje"}
+            title={"Personal activo"}
             size="xl"
           >
             <PrintPage data={reportData} />

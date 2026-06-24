@@ -121,7 +121,9 @@ const PrintableContent = forwardRef((props, ref) => {
               </td>
               <td className="py-2 px-3 border-r border-gray-200">{item.ci}</td>
               {props.data.type === "Estado Falcón" && (
-                <td className="py-2 px-3 border-r border-gray-200">{item.asic.name.replace("ASIC", "")}</td>
+                <td className="py-2 px-3 border-r border-gray-200">
+                  {item.asic.name.replace("ASIC", "")}
+                </td>
               )}
               <td className="py-2 px-3 border-r border-gray-200">
                 {item.additional_data.job_title}
@@ -136,17 +138,38 @@ const PrintableContent = forwardRef((props, ref) => {
       </table>
 
       {/* Sección de Firma */}
-      <div className="mt-12 text-center max-w-xs mx-auto border-t border-gray-400 pt-2">
-        <p className="text-xs font-semibold text-gray-700 uppercase">
-          Firma del jefe{" "}
-          {props.data.type === "ASIC" ||
-          props.data.type === "Servicio" ||
-          props.data.type === "Departamento"
-            ? "del"
-            : "de la"}{" "}
-          <span className="font-bold">{props.data.type}</span>
-        </p>
-      </div>
+      {props.data.type !== "Estado Falcón" && (
+        <div className="mt-12 text-center max-w-xs mx-auto border-t border-gray-400 pt-2">
+          <p className="text-xs font-semibold text-gray-700 uppercase">
+            Firma del jefe{" "}
+            {props.data.type === "ASIC" ||
+            props.data.type === "Servicio" ||
+            props.data.type === "Departamento"
+              ? "del"
+              : "de la"}{" "}
+            <span className="font-bold">{props.data.type}</span>
+          </p>
+        </div>
+      )}
+      {props.data.type == "Estado Falcón" && (
+        <>
+          <div className="mt-12 text-center max-w-xs mx-auto border-t border-gray-400 pt-2">
+            <p className="text-xs font-semibold text-gray-700 uppercase">
+              Realizado
+            </p>
+          </div>
+          <div className="mt-12 text-center max-w-xs mx-auto border-t border-gray-400 pt-2">
+            <p className="text-xs font-semibold text-gray-700 uppercase">
+              Revisado
+            </p>
+          </div>
+          <div className="mt-12 text-center max-w-xs mx-auto border-t border-gray-400 pt-2">
+            <p className="text-xs font-semibold text-gray-700 uppercase">
+              Confirmado
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 });
