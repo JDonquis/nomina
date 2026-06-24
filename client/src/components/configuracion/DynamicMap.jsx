@@ -3,16 +3,49 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-l
 import L from 'leaflet';
 import { Icon } from '@iconify/react';
 
-// 🎨 Generador de iconos SVG dinámicos por tipo
-const getSvgIcon = (type) => {
-  const color = type === "ASIC" ? "#011140" : "#397373";
-  const svgTemplate = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="32" height="32">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-    </svg>
-  `;
+const getStableAsicColor = (asic) => {
+  const source = String(asic?.id ?? asic?.name ?? "ASIC");
+  let hash = 0;
+  for (let i = 0; i < source.length; i++) {
+    hash = source.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return `hsl(${Math.abs(hash) % 360}, 62%, 34%)`;
+};
+
+// 🎨 Generador de iconos dinámicos por tipo
+const getSvgIcon = (type, color) => {
+  const markerHtml = type === "ASIC"
+    ? `
+      <div style="
+        width: 32px;
+        height: 32px;
+        border-radius: 50% 50% 50% 0;
+        background: ${color};
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,.35);
+        border: 2px solid white;
+      ">
+        <span style="
+          color: white;
+          font-weight: 800;
+          font-size: 16px;
+          line-height: 1;
+          transform: rotate(45deg);
+          font-family: Arial, sans-serif;
+        ">A</span>
+      </div>
+    `
+    : `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="32" height="32">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+    `;
+
   return L.divIcon({
-    html: svgTemplate,
+    html: markerHtml,
     className: "custom-svg-marker",
     iconSize: [32, 32],
     iconAnchor: [16, 32],
@@ -121,6 +154,7 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
 
         {asicsList?.map((asic) => {
           const asicCoords = parseCoordinates(asic.coordinates);
+          const asicColor = getStableAsicColor(asic);
           const territorioPoligono = calculateTerritory(asicCoords, asic.dependencies);
 
           return (
@@ -131,8 +165,8 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                 <Polygon
                   positions={territorioPoligono}
                   pathOptions={{
-                    color: '#011140',
-                    fillColor: '#011140',
+                    color: asicColor,
+                    fillColor: asicColor,
                     fillOpacity: 0.10,
                     weight: 2.5,
                     dashArray: '6, 6'
@@ -151,7 +185,7 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
               {asicCoords && (
                 <Marker 
                   position={asicCoords} 
-                  icon={getSvgIcon("ASIC")}
+                  icon={getSvgIcon("ASIC", asicColor)}
                   // 🔑 Vinculamos el nodo físico del marcador con nuestro useRef usando su ID único
                   ref={(el) => {
                     if (el) markerRefs.current[asic.id] = el;
@@ -165,7 +199,10 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                   <Popup>
                     <div className="p-1 max-w-[220px] ">
                       <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">{asic.name}</h3>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded mr-auto text-white bg-[#011140]">
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.5 rounded mr-auto text-white"
+                        style={{ backgroundColor: asicColor }}
+                      >
                         Sede ASIC Principal
                       </span>
                       {/* Corregido: Si usas la prop externa para el conteo, la leemos desde la iteración del mapa */}
@@ -196,7 +233,7 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                   <Marker 
                     key={dep.id} 
                     position={depCoords} 
-                    icon={getSvgIcon("Dependencia")}
+                    icon={getSvgIcon("Dependencia", asicColor)}
                     eventHandlers={{
                       click: () => {
                         getTotalActiveCensusedInDependency(dep.id); // Llamamos a la función para actualizar el conteo de censados activos en esta dependencia
@@ -206,7 +243,10 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                     <Popup>
                       <div className="p-1 max-w-[200px]">
                         <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">{dep.name}</h3>
-                        <span className="text-[10px] font-bold px-1.5 py-1 mt-1 inline-block rounded mr-auto text-white bg-[#397373]">
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-1 mt-1 inline-block rounded mr-auto text-white"
+                          style={{ backgroundColor: asicColor }}
+                        >
                           {asic.name} 
                         </span>
                         <p className="text-xs font-semibold">Censados activos: {totalActiveCensusedInDependency !== null ? totalActiveCensusedInDependency : "cargando..."}</p>
