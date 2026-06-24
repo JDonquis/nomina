@@ -200,7 +200,8 @@ class DatabaseSeeder extends Seeder
 
         // $this->verifyCensusDates();
         // $this->passCreatedAtToCensusDate();
-        $this->importJobPositionsFromPersonnel();
+        // $this->importJobPositionsFromPersonnel();
+        $this->assignJobIdToActivePersonnel();
     }
 
     public function importJobPositionsFromPersonnel(): void
@@ -224,6 +225,32 @@ class DatabaseSeeder extends Seeder
         foreach (array_keys($jobTitles) as $name) {
             JobPosition::firstOrCreate(['name' => $name]);
         }
+    }
+
+    public function assignJobIdToActivePersonnel(): void
+    {
+        $jobPositions = JobPosition::pluck('id', 'name')->toArray();
+
+        Personnel::where('status', 'active')
+            ->whereNotNull('additional_data')
+            ->chunk(100, function ($personnels) use (&$jobPositions) {
+                foreach ($personnels as $personnel) {
+                    $additionalData = $personnel->additional_data;
+                    if (is_array($additionalData) && isset($additionalData['job_title'])) {
+                        $jobTitle = trim($additionalData['job_title']);
+                        if (!empty($jobTitle)) {
+                            $jobId = $jobPositions[$jobTitle] ?? null;
+                            if (!$jobId) {
+                                $jobPosition = JobPosition::firstOrCreate(['name' => $jobTitle]);
+                                $jobId = $jobPosition->id;
+                                $jobPositions[$jobTitle] = $jobId;
+                            }
+                            $additionalData['job_id'] = $jobId;
+                            $personnel->update(['additional_data' => $additionalData]);
+                        }
+                    }
+                }
+            });
     }
 
     public function passCreatedAtToCensusDate()

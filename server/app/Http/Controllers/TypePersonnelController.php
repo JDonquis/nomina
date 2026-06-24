@@ -11,4 +11,18 @@ class TypePersonnelController extends Controller
     {
         return response()->json(TypePersonnel::all());
     }
+
+    public function report()
+    {
+        $report = TypePersonnel::withCount(['personels as total_personnels' => function ($query) {
+            $query->where('status', 'active')
+                ->where('census_status', true);
+        }])
+            ->get()
+            ->groupBy('type_personal')->map(function ($group) {
+                return $group->sum('total_personnels');
+            });
+
+        return response()->json($report);
+    }
 }
