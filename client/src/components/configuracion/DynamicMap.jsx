@@ -3,8 +3,12 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-l
 import L from 'leaflet';
 import { Icon } from '@iconify/react';
 
+const DIAGNOSTIC_TAG = '[DynamicMap diagnostic v2]';
+
+const getAsicColorSource = (asic) => String(asic?.id ?? asic?.name ?? 'ASIC');
+
 const getStableAsicColor = (asic) => {
-  const source = String(asic?.id ?? asic?.name ?? "ASIC");
+  const source = getAsicColorSource(asic);
   let hash = 0;
   for (let i = 0; i < source.length; i++) {
     hash = source.charCodeAt(i) + ((hash << 5) - hash);
@@ -128,13 +132,39 @@ const MapController = ({ selectedAsic, markerRefs }) => {
 // COMPONENTE PRINCIPAL MODIFICADO
 const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalActiveCensusedInDependency, getTotalActiveCensusedInDependency }) => {
   const defaultPosition = [11.4045, -69.6775]; // Coro
-  
-  console.log({totalActiveCensusedInDependency, selectedAsic, handlers })
+
   // Diccionario para almacenar las referencias físicas de cada marcador ASIC en el mapa
   const markerRefs = useRef({});
 
   const firstAsicCoords = asicsList && asicsList.length > 0 ? parseCoordinates(asicsList[0].coordinates) : null;
   const mapCenter = firstAsicCoords || defaultPosition;
+
+  useEffect(() => {
+    console.log(`${DIAGNOSTIC_TAG} bundle loaded`);
+
+    if (!asicsList?.length) {
+      console.warn(`${DIAGNOSTIC_TAG} asicsList is empty or undefined`, asicsList);
+      return;
+    }
+
+    const summary = asicsList.map((asic) => ({
+      id: asic?.id ?? null,
+      name: asic?.name ?? null,
+      source: getAsicColorSource(asic),
+      color: getStableAsicColor(asic),
+      dependencyCount: asic?.dependencies?.length ?? 0,
+    }));
+
+    console.table(summary);
+
+    const uniqueColors = new Set(summary.map((item) => item.color));
+    console.log(`${DIAGNOSTIC_TAG} unique colors: ${uniqueColors.size}/${summary.length}`);
+    console.log(`${DIAGNOSTIC_TAG} selectedAsic`, selectedAsic ? {
+      id: selectedAsic?.id ?? null,
+      name: selectedAsic?.name ?? null,
+      color: getStableAsicColor(selectedAsic),
+    } : null);
+  }, [asicsList, selectedAsic]);
 
   return (
     <div className="w-full h-[600px] rounded-xl overflow-hidden shadow-lg border border-gray-200">
