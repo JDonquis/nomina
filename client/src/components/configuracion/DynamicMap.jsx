@@ -1,20 +1,42 @@
-import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import { Icon } from '@iconify/react';
+import React, { useEffect, useRef } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polygon,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
+import { Icon } from "@iconify/react";
 
-const DIAGNOSTIC_TAG = '[DynamicMap diagnostic v2]';
+const DIAGNOSTIC_TAG = "[DynamicMap diagnostic v2]";
 
-const getAsicColorSource = (asic) => String(+asic?.id ?? asic?.name ?? 'ASIC');
+const FALCON_BOUNDS = {
+  north: 12.2, // Límite norte
+  south: 10.4, // Límite sur
+  east: -68.2, // Límite este
+  west: -71.0, // Límite oeste
+};
+
+const getAsicColorSource = (asic) => String(+asic?.id ?? asic?.name ?? "ASIC");
 
 const getStableAsicColor = (index, total) => {
-  const hue = (index * 360 / total) % 360;
-  return `hsl(${hue}, 62%, 34%)`;
+  // Proporción áurea para distribución óptima
+  const goldenRatio = 0.618033988749895;
+  const hue = (index * goldenRatio * 360) % 360;
+  
+  // Alternar saturación y luminosidad para más variedad
+  const saturation = 65 + (index % 5) * 7;
+  const lightness = 35 + (index % 5) * 7;
+  
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
 // 🎨 Generador de iconos dinámicos por tipo
 const getSvgIcon = (type, color) => {
-  const markerHtml = type === "ASIC"
-    ? `
+  const markerHtml =
+    type === "ASIC"
+      ? `
       <div style="
         width: 32px;
         height: 32px;
@@ -37,7 +59,7 @@ const getSvgIcon = (type, color) => {
         ">A</span>
       </div>
     `
-    : `
+      : `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="32" height="32">
         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
       </svg>
@@ -48,14 +70,14 @@ const getSvgIcon = (type, color) => {
     className: "custom-svg-marker",
     iconSize: [32, 32],
     iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    popupAnchor: [0, -32],
   });
 };
 
 // 🛠️ Helper para limpiar el string "lat, lng"
 const parseCoordinates = (coordString) => {
-  if (!coordString || typeof coordString !== 'string') return null;
-  const parts = coordString.split(',');
+  if (!coordString || typeof coordString !== "string") return null;
+  const parts = coordString.split(",");
   if (parts.length !== 2) return null;
   const lat = parseFloat(parts[0].trim());
   const lng = parseFloat(parts[1].trim());
@@ -66,27 +88,42 @@ const parseCoordinates = (coordString) => {
 const calculateTerritory = (asicCenter, dependencies) => {
   const points = [];
   if (asicCenter) points.push(asicCenter);
-  dependencies?.forEach(dep => {
+  dependencies?.forEach((dep) => {
     const coords = parseCoordinates(dep.coordinates);
     if (coords) points.push(coords);
   });
   if (points.length < 3) return [];
-  points.sort((a, b) => a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1]);
+  points.sort((a, b) => (a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1]));
   const lower = [];
   for (let i = 0; i < points.length; i++) {
-    while (lower.length >= 2 && crossProduct(lower[lower.length - 2], lower[lower.length - 1], points[i]) <= 0) {
+    while (
+      lower.length >= 2 &&
+      crossProduct(
+        lower[lower.length - 2],
+        lower[lower.length - 1],
+        points[i],
+      ) <= 0
+    ) {
       lower.pop();
     }
     lower.push(points[i]);
   }
   const upper = [];
   for (let i = points.length - 1; i >= 0; i--) {
-    while (upper.length >= 2 && crossProduct(upper[upper.length - 2], upper[upper.length - 1], points[i]) <= 0) {
+    while (
+      upper.length >= 2 &&
+      crossProduct(
+        upper[upper.length - 2],
+        upper[upper.length - 1],
+        points[i],
+      ) <= 0
+    ) {
       upper.pop();
     }
     upper.push(points[i]);
   }
-  upper.pop(); lower.pop();
+  upper.pop();
+  lower.pop();
   return lower.concat(upper);
 };
 
@@ -107,7 +144,7 @@ const MapController = ({ selectedAsic, markerRefs }) => {
       // Centra el mapa con una animación suave (flyTo) e incrementa el zoom a 14
       map.flyTo(coords, 14, {
         animate: true,
-        duration: 1.5 // Duración en segundos
+        duration: 1.5, // Duración en segundos
       });
 
       // Buscamos la referencia de este marcador específico en nuestro diccionario
@@ -125,53 +162,47 @@ const MapController = ({ selectedAsic, markerRefs }) => {
 };
 
 // COMPONENTE PRINCIPAL MODIFICADO
-const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalActiveCensusedInDependency, getTotalActiveCensusedInDependency }) => {
+const MapComponent = ({
+  asicsList,
+  selectedAsic,
+  onSelectAsic,
+  handlers,
+  totalActiveCensusedInDependency,
+  getTotalActiveCensusedInDependency,
+}) => {
   const defaultPosition = [11.4045, -69.6775]; // Coro
 
   // Diccionario para almacenar las referencias físicas de cada marcador ASIC en el mapa
   const markerRefs = useRef({});
 
-  const firstAsicCoords = asicsList && asicsList.length > 0 ? parseCoordinates(asicsList[0].coordinates) : null;
+  const firstAsicCoords =
+    asicsList && asicsList.length > 0
+      ? parseCoordinates(asicsList[0].coordinates)
+      : null;
   const mapCenter = firstAsicCoords || defaultPosition;
 
-  useEffect(() => {
-    console.log(`${DIAGNOSTIC_TAG} bundle loaded`);
 
-    if (!asicsList?.length) {
-      console.warn(`${DIAGNOSTIC_TAG} asicsList is empty or undefined`, asicsList);
-      return;
-    }
-
-    const summary = asicsList.map((asic) => ({
-      id: asic?.id ?? null,
-      name: asic?.name ?? null,
-      source: getAsicColorSource(asic),
-      color: getStableAsicColor(asic),
-      dependencyCount: asic?.dependencies?.length ?? 0,
-    }));
-
-    console.table(summary);
-
-    const uniqueColors = new Set(summary.map((item) => item.color));
-    console.log(`${DIAGNOSTIC_TAG} unique colors: ${uniqueColors.size}/${summary.length}`);
-    console.log(`${DIAGNOSTIC_TAG} selectedAsic`, selectedAsic ? {
-      id: selectedAsic?.id ?? null,
-      name: selectedAsic?.name ?? null,
-      color: getStableAsicColor(selectedAsic),
-    } : null);
-  }, [asicsList, selectedAsic]);
+  
 
   return (
     <div className="w-full h-[600px] rounded-xl overflow-hidden shadow-lg border border-gray-200">
-      <MapContainer 
-        center={mapCenter} 
-        zoom={13} 
-        scrollWheelZoom={true}
-        className="w-full h-full"
+      <MapContainer
+        center={mapCenter}
+        zoom={13}
+      scrollWheelZoom={true}
+      className="w-full h-full"
+      maxBounds={[
+        [FALCON_BOUNDS.south, FALCON_BOUNDS.west],
+        [FALCON_BOUNDS.north, FALCON_BOUNDS.east]
+      ]}
+      maxBoundsViscosity={1.0} // Evita que se salga de los límites
+      minZoom={8.3} // Evita zoom out excesivo
+      maxZoom={18} // Evita zoom in excesivo
       >
         <TileLayer
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        
         />
 
         {/* 🧭 Controlador dinámico inyectado en el mapa */}
@@ -179,12 +210,16 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
 
         {asicsList?.map((asic, index) => {
           const asicCoords = parseCoordinates(asic.coordinates);
-            const asicColor = getStableAsicColor(index, asicsList.length);
-          const territorioPoligono = calculateTerritory(asicCoords, asic.dependencies);
+          const asicColor = getStableAsicColor(index, asicsList.length);
+          console.log(asicColor)
+          
+          const territorioPoligono = calculateTerritory(
+            asicCoords,
+            asic.dependencies,
+          );
 
           return (
             <React.Fragment key={asic.id}>
-              
               {/* 1. TERRITORIO */}
               {territorioPoligono.length > 0 && (
                 <Polygon
@@ -192,14 +227,16 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                   pathOptions={{
                     color: asicColor,
                     fillColor: asicColor,
-                    fillOpacity: 0.10,
+                    fillOpacity: 0.1,
                     weight: 2.5,
-                    dashArray: '6, 6'
+                    dashArray: "6, 6",
                   }}
                 >
                   <Popup>
                     <div className="text-center p-1">
-                      <span className="font-bold text-xs text-gray-800 block">Área Geográfica</span>
+                      <span className="font-bold text-xs text-gray-800 block">
+                        Área Geográfica
+                      </span>
                       <span className="text-xs text-gray-500">{asic.name}</span>
                     </div>
                   </Popup>
@@ -208,8 +245,8 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
 
               {/* 2. MARCADOR DEL ASIC PADRE (CON REFERENCIA AGREGADA) */}
               {asicCoords && (
-                <Marker 
-                  position={asicCoords} 
+                <Marker
+                  position={asicCoords}
                   icon={getSvgIcon("ASIC", asicColor)}
                   // 🔑 Vinculamos el nodo físico del marcador con nuestro useRef usando su ID único
                   ref={(el) => {
@@ -223,7 +260,9 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                 >
                   <Popup>
                     <div className="p-1 max-w-[220px] ">
-                      <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">{asic.name}</h3>
+                      <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">
+                        {asic.name}
+                      </h3>
                       <span
                         className="text-[10px] font-bold px-1.5 py-0.5 rounded mr-auto text-white"
                         style={{ backgroundColor: asicColor }}
@@ -231,16 +270,24 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                         Sede ASIC Principal
                       </span>
                       {/* Corregido: Si usas la prop externa para el conteo, la leemos desde la iteración del mapa */}
-                      <p className="text-xs  font-semibold">Censados activos: {selectedAsic?.active_censused_count || "cargando..."}</p>
-                      <p className="text-xs text-gray-600 m-0 py-0">{asic.address || "Sin dirección registrada"}</p>
+                      <p className="text-xs  font-semibold">
+                        Censados activos:{" "}
+                        {selectedAsic?.active_censused_count || "cargando..."}
+                      </p>
+                      <p className="text-xs text-gray-600 m-0 py-0">
+                        {asic.address || "Sin dirección registrada"}
+                      </p>
                       {asic.url && (
-                        <a 
-                          href={asic.url} 
-                          target="_blank" 
+                        <a
+                          href={asic.url}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center justify-center gap-1.5 text-xs  font-medium py-1.5 px-2.5 rounded transition-colors no-underline mt-2"
                         >
-                          <Icon icon="logos:google-maps" className="w-3.5 h-3.5" />
+                          <Icon
+                            icon="logos:google-maps"
+                            className="w-3.5 h-3.5"
+                          />
                           Ver Sede en Maps
                         </a>
                       )}
@@ -255,9 +302,9 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                 if (!depCoords) return null;
 
                 return (
-                  <Marker 
-                    key={dep.id} 
-                    position={depCoords} 
+                  <Marker
+                    key={dep.id}
+                    position={depCoords}
                     icon={getSvgIcon("Dependencia", asicColor)}
                     eventHandlers={{
                       click: () => {
@@ -267,23 +314,35 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                   >
                     <Popup>
                       <div className="p-1 max-w-[200px]">
-                        <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">{dep.name}</h3>
+                        <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">
+                          {dep.name}
+                        </h3>
                         <span
                           className="text-[10px] font-bold px-1.5 py-1 mt-1 inline-block rounded mr-auto text-white"
                           style={{ backgroundColor: asicColor }}
                         >
-                          {asic.name} 
+                          {asic.name}
                         </span>
-                        <p className="text-xs font-semibold">Censados activos: {totalActiveCensusedInDependency !== null ? totalActiveCensusedInDependency : "cargando..."}</p>
-                        <p className="text-xs text-gray-600 m-0 mt-0">{dep.address || "Sin dirección física"}</p>
+                        <p className="text-xs font-semibold">
+                          Censados activos:{" "}
+                          {totalActiveCensusedInDependency !== null
+                            ? totalActiveCensusedInDependency
+                            : "cargando..."}
+                        </p>
+                        <p className="text-xs text-gray-600 m-0 mt-0">
+                          {dep.address || "Sin dirección física"}
+                        </p>
                         {dep.url && (
-                          <a 
-                            href={dep.url} 
-                            target="_blank" 
+                          <a
+                            href={dep.url}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center gap-1.5 text-xs  font-medium py-1.5 px-2.5 rounded transition-colors no-underline mt-2"
                           >
-                            <Icon icon="logos:google-maps" className="w-3.5 h-3.5" />
+                            <Icon
+                              icon="logos:google-maps"
+                              className="w-3.5 h-3.5"
+                            />
                             Ir a Google Maps
                           </a>
                         )}
@@ -292,7 +351,6 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
                   </Marker>
                 );
               })}
-
             </React.Fragment>
           );
         })}
