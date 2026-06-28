@@ -5,17 +5,12 @@ import { Icon } from '@iconify/react';
 
 const DIAGNOSTIC_TAG = '[DynamicMap diagnostic v2]';
 
-const getAsicColorSource = (asic) => String(asic?.id ?? asic?.name ?? 'ASIC');
+const getAsicColorSource = (asic) => String(+asic?.id ?? asic?.name ?? 'ASIC');
 
-const getStableAsicColor = (asic) => {
-  const source = getAsicColorSource(asic);
-  let hash = 0;
-  for (let i = 0; i < source.length; i++) {
-    hash = source.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return `hsl(${Math.abs(hash) % 360}, 62%, 34%)`;
+const getStableAsicColor = (index, total) => {
+  const hue = (index * 360 / total) % 360;
+  return `hsl(${hue}, 62%, 34%)`;
 };
-
 // 🎨 Generador de iconos dinámicos por tipo
 const getSvgIcon = (type, color) => {
   const markerHtml = type === "ASIC"
@@ -182,9 +177,9 @@ const MapComponent = ({ asicsList, selectedAsic, onSelectAsic, handlers, totalAc
         {/* 🧭 Controlador dinámico inyectado en el mapa */}
         <MapController selectedAsic={selectedAsic} markerRefs={markerRefs} />
 
-        {asicsList?.map((asic) => {
+        {asicsList?.map((asic, index) => {
           const asicCoords = parseCoordinates(asic.coordinates);
-          const asicColor = getStableAsicColor(asic);
+            const asicColor = getStableAsicColor(index, asicsList.length);
           const territorioPoligono = calculateTerritory(asicCoords, asic.dependencies);
 
           return (
