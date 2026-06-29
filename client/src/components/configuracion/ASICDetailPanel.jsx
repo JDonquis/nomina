@@ -88,7 +88,6 @@ export default function ASICDetailPanel({
   }, [asic]);
 
 
-  console.log({ asic }); // Debugging line to check the values of asic and formData
   if (!asic) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400">
