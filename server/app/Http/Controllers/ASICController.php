@@ -140,4 +140,21 @@ class ASICController extends Controller
 
         return response()->json($report);
     }
+
+    public function reportAllPerJob(): JsonResponse
+    {
+        $personnels = Personnel::where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        $report = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->additional_data['job_title'] ?? 'Sin Cargo Asignado';
+            })
+            ->map(function ($group) {
+                return $group->count();
+            });
+
+        return response()->json($report);
+    }
 }

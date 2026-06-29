@@ -92,4 +92,22 @@ class DependencyController extends Controller
 
         return response()->json($personnels);
     }
+
+    public function reportPerJob($dependency): JsonResponse
+    {
+        $personnels = Personnel::where('dependency_id', $dependency->id)
+            ->where('status', 'active')
+            ->where('census_status', true)
+            ->get();
+
+        $report = $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->additional_data['job_title'] ?? 'Sin Cargo Asignado';
+            })
+            ->map(function ($group) {
+                return $group->count();
+            });
+
+        return response()->json($report);
+    }
 }

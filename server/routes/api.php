@@ -26,11 +26,17 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::get('asics/report/{asic}', [ASICController::class, 'report']);
     Route::get('asics/report-per-job/{asic}', [ASICController::class, 'reportPerJob']);
+    Route::get('asics/all/report-per-job', [ASICController::class, 'reportAllPerJob']);
     Route::get('asics/all/report', [ASICController::class, 'reportAllDetailed']);
-    Route::get('type_personal/report', [TypePersonnelController::class, 'report']);
+    Route::get('asics/all/type_personnel/report', [TypePersonnelController::class, 'report']);
+    Route::get('asics/type_personnel/report/{asic}', [TypePersonnelController::class, 'reportByAsic']);
+
 
     Route::get('dependencies/report/{dependency}', [DependencyController::class, 'report']);
     Route::get('dependencies/censused/{dependency}', [DependencyController::class, 'censused']);
+    Route::get('dependencies/report-per-job/{dependency}', [DependencyController::class, 'reportPerJob']);
+    Route::get('dependencies/type_personnel/report/{dependency}', [TypePersonnelController::class, 'reportByDependency']);
+
     Route::get('administrative-units/report/{administrativeUnit}', [AdministrativeUnitController::class, 'report']);
     Route::get('departments/report/{department}', [DepartmentController::class, 'report']);
     Route::get('services/report/{service}', [ServiceController::class, 'report']);
