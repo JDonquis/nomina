@@ -9,6 +9,17 @@ const year = new Date().getFullYear();
 
 const PrintableContent = forwardRef((props, ref) => {
   console.log({ props });
+  const { asicName, dependencyName, unitName, departmentName, serviceName } =
+    props.data.dataType;
+
+  // Filtrar los niveles existentes para renderizarlos limpiamente
+  const levels = [
+    asicName,
+    dependencyName,
+    unitName,
+    departmentName,
+    serviceName,
+  ].filter(Boolean);
 
   return (
     <div
@@ -39,6 +50,21 @@ const PrintableContent = forwardRef((props, ref) => {
           <h4 className="font-bold text-xs tracking-wider text-gray-500 uppercase mt-2">
             Oficina de Recursos Humanos
           </h4>
+          <div className="flex flex-wrap justify-center items-center gap-1.5 my-3 max-w-2xl mx-auto w-full">
+            {levels.map((level, index) => (
+              <React.Fragment key={index}>
+                <span className="px-2.5 py-0.5 bg-gray-100 text-gray-800 rounded-md text-xs font-semibold border border-gray-200 shadow-sm whitespace-nowrap">
+                  {level}
+                </span>
+                {index < levels.length - 1 && (
+                  <Icon
+                    icon="tabler:chevron-right"
+                    className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
           <p className="text-[11px] text-gray-400 mt-1">
             Generado el {new Date().toLocaleDateString()} a las{" "}
             {new Date().toLocaleTimeString()}
@@ -58,13 +84,10 @@ const PrintableContent = forwardRef((props, ref) => {
       </header>
 
       <ol className="">
-        {Object.entries(props.data).map(([job, amount], i) => (
+        {Object.entries(props.data.data).map(([job, amount], i) => (
           <li key={job} className="border-b border-gray-200 py-1">
-            <span className="text-xs text-gray-400">
-              {i+1}.
-            </span>
-            {" "}
-            {job} : <b>{amount}</b>
+            <span className="text-xs text-gray-400">{i + 1}.</span> {job} :{" "}
+            <b>{amount}</b>
           </li>
         ))}
       </ol>

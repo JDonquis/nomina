@@ -13,6 +13,7 @@ export default function SidebarASICList({
   onToggleMap,
   isMapOpen,
   onGetReportActiveCensus,
+  onGetCargosReport,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && newAsicName.trim()) {
@@ -30,16 +31,28 @@ export default function SidebarASICList({
             className=" bg-color2/10 px-2 mr-2 items-center py-0.5 rounded flex text-color2 hover:text-green-500"
             title="Cantidad personal activo censado"
             onClick={() =>
-              onGetReportActiveCensus(null, "Estado Falcón", { asicName: "Estado Falcón" })
+              onGetReportActiveCensus(null, "Estado Falcón", {
+                asicName: "Estado Falcón",
+              })
             }
           >
-            
             <Icon
               icon="ci:wavy-check"
               className="ml-1 text-gray-500"
               width={12}
               height={12}
             />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onGetCargosReport(null, "Estado Falcón", {asicName: "Estado Falcón"});
+            }}
+            title="Generar reporte de cargos censados"
+            className=" bg-color1/10 px-2 mr-2  py-1.5 text-xs rounded flex text-color1 hover:text-color1/90 hover:"
+          >
+            Cargos
           </button>
 
           <button

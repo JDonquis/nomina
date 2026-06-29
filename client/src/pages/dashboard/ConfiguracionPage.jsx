@@ -20,6 +20,7 @@ import {
 } from "../../components/configuracion";
 import { SyncSection } from "./SyncPage";
 import DynamicMap from "../../components/configuracion/DynamicMap";
+import CargosReport from "../../components/configuracion/CargosReport.jsx";
 
 // Ejemplo del formato de datos que deberías traer de tu BD
 const listaAsicsDesdeBD = [
@@ -91,7 +92,8 @@ export default function ConfiguracionPage() {
   const [activeTab, setActiveTab] = useState("estructura");
   const [asicData, setAsicData] = useState([]);
   const [selectedAsic, setSelectedAsic] = useState(null);
-  const [totalActiveCensusedInDependency, setTotalActiveCensusedInDependency] = useState(null);
+  const [totalActiveCensusedInDependency, setTotalActiveCensusedInDependency] =
+    useState(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -138,7 +140,10 @@ export default function ConfiguracionPage() {
       const response = await dependenciesAPI.getTotalActiveCensused(id);
       setTotalActiveCensusedInDependency(response);
     } catch (error) {
-      console.error("Error fetching total active censused in dependency:", error);
+      console.error(
+        "Error fetching total active censused in dependency:",
+        error,
+      );
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -671,6 +676,50 @@ export default function ConfiguracionPage() {
 
   console.log({ selectedAsic }); // Debugging line to check the values of selectedAsic and formData
 
+  const [isModalChargeOpen, setIsModalChargeOpen] = useState(false);
+  const [jobsData, setJobsData] = useState(null);
+
+  const reportPerJob = async (id, type, dataType) => {
+    console.log({type, dataType})
+    try {
+      let response;
+      switch (type) {
+        case "Estado Falcón": {
+          response = await ASICAPI.reportPerJobAll();
+
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte total
+          break;
+        }
+        case "ASIC": {
+          response = await ASICAPI.reportPerJob(asic.id);
+
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte por ubicación
+          break;
+        }
+
+        case "Dependencia":
+          response = await dependenciesAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+
+        default:
+          break;
+      }
+      // Aquí puedes manejar la respuesta del reporte, como descargar un archivo o mostrar datos
+      setJobsData({ data: response, type, dataType });
+      setIsModalChargeOpen(true);
+    } catch (error) {
+      console.error("Error fetching active census report:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    }
+  };
+
   const handlers = React.useMemo(
     () => ({
       asicId: selectedAsic?.id,
@@ -690,6 +739,7 @@ export default function ConfiguracionPage() {
       onUpdateService: debouncedUpdateService,
       onDeleteService: deleteService,
       onGetReportActiveCensus: getReportActiveCensus,
+      onGetCargosReport: reportPerJob,
     }),
     [
       selectedAsic?.id,
@@ -709,7 +759,7 @@ export default function ConfiguracionPage() {
       debouncedUpdateService,
       deleteService,
       getReportActiveCensus,
-      
+      reportPerJob,
     ],
   );
 
@@ -765,6 +815,8 @@ export default function ConfiguracionPage() {
               onToggleMap={toggleMap}
               isMapOpen={isMapOpen}
               onGetReportActiveCensus={getReportActiveCensus}
+              onGetCargosReport={reportPerJob}
+
             />
             {isMapOpen ? (
               <>
@@ -773,8 +825,12 @@ export default function ConfiguracionPage() {
                   handlers={handlers}
                   asicsList={asicData}
                   onSelectAsic={getAsicRelations}
-                  totalActiveCensusedInDependency={totalActiveCensusedInDependency}
-                  getTotalActiveCensusedInDependency={getTotalActiveCensusedInDependency}
+                  totalActiveCensusedInDependency={
+                    totalActiveCensusedInDependency
+                  }
+                  getTotalActiveCensusedInDependency={
+                    getTotalActiveCensusedInDependency
+                  }
                 />
               </>
             ) : (
@@ -799,6 +855,14 @@ export default function ConfiguracionPage() {
             size="xl"
           >
             <PrintPage data={reportData} />
+          </Modal>
+
+          <Modal
+            isOpen={isModalChargeOpen}
+            onClose={() => setIsModalChargeOpen(false)}
+            title="Cargos censados"
+          >
+            <CargosReport data={jobsData} />
           </Modal>
         </>
       ) : (
