@@ -131,7 +131,7 @@ export const dependenciesAPI = {
   deleteDependency: (id) => api.delete(`/admin/dependencies/${id}`),
   getReportActiveCensus: (id) => api.get(`/admin/dependencies/report/${id}`),
   getTotalActiveCensused: (id) => api.get(`/admin/dependencies/censused/${id}`),
-  reportPerJob: (dependencyId) => api.get(`/admin/dependencies/report-per-Job/${dependencyId}`),
+  reportPerJob: (dependencyId) => api.get(`/admin/dependencies/report-per-job/${dependencyId}`),
   reportTypePersonnel: (id) => api.get(`/admin/dependencies/type_personnel/report/${id}`)
 };
 

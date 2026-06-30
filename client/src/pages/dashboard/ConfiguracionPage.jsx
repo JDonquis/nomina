@@ -701,7 +701,7 @@ export default function ConfiguracionPage() {
         }
 
         case "Dependencia":
-          response = await dependenciesAPI.getReportActiveCensus(id);
+          response = await dependenciesAPI.reportPerJob(id);
           // Tu lógica aquí
           break;
 
@@ -746,7 +746,7 @@ export default function ConfiguracionPage() {
         }
 
         case "Dependencia":
-          response = await dependenciesAPI.getReportActiveCensus(id);
+          response = await dependenciesAPI.reportTypePersonnel(id);
           // Tu lógica aquí
           break;
 

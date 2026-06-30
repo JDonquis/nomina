@@ -1073,6 +1073,7 @@ export default function PersonalActivoPage() {
   };
 
   console.log({formData})
+  console.log({})
 
   const importExcel = async (e) => {
     setLoading(true);
@@ -1221,7 +1222,7 @@ export default function PersonalActivoPage() {
         filterSelectOptions: nominasNames.map((n) => n.namesWithoutCode),
       },
       {
-        accessorKey: "work_status",
+        accessorKey: "additional_data.work_status",
         header: "Estatus Laboral",
         size: 120,
         filterVariant: "select",
