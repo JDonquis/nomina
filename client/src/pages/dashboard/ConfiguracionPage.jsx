@@ -21,6 +21,7 @@ import {
 import { SyncSection } from "./SyncPage";
 import DynamicMap from "../../components/configuracion/DynamicMap";
 import CargosReport from "../../components/configuracion/CargosReport.jsx";
+import PersonnelsReport from "../../components/configuracion/PersonnelsReport.jsx";
 
 // Ejemplo del formato de datos que deberías traer de tu BD
 const listaAsicsDesdeBD = [
@@ -692,7 +693,7 @@ export default function ConfiguracionPage() {
           break;
         }
         case "ASIC": {
-          response = await ASICAPI.reportPerJob(asic.id);
+          response = await ASICAPI.reportPerJob(id);
 
           // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
           // Lógica para reporte por ubicación
@@ -710,6 +711,51 @@ export default function ConfiguracionPage() {
       // Aquí puedes manejar la respuesta del reporte, como descargar un archivo o mostrar datos
       setJobsData({ data: response, type, dataType });
       setIsModalChargeOpen(true);
+    } catch (error) {
+      console.error("Error fetching active census report:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error en el sistema principal";
+      showError(errorMessage);
+    }
+  };
+
+
+  const [isModalPersonnelsOpen, setIsModalPersonnelsOpen] = useState(false);
+  const [personnelsData, setPersonnelsData] = useState(null);
+
+  const reportPerPersonnels = async (id, type, dataType) => {
+    console.log({type, dataType})
+    try {
+      let response;
+      switch (type) {
+        case "Estado Falcón": {
+          response = await ASICAPI.reportTypePersonnelAll();
+
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte total
+          break;
+        }
+        case "ASIC": {
+          response = await ASICAPI.reportTypePersonnel(id);
+
+          // <-- Dos puntos corregidos. Se añaden llaves {} por buena práctica al usar const/let dentro de un case
+          // Lógica para reporte por ubicación
+          break;
+        }
+
+        case "Dependencia":
+          response = await dependenciesAPI.getReportActiveCensus(id);
+          // Tu lógica aquí
+          break;
+
+        default:
+          break;
+      }
+      // Aquí puedes manejar la respuesta del reporte, como descargar un archivo o mostrar datos
+      setPersonnelsData({ data: response, type, dataType });
+      setIsModalPersonnelsOpen(true);
     } catch (error) {
       console.error("Error fetching active census report:", error);
       const errorMessage =
@@ -740,6 +786,7 @@ export default function ConfiguracionPage() {
       onDeleteService: deleteService,
       onGetReportActiveCensus: getReportActiveCensus,
       onGetCargosReport: reportPerJob,
+      onGetPersonnelsReport: reportPerPersonnels,
     }),
     [
       selectedAsic?.id,
@@ -760,6 +807,7 @@ export default function ConfiguracionPage() {
       deleteService,
       getReportActiveCensus,
       reportPerJob,
+      reportPerPersonnels,
     ],
   );
 
@@ -816,6 +864,7 @@ export default function ConfiguracionPage() {
               isMapOpen={isMapOpen}
               onGetReportActiveCensus={getReportActiveCensus}
               onGetCargosReport={reportPerJob}
+              onGetPersonnelsReport={reportPerPersonnels}
 
             />
             {isMapOpen ? (
@@ -864,6 +913,14 @@ export default function ConfiguracionPage() {
           >
             <CargosReport data={jobsData} />
           </Modal>
+
+          <Modal 
+           isOpen={isModalPersonnelsOpen}
+            onClose={() => setIsModalPersonnelsOpen(false)}
+            title="Tipo de personal"
+            >
+              <PersonnelsReport data={personnelsData} />
+            </Modal>
         </>
       ) : (
         <SyncSection />

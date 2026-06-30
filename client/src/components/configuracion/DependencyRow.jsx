@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Icon } from "@iconify/react";
 import UnitRow from "./UnitRow";
 import debounce from "lodash.debounce";
@@ -51,12 +51,17 @@ const DependencyRow = React.memo(function DependencyRow({
   isLoading,
   objPosiblesNames,
   onGetReportActiveCensus,
+  onGetPersonnelsReport,
+  onGetCargosReport,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [localName, setLocalName] = useState(dependency.name);
   const newUnitKey = `newUnitName_${dependency.id}`;
   const newUnitName = formData[newUnitKey] || "";
   const [loading, setLoading] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const actionsMenuRef = useRef(null);
+  const actionsButtonRef = useRef(null);
   const [locationData, setLocationData] = useState({
     coordinates: dependency.coordinates || "",
     address: dependency.address || "",
@@ -81,6 +86,24 @@ const DependencyRow = React.memo(function DependencyRow({
       url: dependency.url || "",
     });
   }, [dependency]);
+
+  useEffect(() => {
+    if (!isActionsOpen) return;
+
+    const handleClickOutside = (event) => {
+      const isOutsideMenu =
+        actionsMenuRef.current && !actionsMenuRef.current.contains(event.target);
+      const isOutsideButton =
+        actionsButtonRef.current && !actionsButtonRef.current.contains(event.target);
+
+      if (isOutsideMenu && isOutsideButton) {
+        setIsActionsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isActionsOpen]);
 
   const debouncedSetFormData = useCallback(
     debounce((newValue) => {
@@ -162,6 +185,13 @@ const DependencyRow = React.memo(function DependencyRow({
     }, 100);
   };
 
+  const closeActionsMenu = () => setIsActionsOpen(false);
+
+  const handleActionClick = (callback) => {
+    callback();
+    closeActionsMenu();
+  };
+
   return (
     <>
       <div className="bg-color2/10  rounded-lg mb-3 overflow-hidden">
@@ -189,21 +219,75 @@ const DependencyRow = React.memo(function DependencyRow({
           </div>
 
           <div className="hidden md:flex items-center gap-1 mr-3 text-xs text-gray-500">
-            <button
-              className=" bg-color2/10 px-2 mr-2  py-0.5 rounded flex text-color2"
-              title="Cantidad personal activo censado"
-              onClick={() =>
-                onGetReportActiveCensus(dependency.id, "Dependencia", { asicName, dependencyName: dependency.name })
-              }
-            >
-              {dependency.active_censused_count}
-              <Icon
-                icon="ci:wavy-check"
-                className="ml-1 text-gray-500"
-                width={12}
-                height={12}
-              />
-            </button>
+            <div className="relative">
+              <button
+                ref={actionsButtonRef}
+                type="button"
+                onClick={() => setIsActionsOpen((prev) => !prev)}
+                className="rounded p-1 hover:bg-gray-100"
+                title="Acciones de reporte"
+              >
+                <Icon icon="mage:dots" className="text-lg text-gray-500" />
+              </button>
+
+              {isActionsOpen && (
+                <div
+                  ref={actionsMenuRef}
+                  className="absolute right-0 top-full z-20 mt-2 flex w-48 flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+                >
+                  <button
+                    className="hover:font-bold flex items-center justify-between rounded bg-color2/10 px-2 py-1.5 text-sm text-color2 hover:text-green-500"
+                    title="Cantidad personal activo censado"
+                    onClick={() =>
+                      handleActionClick(() =>
+                        onGetReportActiveCensus(dependency.id, "Dependencia", {
+                          asicName,
+                          dependencyName: dependency.name,
+                        }),
+                      )
+                    }
+                  >
+                    <span>Censados</span>
+                    <Icon
+                      icon="ci:wavy-check"
+                      className="ml-1 text-gray-500"
+                      width={12}
+                      height={12}
+                    />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleActionClick(() =>
+                        onGetPersonnelsReport(dependency.id, "Dependencia", {
+                          asicName,
+                          dependencyName: dependency.name,
+                        }),
+                      )
+                    }
+                    className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                  >
+                    Tipos de personal
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleActionClick(() =>
+                        onGetCargosReport(dependency.id, "Dependencia", {
+                          asicName,
+                          dependencyName: dependency.name,
+                        }),
+                      )
+                    }
+                    className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                  >
+                    Cargos
+                  </button>
+                </div>
+              )}
+            </div>
 
             <button
               type="button"
