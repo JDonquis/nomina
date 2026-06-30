@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Icon } from "@iconify/react";
 import DependencyRow from "./DependencyRow";
 import Modal from "../Modal";
 import FormField from "../forms/FormField.jsx";
-import {ASICAPI} from "../../services/api";
+import { ASICAPI } from "../../services/api";
 import CargosReport from "./CargosReport.jsx";
 
 const current_year = new Date().getFullYear();
@@ -48,9 +48,6 @@ export default function ASICDetailPanel({
     url: asic?.url || "",
   });
 
-
-  
-
   const handleLocationChange = (e) => {
     const { name, value } = e.target;
     setLocationData((prev) => ({
@@ -60,13 +57,16 @@ export default function ASICDetailPanel({
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalChargeOpen, setIsModalChargeOpen] = useState(false);
-  const [jobsData, setJobsData] = useState([])
+  const [jobsData, setJobsData] = useState([]);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const actionsMenuRef = useRef(null);
+  const actionsButtonRef = useRef(null);
 
   const reportPerJob = async () => {
     try {
       const response = await ASICAPI.reportPerJob(asic.id);
-      setJobsData(response)
-      setIsModalChargeOpen(true)
+      setJobsData(response);
+      setIsModalChargeOpen(true);
 
       console.log("Reporte de cargos censados:", response.data);
       // Aquí puedes manejar la respuesta, por ejemplo, mostrarla en un modal o guardarla en el estado
@@ -75,9 +75,8 @@ export default function ASICDetailPanel({
     }
   };
 
-
   const [asicNameInput, setAsicName] = useState(asic?.name || "");
- 
+
   useEffect(() => {
     setAsicName(asic?.name || "");
     setLocationData({
@@ -87,6 +86,23 @@ export default function ASICDetailPanel({
     });
   }, [asic]);
 
+  useEffect(() => {
+    if (!isActionsOpen) return;
+
+    const handleClickOutside = (event) => {
+      const isOutsideMenu =
+        actionsMenuRef.current && !actionsMenuRef.current.contains(event.target);
+      const isOutsideButton =
+        actionsButtonRef.current && !actionsButtonRef.current.contains(event.target);
+
+      if (isOutsideMenu && isOutsideButton) {
+        setIsActionsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isActionsOpen]);
 
   if (!asic) {
     return (
@@ -119,6 +135,8 @@ export default function ASICDetailPanel({
     onUpdateService,
     onDeleteService,
     onGetReportActiveCensus,
+    onGetCargosReport,
+    onGetPersonnelsReport,
   } = handlers;
 
   const handleUpdateDependency = (id, data) => {
@@ -146,7 +164,7 @@ export default function ASICDetailPanel({
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDownMap = (e) => {
     if (e.key === "Enter" && newDepName.trim()) {
       e.preventDefault();
       handleCreateDependency();
@@ -175,8 +193,12 @@ export default function ASICDetailPanel({
     setLoading(false);
   };
 
+  const closeActionsMenu = () => setIsActionsOpen(false);
 
-
+  const handleActionClick = (callback) => {
+    callback();
+    closeActionsMenu();
+  };
 
   return (
     <>
@@ -189,43 +211,89 @@ export default function ASICDetailPanel({
                 <div className="flex-1">
                   <FormField
                     name="asicName"
-                    value={ asicNameInput}
+                    value={asicNameInput}
                     disableOutline
                     className="!bg-transparent"
                     onChange={(e) => {
                       setAsicName(e.target.value);
-                      onUpdateAsic({...asic, name: e.target.value});
-                    } }
+                      onUpdateAsic({ ...asic, name: e.target.value });
+                    }}
                   />
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  className="bg-color1/20 px-2 mr-2  py-0.5 rounded flex text-dark"
-                  title="Cantidad personal activo censado"
-                  onClick={() =>
-                    onGetReportActiveCensus(asicId, "ASIC", { asicName })
-                  }
-                >
-                  {asic.active_censused_count}
-                  <Icon
-                    icon="ci:wavy-check"
-                    className="ml-1 text-dark"
-                    width={12}
-                    height={12}
-                  />
-                </button>
+                
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    reportPerJob(asicId)
-                  }}
-                  title="Generar reporte de cargos censados"
-                  className=" bg-color1/10 px-2 mr-2  py-1.5 text-xs rounded flex text-color1 hover:text-color1/90 hover:"
-                >
-                  cargos
-                </button>
+                <div className="relative">
+                  <button
+                    ref={actionsButtonRef}
+                    type="button"
+                    onClick={() => setIsActionsOpen((prev) => !prev)}
+                    aria-haspopup="menu"
+                    aria-expanded={isActionsOpen}
+                    className="p-1 hover:bg-gray-100"
+                  >
+                    <Icon
+                      icon="mage:dots"
+                      className="ml-1 text-gray-500"
+                      width={20}
+                      height={20}
+                    />
+                  </button>
+
+                  {isActionsOpen && (
+                    <div
+                      ref={actionsMenuRef}
+                      className="absolute right-0 top-full z-50 mt-2 flex w-48 flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+                    >
+                      <button
+                        className="hover:font-bold flex items-center justify-between rounded bg-color2/10 px-2 py-1.5 text-sm text-color2 hover:text-green-500"
+                        title="Cantidad personal activo censado"
+                        onClick={() =>
+                          handleActionClick(() =>
+                            onGetReportActiveCensus(asicId, "ASIC", {
+                              asicName,
+                            }),
+                          )
+                        }
+                      >
+                        <span>Censados</span>
+                        <Icon
+                          icon="ci:wavy-check"
+                          className="ml-1 text-gray-500"
+                          width={12}
+                          height={12}
+                        />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleActionClick(() =>
+                            onGetPersonnelsReport(asicId, "ASIC", { asicName }),
+                          )
+                        }
+                        title="Generar reporte de cargos censados"
+                        className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                      >
+                        Tipos de personal
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleActionClick(() =>
+                            onGetCargosReport(asicId, "ASIC", { asicName }),
+                          )
+                        }
+                        title="Generar reporte de cargos censados"
+                        className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                      >
+                        Cargos
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 <button
                   type="button"
@@ -299,6 +367,8 @@ export default function ASICDetailPanel({
               isLoading={isLoading}
               objPosiblesNames={objPosiblesNames}
               onGetReportActiveCensus={onGetReportActiveCensus}
+              onGetPersonnelsReport={onGetPersonnelsReport}
+              onGetCargosReport={onGetCargosReport}
             />
           ))}
 
@@ -312,7 +382,7 @@ export default function ASICDetailPanel({
                 placeholder="Nueva dependencia..."
                 value={newDepName}
                 onChange={handleNewDepChange}
-                onKeyDown={handleKeyDown}
+                onKeyDown={handleKeyDownMap}
                 disableOutline
                 className="!bg-transparent"
               />
@@ -361,13 +431,12 @@ export default function ASICDetailPanel({
         </form>
       </Modal>
 
-       <Modal
+      <Modal
         isOpen={isModalChargeOpen}
         onClose={() => setIsModalChargeOpen(false)}
         title="Cargos censados"
       >
-        
-        <CargosReport  data={jobsData}/>
+        <CargosReport data={jobsData} />
       </Modal>
     </>
   );

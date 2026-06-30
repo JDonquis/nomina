@@ -114,6 +114,9 @@ export const ASICAPI = {
   getReportActiveCensus: (id) => api.get(`/admin/asics/report/${id}`),
   getTotalActiveCensused: (id) => api.get(`/admin/asics/all/report`),
   reportPerJob: (id) => api.get(`/admin/asics/report-per-job/${id}`),
+  reportPerJobAll:() => api.get(`/admin/asics/all/report-per-job`),
+  reportTypePersonnel: (id) => api.get(`/admin/asics/type_personnel/report/${id}`),
+  reportTypePersonnelAll:() => api.get(`/admin/asics/all/type_personnel/report`), 
 };
 
 export const jobsAPI = {
@@ -128,6 +131,8 @@ export const dependenciesAPI = {
   deleteDependency: (id) => api.delete(`/admin/dependencies/${id}`),
   getReportActiveCensus: (id) => api.get(`/admin/dependencies/report/${id}`),
   getTotalActiveCensused: (id) => api.get(`/admin/dependencies/censused/${id}`),
+  reportPerJob: (dependencyId) => api.get(`/admin/dependencies/report-per-job/${dependencyId}`),
+  reportTypePersonnel: (id) => api.get(`/admin/dependencies/type_personnel/report/${id}`)
 };
 
 export const administrativeUnitsAPI = {

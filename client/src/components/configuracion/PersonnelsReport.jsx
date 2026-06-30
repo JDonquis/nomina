@@ -43,7 +43,7 @@ const PrintableContent = forwardRef((props, ref) => {
         {/* Contenedor Central Perfectamente Alineado */}
         <div className="flex-1 text-center px-4 w-full min-w-[300px]">
           <h3 className="font-bold text-lg tracking-wide text-color1 uppercase">
-            Cargos del Personal Activo
+            Tipos de Personal Activo
           </h3>
           <h3 className="font-bold text-base  text-color1">CENSO {year}</h3>
 
@@ -95,7 +95,7 @@ const PrintableContent = forwardRef((props, ref) => {
   );
 });
 
-const CargosReport = (props) => {
+const PersonnelsReport = (props) => {
   console.log(props.data);
   const componentRef = useRef(null);
   const handlePrint = useReactToPrint({
@@ -149,4 +149,4 @@ const CargosReport = (props) => {
   );
 };
 
-export default CargosReport;
+export default PersonnelsReport;

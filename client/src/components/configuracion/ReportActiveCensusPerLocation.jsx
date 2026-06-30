@@ -122,7 +122,7 @@ const PrintableContent = forwardRef((props, ref) => {
               <td className="py-2 px-3 border-r border-gray-200">{item.ci}</td>
               {props.data.type === "Estado Falcón" && (
                 <td className="py-2 px-3 border-r border-gray-200">
-                  {item.asic.name.replace("ASIC", "")}
+                  {item.asic?.name.replace("ASIC", "")}
                 </td>
               )}
               <td className="py-2 px-3 border-r border-gray-200">
