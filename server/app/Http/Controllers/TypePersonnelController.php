@@ -21,6 +21,8 @@ class TypePersonnelController extends Controller
             ->get()
             ->groupBy('type_personal')->map(function ($group) {
                 return $group->sum('total_personnels');
+            })->filter(function ($total) {
+                return $total > 0;
             });
 
         return response()->json($report);
@@ -55,6 +57,8 @@ class TypePersonnelController extends Controller
             ->get()
             ->groupBy('type_personal')->map(function ($group) {
                 return $group->sum('total_personnels');
+            })->filter(function ($total) {
+                return $total > 0;
             });
 
         return response()->json($report);
