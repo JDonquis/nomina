@@ -94,14 +94,14 @@ class PersonnelService
 
                 $q->where(function ($subQ) use ($keywords) {
                     foreach ($keywords as $word) {
-                        $subQ->where('full_name', 'ILIKE', "%{$word}%");
+                        $subQ->where('full_name', 'LIKE', "%{$word}%");
                     }
                 });
 
                 $q->orWhere('ci', 'LIKE', "%{$search}%");
 
                 foreach ($this->fieldsWithoutCensus['additional_data'] as $jsonField) {
-                    $q->orWhere("additional_data->{$jsonField}", 'ILIKE', "%{$search}%");
+                    $q->orWhere("additional_data->{$jsonField}", 'LIKE', "%{$search}%");
                 }
             });
         }
