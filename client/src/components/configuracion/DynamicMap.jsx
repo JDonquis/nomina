@@ -271,7 +271,7 @@ const MapComponent = ({
                       </span>
                       {/* Corregido: Si usas la prop externa para el conteo, la leemos desde la iteración del mapa */}
                       <p className="text-xs  font-semibold">
-                        Censados activos:{" "}
+                        Censados:{" "}
                         {selectedAsic?.active_censused_count || "cargando..."}
                       </p>
                       <p className="text-xs text-gray-600 m-0 py-0">
@@ -324,7 +324,7 @@ const MapComponent = ({
                           {asic.name}
                         </span>
                         <p className="text-xs font-semibold">
-                          Censados activos:{" "}
+                          Censados:{" "}
                           {totalActiveCensusedInDependency !== null
                             ? totalActiveCensusedInDependency
                             : "cargando..."}
