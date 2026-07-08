@@ -116,6 +116,7 @@ export default function ConfiguracionPage() {
   }, []);
 
   const getAsicRelations = async (id) => {
+      setSelectedAsic(null);
     try {
       const response = await ASICAPI.getASICRelations(id);
       setFormData({
@@ -124,7 +125,6 @@ export default function ConfiguracionPage() {
         dependencies: response.dependencies || [],
         newDependenceName: "",
       });
-      console.log({ response }); // Debugging line to check the response from getASICRelations
       setSelectedAsic(response);
     } catch (error) {
       console.error("Error fetching ASIC relations:", error);

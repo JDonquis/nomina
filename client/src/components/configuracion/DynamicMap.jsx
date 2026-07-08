@@ -221,7 +221,6 @@ const MapComponent = ({
         {asicsList?.map((asic, index) => {
           const asicCoords = parseCoordinates(asic.coordinates);
           const asicColor = getStableAsicColor(index, asicsList.length);
-          console.log(asicColor);
 
           const territorioPoligono = calculateTerritory(
             asicCoords,
@@ -282,7 +281,9 @@ const MapComponent = ({
                       {/* Corregido: Si usas la prop externa para el conteo, la leemos desde la iteración del mapa */}
                       <p className="text-xs  font-semibold">
                         Censados:{" "}
-                        {selectedAsic?.active_censused_count || "cargando..."}
+                        {selectedAsic !== null
+                          ? selectedAsic.active_censused_count
+                          : "cargando..."}
                       </p>
                       <p className="text-xs text-gray-600 m-0 py-0">
                         {asic.address || "Sin dirección registrada"}
