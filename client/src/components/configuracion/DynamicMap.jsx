@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -25,11 +25,11 @@ const getStableAsicColor = (index, total) => {
   // Proporción áurea para distribución óptima
   const goldenRatio = 0.618033988749895;
   const hue = (index * goldenRatio * 360) % 360;
-  
+
   // Alternar saturación y luminosidad para más variedad
   const saturation = 65 + (index % 5) * 7;
   const lightness = 35 + (index % 5) * 7;
-  
+
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
 // 🎨 Generador de iconos dinámicos por tipo
@@ -169,11 +169,18 @@ const MapComponent = ({
   handlers,
   totalActiveCensusedInDependency,
   getTotalActiveCensusedInDependency,
+  onGetReportActiveCensus,
+  onGetPersonnelsReport,
+  onGetCargosReport,
 }) => {
   const defaultPosition = [11.4045, -69.6775]; // Coro
 
   // Diccionario para almacenar las referencias físicas de cada marcador ASIC en el mapa
   const markerRefs = useRef({});
+
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const actionsMenuRef = useRef(null);
+  const actionsButtonRef = useRef(null);
 
   const firstAsicCoords =
     asicsList && asicsList.length > 0
@@ -181,28 +188,31 @@ const MapComponent = ({
       : null;
   const mapCenter = firstAsicCoords || defaultPosition;
 
+  const closeActionsMenu = () => setIsActionsOpen(false);
 
-  
+  const handleActionClick = (callback) => {
+    callback();
+    closeActionsMenu();
+  };
 
   return (
-    <div className="w-full h-[600px] rounded-xl overflow-hidden shadow-lg border border-gray-200">
+    <div className="w-full h-[600px] z-10 rounded-xl overflow-hidden shadow-lg border border-gray-200">
       <MapContainer
         center={mapCenter}
         zoom={13}
-      scrollWheelZoom={true}
-      className="w-full h-full"
-      maxBounds={[
-        [FALCON_BOUNDS.south, FALCON_BOUNDS.west],
-        [FALCON_BOUNDS.north, FALCON_BOUNDS.east]
-      ]}
-      maxBoundsViscosity={1.0} // Evita que se salga de los límites
-      minZoom={8.3} // Evita zoom out excesivo
-      maxZoom={18} // Evita zoom in excesivo
+        scrollWheelZoom={true}
+        className="w-full h-full"
+        maxBounds={[
+          [FALCON_BOUNDS.south, FALCON_BOUNDS.west],
+          [FALCON_BOUNDS.north, FALCON_BOUNDS.east],
+        ]}
+        maxBoundsViscosity={1.0} // Evita que se salga de los límites
+        minZoom={8.3} // Evita zoom out excesivo
+        maxZoom={18} // Evita zoom in excesivo
       >
         <TileLayer
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        
         />
 
         {/* 🧭 Controlador dinámico inyectado en el mapa */}
@@ -211,8 +221,8 @@ const MapComponent = ({
         {asicsList?.map((asic, index) => {
           const asicCoords = parseCoordinates(asic.coordinates);
           const asicColor = getStableAsicColor(index, asicsList.length);
-          console.log(asicColor)
-          
+          console.log(asicColor);
+
           const territorioPoligono = calculateTerritory(
             asicCoords,
             asic.dependencies,
@@ -313,10 +323,94 @@ const MapComponent = ({
                     }}
                   >
                     <Popup>
-                      <div className="p-1 max-w-[200px]">
-                        <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">
-                          {dep.name}
-                        </h3>
+                      <div className="p-1 max-w-[220px]">
+                        <div className="flex justify-between gap-1">
+                          <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">
+                            {dep.name}
+                          </h3>
+                          <div className="relative">
+                            <button
+                              ref={actionsButtonRef}
+                              type="button"
+                              onClick={() => setIsActionsOpen((prev) => !prev)}
+                              className="rounded p-1 hover:bg-gray-100"
+                              title="Acciones de reporte"
+                            >
+                              <Icon
+                                icon="mage:dots"
+                                className="text-lg text-gray-500"
+                              />
+                            </button>
+
+                            {isActionsOpen && (
+                              <div
+                                ref={actionsMenuRef}
+                                className="absolute right-0 top-full z-20 mt-2 flex w-48 flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+                              >
+                                <button
+                                  className="hover:font-bold flex items-center justify-between rounded bg-color2/10 px-2 py-1.5 text-sm text-color2 hover:text-green-500"
+                                  title="Cantidad personal activo censado"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetReportActiveCensus(
+                                        dep.id,
+                                        "Dependencia",
+                                        {
+                                          asicName: asic.name,
+                                          dependencyName: dep.name,
+                                        },
+                                      ),
+                                    )
+                                  }
+                                >
+                                  <span>Censados</span>
+                                  <Icon
+                                    icon="ci:wavy-check"
+                                    className="ml-1 text-gray-500"
+                                    width={12}
+                                    height={12}
+                                  />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetPersonnelsReport(
+                                        dep.id,
+                                        "Dependencia",
+                                        {
+                                          asicName: asic.name,
+
+                                          dependencyName: dep.name,
+                                        },
+                                      ),
+                                    )
+                                  }
+                                  className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                                >
+                                  Tipos de personal
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetCargosReport(dep.id, "Dependencia", {
+                                        asicName: asic.name,
+
+                                        dependencyName: dep.name,
+                                      }),
+                                    )
+                                  }
+                                  className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                                >
+                                  Cargos
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                         <span
                           className="text-[10px] font-bold px-1.5 py-1 mt-1 inline-block rounded mr-auto text-white"
                           style={{ backgroundColor: asicColor }}
@@ -341,7 +435,7 @@ const MapComponent = ({
                           >
                             <Icon
                               icon="logos:google-maps"
-                              className="w-3.5 h-3.5"
+                              className="w-3.5 h-3.5 z-0"
                             />
                             Ir a Google Maps
                           </a>

@@ -2,6 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import { FormField } from "../../components/forms";
 
+const getStableAsicColor = (index, total) => {
+  const goldenRatio = 0.618033988749895;
+  const hue = (index * goldenRatio * 360) % 360;
+  const saturation = 65 + (index % 5) * 7;
+  const lightness = 35 + (index % 5) * 7;
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
 export default function SidebarASICList({
   asics,
   selectedAsicId,
@@ -145,28 +154,39 @@ export default function SidebarASICList({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {asics?.map((asic, index) => (
-          <div
-            key={asic.id}
-            onClick={() => onSelectAsic(asic.id)}
-            className={`p-3 cursor-pointer border-b border-gray-100 transition-colors ${
-              selectedAsicId === asic.id
-                ? "bg-color1/10 border-l-4 border-l-color1"
-                : "hover:bg-gray-50 border-l-4 border-l-transparent"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <div className="text-sm text-gray-400">{index + 1}.</div>
-              <span
-                className={`text-sm font-medium ${
-                  selectedAsicId === asic.id ? "text-color1" : "text-gray-700"
-                }`}
-              >
-                {asic.name.replace("ASIC", "")}
-              </span>
+        {asics?.map((asic, index) => {
+          const asicColor = getStableAsicColor(index, asics.length);
+
+          return (
+            <div
+              key={asic.id}
+              onClick={() => onSelectAsic(asic.id)}
+              className={`p-3 cursor-pointer border-b border-gray-100 transition-colors ${
+                selectedAsicId === asic.id
+                  ? "bg-color1/10 border-l-4 border-l-color1"
+                  : "hover:bg-gray-50 border-l-4 border-l-transparent"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-gray-400">
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: asicColor }}
+                  >
+                    {index + 1}
+                  </div>
+                </div>
+                <span
+                  className={`text-sm font-medium ${
+                    selectedAsicId === asic.id ? "text-color1" : "text-gray-700"
+                  }`}
+                >
+                  {asic.name.replace("ASIC", "")}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="p-4 border-t border-gray-200 bg-gray-50">
