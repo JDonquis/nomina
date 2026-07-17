@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Models\AuditLog;
-
+use Illuminate\Support\Facades\Log;
 class AuditLogService
 {
-    public function get($filters = [])
+    public function get($generalFilters = [])
     {
+        $filters = json_decode($generalFilters['filters'], true);
         $query = AuditLog::query();
 
         // if (isset($filters['action'])) {
@@ -26,6 +27,28 @@ class AuditLogService
         //     $query->whereDate('created_at', '<=', $filters['date_to']);
         // }
 
-        return $query->with('user', 'auditable')->orderBy('created_at', 'desc')->paginate();
+         if (isset($filters['auditable.status'])) {
+            $query->whereHas('auditable', function ($q) use ($filters) {
+                $translate = ['activo'=> 'active', 'inactivo'=> 'inactive'];
+                $q->where('status', $translate[$filters['auditable.status']]);
+            });
+        }
+
+        $actionLabels = [
+            'update_and_census' => 'Actualizacion y censo',
+            'census'            => 'Censo',
+            'update'            => 'Actualizacion',
+            'create_and_census' => 'Creacion y censo',
+            'delete'            => 'Eliminacion',
+        ];
+
+        return $query->with('user', 'auditable')
+            ->orderBy('created_at', 'desc')
+            ->paginate()
+            ->through(function ($log) use ($actionLabels) {
+                $log->action = $actionLabels[$log->action] ?? $log->action;
+                return $log;
+            });
+
     }
 }

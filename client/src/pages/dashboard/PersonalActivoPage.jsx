@@ -1375,18 +1375,25 @@ export default function PersonalActivoPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
+      const serializedFilters = JSON.stringify(
+        columnFilters.reduce((acc, curr) => {
+          const value = curr?.value;
+
+          if (value !== undefined && value !== null && value !== "") {
+            acc[curr.id] = value;
+          }
+
+          return acc;
+        }, {}),
+      );
+
       const res = await activePersonnelAPI.getPersonnel({
         page: pagination.pageIndex + 1,
         per_page: pagination.pageSize,
         sortField: sorting[0]?.id || "id",
         sortOrder: sorting[0]?.desc ? "desc" : "asc",
         search: globalFilter,
-        // filters: JSON.stringify(
-        //   columnFilters.reduce((acc, curr) => {
-        //     acc[curr.id] = curr.value;
-        //     return acc;
-        //   }, {}),
-        // ),
+        filters: serializedFilters,
       });
       setData(res.personnels.data);
       setRowCount(res.personnels.total);

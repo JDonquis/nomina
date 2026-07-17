@@ -23,7 +23,7 @@ import FormField from "../../components/forms/FormField.jsx";
 import debounce from "lodash.debounce";
 
 const defaultFormData = {
-  activity: "",
+  action: "",
   to_census: false,
   // Datos personales
   photo: "",
@@ -146,14 +146,23 @@ export default function MovimientosPage() {
         enableSorting: true,
       },
       {
-        accessorKey: "activity",
+        accessorKey: "auditable.status",
+        header: "Módulo",
+        size: 150,
+        enableColumnFilter: true,
+        filterVariant: "select",
+        filterSelectOptions: ["activo", "inactivo"],
+        Cell: ({ cell }) => cell.getValue() == "active" ? <p className="flex gap-1"><Icon className="text-color2" icon="streamline-plump:office-worker-remix" width={20} height={20} /> Personal Activo</p>: <p className="flex gap-1"> <Icon className="text-color1" icon="fluent-emoji-high-contrast:old-man" width={18} height={17} /> Fe de vida </p>,
+
+      },
+      {
+        accessorKey: "action",
         header: "Actividad",
         size: 150,
         enableColumnFilter: true,
         filterVariant: "select",
 
         filterSelectOptions: [
-     
           "Creacion de Censo",
           "Actualizacion de Censo",
           "Eliminacion de Censo",
@@ -166,14 +175,13 @@ export default function MovimientosPage() {
         enableSorting: true,
       },
       {
-        accessorKey: "pay_sheet.id",
+        accessorKey: "auditable_id",
         header: "Cód del trabajador afectado",
         size: 250,
         enableColumnFilter: true,
         enableSorting: true,
       },
 
-  
       {
         header: "Acciones",
         accessorKey: "actions",
@@ -187,9 +195,9 @@ export default function MovimientosPage() {
                   setDetailModal(true);
                   setFormData({
                     ...cell.row.original.pay_sheet,
-                    activity: cell.row.original.activity,
+                    action: cell.row.original.action,
                     to_census:
-                      cell.row.original.activity === "Creacion de Censo"
+                      cell.row.original.action === "Creacion de Censo"
                         ? true
                         : false,
                   });
@@ -512,7 +520,7 @@ export default function MovimientosPage() {
         ),
       });
       console.log({ res });
-      setData(res.data);
+      setData(res.activities.data);
       setRowCount(res.total);
     } catch (e) {
       console.error("Failed to fetch data", e);
@@ -579,11 +587,11 @@ export default function MovimientosPage() {
         title="Detalles"
       >
         <div className="flex flex-col justify-center">
-          {/* {PDFdata.activity == "Creación de registro" || PDFdata.activity == "Actualización de registro" ? 
+          {/* {PDFdata.action == "Creación de registro" || PDFdata.action == "Actualización de registro" ? 
            
           } */}
           <h1 className="text-xl font-bold mb-2 text-gray-300 col-span-2 text-center uppercase ">
-            {formData.activity}
+            {formData.action}
           </h1>
           <form
             className={`px-12 space-y-5 md:space-y-0 gap-7 w-full relative`}
