@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   activitiesAPI,
   ASICAPI,
+  jobsAPI,
   nominaNamesAPI,
   usersAPI,
 } from "../../services/api.js";
@@ -65,6 +66,245 @@ const defaultFormData = {
   fotoChanged: false,
 };
 
+const formatDetailLabel = (key) =>
+  key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const normalizeDetailValue = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return "No especificado";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Sí" : "No";
+  }
+
+  if (Array.isArray(value)) {
+    if (!value.length) return "Sin datos";
+    return value
+      .map((item) => {
+        if (typeof item === "object" && item !== null) {
+          return JSON.stringify(item);
+        }
+        return String(item);
+      })
+      .join(", ");
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+};
+
+const formatFamilyMembers = (value) => {
+  if (!Array.isArray(value) || !value.length) {
+    return "Sin datos";
+  }
+
+  return value
+    .map((member, index) => {
+      if (!member || typeof member !== "object") {
+        return `${index + 1}. ${normalizeDetailValue(member)}`;
+      }
+
+      const parts = [];
+      if (member.full_name) parts.push(member.full_name);
+      if (member.relationship) parts.push(`(${member.relationship})`);
+      if (member.ci) parts.push(`CI: ${member.ci}`);
+
+      return `${index + 1}. ${parts.join(" ") || "Familiar"}`;
+    })
+    .join(" • ");
+};
+
+const areValuesEqual = (a, b) => {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    return a.every((item, index) => areValuesEqual(item, b[index]));
+  }
+
+  if (typeof a === "object" && typeof b === "object") {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+    return aKeys.every((key) => areValuesEqual(a[key], b[key]));
+  }
+
+  return JSON.stringify(a) === JSON.stringify(b);
+};
+
+const collectChangedFields = (oldValues, newValues, prefix = "") => {
+  const changes = {};
+  const keys = new Set([
+    ...(oldValues ? Object.keys(oldValues) : []),
+    ...(newValues ? Object.keys(newValues) : []),
+  ]);
+
+  keys.forEach((key) => {
+    const oldValue = oldValues?.[key];
+    const newValue = newValues?.[key];
+    const currentPath = prefix ? `${prefix}.${key}` : key;
+
+    if (
+      oldValue &&
+      newValue &&
+      typeof oldValue === "object" &&
+      typeof newValue === "object" &&
+      !Array.isArray(oldValue) &&
+      !Array.isArray(newValue)
+    ) {
+      Object.assign(changes, collectChangedFields(oldValue, newValue, currentPath));
+      return;
+    }
+
+    if (!areValuesEqual(oldValue, newValue)) {
+      changes[currentPath] = true;
+    }
+  });
+
+  return changes;
+};
+
+const buildDetailViewModel = async (activityRow = {}) => {
+  const payload =
+    activityRow?.new_values && typeof activityRow.new_values === "object"
+      ? activityRow.new_values
+      : activityRow?.pay_sheet && typeof activityRow.pay_sheet === "object"
+        ? activityRow.pay_sheet
+        : {};
+
+  const oldValues =
+    activityRow?.old_values && typeof activityRow.old_values === "object"
+      ? activityRow.old_values
+      : {};
+
+  const additionalData =
+    payload?.additional_data && typeof payload.additional_data === "object"
+      ? payload.additional_data
+      : null;
+
+  const entries = [];
+
+  const asicLookup = payload?.asic_id
+    ? await ASICAPI.getASICRelations(payload.asic_id)
+    : null;
+
+  const dependencyMap = Object.fromEntries(
+    (asicLookup?.dependencies || []).map((dep) => [String(dep.id), dep.name]),
+  );
+  const unitMap = Object.fromEntries(
+    (asicLookup?.dependencies || []).flatMap((dep) =>
+      (dep.administrative_units || []).map((unit) => [String(unit.id), unit.name]),
+    ),
+  );
+  const departmentMap = Object.fromEntries(
+    (asicLookup?.dependencies || []).flatMap((dep) =>
+      (dep.administrative_units || []).flatMap((unit) =>
+        (unit.departments || []).map((department) => [String(department.id), department.name]),
+      ),
+    ),
+  );
+  const serviceMap = Object.fromEntries(
+    (asicLookup?.dependencies || []).flatMap((dep) =>
+      (dep.administrative_units || []).flatMap((unit) =>
+        (unit.departments || []).flatMap((department) =>
+          (department.services || []).map((service) => [String(service.id), service.name]),
+        ),
+      ),
+    ),
+  );
+
+  const typePersonnelList = payload?.type_personnel_id
+    ? await nominaNamesAPI.get()
+    : [];
+  const typePersonnelMap = Object.fromEntries(
+    typePersonnelList.map((typePersonnel) => [String(typePersonnel.id), typePersonnel.name]),
+  );
+
+  const jobsResponse = additionalData?.job_id || payload?.job_id
+    ? await jobsAPI.getJobs()
+    : null;
+  const jobMap = Object.fromEntries(
+    (jobsResponse?.job_positions || jobsResponse || []).map((job) => [
+      String(job.id),
+      job.title || job.name || job.position || job.label || "",
+    ]),
+  );
+
+  const asicList = await ASICAPI.getASIC();
+  const asicMap = Object.fromEntries(
+    asicList.map((asic) => [String(asic.id), asic.name]),
+  );
+
+  const resolveDisplayValue = (key, value) => {
+    if (value === null || value === undefined || value === "") {
+      return "No especificado";
+    }
+
+    if (key === "asic_id") return asicMap[String(value)] || String(value);
+    if (key === "dependency_id") return dependencyMap[String(value)] || String(value);
+    if (key === "administrative_unit_id") return unitMap[String(value)] || String(value);
+    if (key === "department_id") return departmentMap[String(value)] || String(value);
+    if (key === "service_id") return serviceMap[String(value)] || String(value);
+    if (key === "type_personnel_id") return typePersonnelMap[String(value)] || String(value);
+    if (key === "job_id") return jobMap[String(value)] || String(value);
+    if (key === "additional_data.family_members" || key === "family_members") {
+      return formatFamilyMembers(value);
+    }
+
+    return normalizeDetailValue(value);
+  };
+
+  const addEntriesFromObject = (source, prefix = "") => {
+    Object.entries(source || {}).forEach(([key, value]) => {
+      if (["additional_data", "photo", "created_at", "updated_at", "id"].includes(key)) {
+        return;
+      }
+
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        return;
+      }
+
+      const entryKey = prefix ? `${prefix}.${key}` : key;
+      entries.push({
+        key: entryKey,
+        label: formatDetailLabel(entryKey),
+        value: resolveDisplayValue(entryKey, value),
+      });
+    });
+  };
+
+  addEntriesFromObject(payload);
+
+  if (additionalData) {
+    Object.entries(additionalData).forEach(([key, value]) => {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        return;
+      }
+
+      const entryKey = `additional_data.${key}`;
+      entries.push({
+        key: entryKey,
+        label: `${formatDetailLabel(key)} (datos adicionales)`,
+        value: resolveDisplayValue(entryKey, value),
+      });
+    });
+  }
+
+  return {
+    moduleName: additionalData ? "Personal Activo" : "Fe de Vida",
+    entries,
+    changedFields: collectChangedFields(oldValues, payload),
+  };
+};
+
 export default function MovimientosPage() {
   const [columnVisibility, setColumnVisibility] = useTableVisibility(
     "movimientos_columns",
@@ -78,6 +318,11 @@ export default function MovimientosPage() {
   const [users, setUsers] = useState([]);
   const [detailModal, setDetailModal] = useState(false);
   const [PDFdata, setPDFdata] = useState({});
+  const [detailView, setDetailView] = useState({
+    moduleName: "Fe de Vida",
+    entries: [],
+    changedFields: {},
+  });
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -152,8 +397,29 @@ export default function MovimientosPage() {
         enableColumnFilter: true,
         filterVariant: "select",
         filterSelectOptions: ["activo", "inactivo"],
-        Cell: ({ cell }) => cell.getValue() == "active" ? <p className="flex gap-1"><Icon className="text-color2" icon="streamline-plump:office-worker-remix" width={20} height={20} /> Personal Activo</p>: <p className="flex gap-1"> <Icon className="text-color1" icon="fluent-emoji-high-contrast:old-man" width={18} height={17} /> Fe de vida </p>,
-
+        Cell: ({ cell }) =>
+          cell.getValue() == "active" ? (
+            <p className="flex gap-1">
+              <Icon
+                className="text-color2"
+                icon="streamline-plump:office-worker-remix"
+                width={20}
+                height={20}
+              />{" "}
+              Personal Activo
+            </p>
+          ) : (
+            <p className="flex gap-1">
+              {" "}
+              <Icon
+                className="text-color1"
+                icon="fluent-emoji-high-contrast:old-man"
+                width={18}
+                height={17}
+              />{" "}
+              Fe de vida{" "}
+            </p>
+          ),
       },
       {
         accessorKey: "action",
@@ -191,17 +457,21 @@ export default function MovimientosPage() {
           return (
             <div className="flex gap-2">
               <button
-                onClick={() => {
+                onClick={async () => {
+                  const detailViewModel = await buildDetailViewModel(cell.row.original);
+                  setDetailView(detailViewModel);
                   setDetailModal(true);
                   setFormData({
-                    ...cell.row.original.pay_sheet,
+                    ...defaultFormData,
+                    ...(cell.row.original.pay_sheet || {}),
+                    ...(cell.row.original.new_values || {}),
+                    ...(cell.row.original.new_values?.additional_data || {}),
                     action: cell.row.original.action,
                     to_census:
                       cell.row.original.action === "Creacion de Censo"
                         ? true
                         : false,
                   });
-                  console.log(cell.row.original);
                 }}
                 className="text-0 p-1 rounded-full text-gray-700 hover:bg-gray-300 hover:underline"
                 title="Ver detalles"
@@ -587,169 +857,62 @@ export default function MovimientosPage() {
         title="Detalles"
       >
         <div className="flex flex-col justify-center">
-          {/* {PDFdata.action == "Creación de registro" || PDFdata.action == "Actualización de registro" ? 
-           
-          } */}
-          <h1 className="text-xl font-bold mb-2 text-gray-300 col-span-2 text-center uppercase ">
+          <h1 className="text-xl font-bold mb-2 text-gray-300 col-span-2 text-center uppercase">
             {formData.action}
           </h1>
-          <form
-            className={`px-12 space-y-5 md:space-y-0 gap-7 w-full relative`}
-          >
-            <div className="space-y-3 z-10 md:sticky top-0 h-max mb-24">
-              <h2 className="text-xl font-bold mb-2 col-span-2  ">
-                Datos personales
-              </h2>
 
-              <div className="grid grid-cols-12 gap-4">
-                {patientFormFields.map((field, index) => {
-                  if (field.name == "photo") {
-                    // return (
-                    //   <div
-                    //     key={field.name + "_" + field.label + index}
-                    //     className="mb-5 col-span-12 flex justify-center  pb-4 mx-auto relative"
-                    //   >
-                    //     <div
-                    //       ref={photoOptionsRef}
-                    //       className="mx-auto text-gray-600 text-sm"
-                    //     >
-                    //       <div
-                    //         onClick={() =>
-                    //           setShowPhotoOptions(!showPhotoOptions)
-                    //         }
-                    //         className="bg-gray-200 mt-1 rounded-md w-36 h-44 flex items-center justify-center cursor-pointer hover:bg-gray-400 duration-150"
-                    //       >
-                    //         {formData.photo ? null : (
-                    //           <Icon
-                    //             icon="tabler:photo-up"
-                    //             className="w-20 h-20 text-gray-300"
-                    //           />
-                    //         )}
-                    //         {(formData.photo && submitString === "Registrar") ||
-                    //         formData.fotoChanged ? (
-                    //           <img
-                    //             src={URL.createObjectURL(formData.photo)}
-                    //             alt="preview"
-                    //             className="w-full h-full object-cover rounded-md"
-                    //             width={144}
-                    //             height={176}
-                    //             loading="lazy"
-                    //           />
-                    //         ) : null}
-                    //         {formData.photo &&
-                    //         submitString === "Actualizar" &&
-                    //         !formData.fotoChanged ? (
-                    //           <img
-                    //             src={API_URL + "/storage/" + formData.photo}
-                    //             alt="preview"
-                    //             className="w-full h-full object-cover rounded-md"
-                    //             width={144}
-                    //             height={176}
-                    //             loading="lazy"
-                    //           />
-                    //         ) : null}
-                    //       </div>
-                    //       {/* Photo Options Menu */}
-                    //       {showPhotoOptions && (
-                    //         <div className="absolute z-50 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
-                    //           <button
-                    //             type="button"
-                    //             onClick={openCamera}
-                    //             className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 rounded-t-lg"
-                    //           >
-                    //             <Icon
-                    //               icon="mdi:camera"
-                    //               className="w-5 h-5 text-color1"
-                    //             />
-                    //             <span>Tomar foto</span>
-                    //           </button>
-                    //           <button
-                    //             type="button"
-                    //             onClick={() => {
-                    //               galleryInputRef.current?.click();
-                    //               setShowPhotoOptions(false);
-                    //             }}
-                    //             className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 rounded-b-lg border-t border-gray-200"
-                    //           >
-                    //             <Icon
-                    //               icon="mdi:image"
-                    //               className="w-5 h-5 text-color1"
-                    //             />
-                    //             <span>Subir desde galería</span>
-                    //           </button>
-                    //         </div>
-                    //       )}
-                    //     </div>
-                    //     {/* Gallery Input */}
-                    //     <input
-                    //       ref={galleryInputRef}
-                    //       type="file"
-                    //       name="photo-gallery"
-                    //       className="hidden"
-                    //       accept="image/*"
-                    //       onChange={(e) => {
-                    //         if (e.target.files[0]) {
-                    //           setFormData({
-                    //             ...formData,
-                    //             photo: e.target.files[0],
-                    //             fotoChanged:
-                    //               submitString === "Actualizar" ? true : false,
-                    //           });
-                    //         }
-                    //       }}
-                    //     />
-                    //   </div>
-                    // );
-                  } else {
-                    return (
-                      <>
-                        {field.name == "type_pension" && (
-                          <>
-                            {formData.to_census && (
-                              <div className="col-span-12 flex items-center">
-                                <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
-                                  Datos de la pensión
-                                </h2>
-                                <hr className="w-full h-0.5 flex-auto bg-gray-300" />
-                              </div>
-                            )}
-                          </>
-                        )}
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {detailView.moduleName}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Los campos en verde indican que cambiaron en este movimiento.
+                </p>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-gray-600">
+                {detailView.entries.length} campos
+              </span>
+            </div>
 
-                        {field.name == "pension_survivor_status" &&
-                        formData.to_census ? (
-                          <>
-                            <div className="col-span-12 flex items-center">
-                              <h2 className="text-xl min-w-56 mt-3 font-bold mb-2">
-                                Pensión sobrevivencia
-                              </h2>
-                              <hr className="w-full h-0.5 flex-auto bg-gray-300" />
-                            </div>
-                            <div className="col-span-12">
-                              {!formData.pension_survivor_status ? (
-                                <p> No aplica</p>
-                              ) : null}
-                            </div>
-                          </>
-                        ) : index < 14 || formData.to_census ? (
-                          <FormField
-                            key={field.name}
-                            {...field}
-                            value={formData[field.name]}
-                            readOnly={true}
-                          />
-                        ) : null}
-                      </>
-                    );
-                  }
+            {detailView.entries.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {detailView.entries.map(({ key, label, value }) => {
+                  const isChanged =
+                    Boolean(detailView.changedFields[key]) ||
+                    Boolean(detailView.changedFields[`additional_data.${key}`]) ||
+                    Boolean(detailView.changedFields[key.replace(/^additional_data\./, "")]);
+
+                  return (
+                    <div
+                      key={key}
+                      className={`rounded-md border p-3 ${
+                        isChanged
+                          ? "border-emerald-500 bg-emerald-50"
+                          : "border-gray-200 bg-white"
+                      }`}
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        {label}
+                      </div>
+                      <div
+                        className={`mt-1 break-words text-sm font-medium ${
+                          isChanged ? "text-emerald-700" : "text-gray-800"
+                        }`}
+                      >
+                        {value}
+                      </div>
+                    </div>
+                  );
                 })}
               </div>
-            </div>
-
-            <div className="col-span-12">
-              <div className="flex justify-end space-x-4 pt-4"></div>
-            </div>
-          </form>
+            ) : (
+              <div className="rounded-md border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-500">
+                No hay información disponible para este movimiento.
+              </div>
+            )}
+          </div>
         </div>
       </Modal>
     </LocalizationProvider>

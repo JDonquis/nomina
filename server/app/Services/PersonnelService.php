@@ -82,9 +82,6 @@ class PersonnelService
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
 
-
-
-
         if (!empty($params['search'])) {
             $search = $params['search'];
 
@@ -122,7 +119,6 @@ class PersonnelService
             if (isset($filters['type_personnel_id'])) {
                 $query->where('type_personnel_id', $filters['type_personnel_id']);
             }
-
 
             if (isset($filters['full_name'])) {
                 $query->where('full_name', 'LIKE', "%{$filters['full_name']}%");
@@ -257,6 +253,9 @@ class PersonnelService
             $personnel->update(['census_status' => true]);
         }
 
+        // Carga las relaciones para que se incluyan en el log
+        $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
+
         AuditLog::create([
             'action' => $action,
             'auditable_type' => Personnel::class,
@@ -271,13 +270,13 @@ class PersonnelService
 
     public function update($data, Personnel $personnel, $photo = null)
     {
-
         $action = 'update';
         $censusStatus = $data['to_census'] ?? false;
 
         $data['census_date'] = $censusStatus ? Carbon::now() : null;
 
-
+        // Carga y guarda relaciones del estado previo
+        $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
         $oldValues = $personnel->toArray();
 
         $allowedFields = $this->getAllowedFields($censusStatus);
@@ -297,6 +296,8 @@ class PersonnelService
         }
 
         $personnel->refresh();
+        // Carga relaciones actualizadas tras el update
+        $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
 
         AuditLog::create([
             'action' => $action,
@@ -312,6 +313,8 @@ class PersonnelService
 
     public function destroy(Personnel $personnel)
     {
+        // Carga relaciones previas a la eliminación
+        $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
         $oldValues = $personnel->toArray();
 
         AuditLog::create([
@@ -515,6 +518,9 @@ class PersonnelService
                 ],
             ]);
 
+            // Carga relaciones del personal importado
+            $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
+
             AuditLog::create([
                 'action' => 'import_excel',
                 'auditable_type' => Personnel::class,
@@ -547,104 +553,11 @@ class PersonnelService
         return $value;
     }
 
-
-    /*
-    public function generateReport()
-    {
-        Carbon::setLocale('es');
-
-        $year = $year ?? now()->year;
-
-        $censusLogs = AuditLog::where('auditable_type', Personnel::class)
-            ->whereIn('action', ['create_and_census', 'update_and_census'])
-            ->whereYear('created_at', $year)
-            ->orderBy('created_at')
-            ->get()
-            ->groupBy('auditable_id')
-            ->map(function ($logs) {
-                return $logs->first()->created_at;
-            });
-
-        if ($censusLogs->isEmpty()) {
-            return response()->json([
-                'asics' => [],
-                'days' => []
-            ]);
-        }
-
-        $personnelIds = $censusLogs->keys()->toArray();
-
-        $personnels = Personnel::whereIn('id', $personnelIds)
-            ->where('census_status', true)
-            ->where('status', 'inactive')
-            ->with(['asic'])
-            ->get()
-            ->map(function ($personnel) use ($censusLogs) {
-                $personnel->census_date = $censusLogs->get($personnel->id);
-                return $personnel;
-            });
-
-        if ($personnels->isEmpty()) {
-            return response()->json([
-                'asics' => [],
-                'days' => []
-            ]);
-        }
-
-        $asics = $personnels
-            ->groupBy(function ($personnel) {
-                return $personnel->asic->id ?? 'sin-asic';
-            })
-            ->map(function ($asicPersonnels, $asicId) {
-                $asic = $asicPersonnels->first()->asic;
-                $asicName = $asic->name ?? 'SIN ASIC';
-
-                $censadosPorDia = $asicPersonnels
-                    ->groupBy(function ($personnel) {
-                        return $personnel->census_date->format('Y-m-d');
-                    })
-                    ->map(function ($dayCensuses) {
-                        return count($dayCensuses);
-                    })
-                    ->toArray();
-
-                return [
-                    'id' => $asicId,
-                    'name' => $asicName,
-                    'censadosPorDia' => $censadosPorDia
-                ];
-            })
-            ->values()
-            ->toArray();
-
-        $firstDate = $personnels->min('census_date');
-        $lastDate = $personnels->max('census_date');
-
-        $days = [];
-        $start = Carbon::parse($firstDate)->startOfDay();
-        $end = Carbon::parse($lastDate)->startOfDay();
-
-        while ($start <= $end) {
-            $days[] = [
-                'id' => $start->format('Y-m-d'),
-                'label' => $start->format('d/m')
-            ];
-            $start->addDay();
-        }
-
-        return response()->json([
-            'asics' => $asics,
-            'days' => $days
-        ]);
-    }
-    */
-
     public function generateReport(Request $request, $status)
     {
         Carbon::setLocale('es');
         $year = $request->year ?? now()->year;
 
-        // Buscamos directamente en el personal inactivo (Fe de vida) que esté censado
         $personnels = Personnel::where('census_status', true)
             ->where('status', $status)
             ->whereYear('census_date', $year)
@@ -672,7 +585,6 @@ class PersonnelService
 
                 $censadosPorDia = $asicPersonnels
                     ->groupBy(function ($personnel) {
-                        // Usamos created_at directamente del personal
                         return $personnel->census_date->format('Y-m-d');
                     })
                     ->map(function ($dayCensuses) {
@@ -819,3 +731,4 @@ class PersonnelService
         ]);
     }
 }
+

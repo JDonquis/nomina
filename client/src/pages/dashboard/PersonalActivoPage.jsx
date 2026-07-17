@@ -1298,7 +1298,7 @@ export default function PersonalActivoPage() {
                     row.type_personnel?.laboral_relationship || "",
                   personnel_type: row.type_personnel?.name || "",
                   budget: row.type_personnel?.source_budget || "",
-                  job_id: +row.additional_data.job_id || ""
+                  job_id: +row.additional_data?.job_id || ""
                 });
 
                 setEditingId(row.id);

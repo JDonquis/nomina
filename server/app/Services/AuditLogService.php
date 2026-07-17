@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use Illuminate\Support\Facades\Log;
+use App\Models\Personnel;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 class AuditLogService
 {
     public function get($generalFilters = [])
@@ -42,7 +44,10 @@ class AuditLogService
             'delete'            => 'Eliminacion',
         ];
 
-        return $query->with('user', 'auditable')
+        return $query->with(['user', 'auditable' => function (MorphTo $morphTo) {
+            $morphTo->morphWith([
+                Personnel::class => ['typePersonnel', 'asic', 'service', 'dependency', 'administrativeUnit', 'department'],
+            ]);}])
             ->orderBy('created_at', 'desc')
             ->paginate()
             ->through(function ($log) use ($actionLabels) {
