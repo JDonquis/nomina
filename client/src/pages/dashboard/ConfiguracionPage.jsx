@@ -116,6 +116,7 @@ export default function ConfiguracionPage() {
   }, []);
 
   const getAsicRelations = async (id) => {
+      setSelectedAsic(null);
     try {
       const response = await ASICAPI.getASICRelations(id);
       setFormData({
@@ -124,7 +125,6 @@ export default function ConfiguracionPage() {
         dependencies: response.dependencies || [],
         newDependenceName: "",
       });
-      console.log({ response }); // Debugging line to check the response from getASICRelations
       setSelectedAsic(response);
     } catch (error) {
       console.error("Error fetching ASIC relations:", error);
@@ -681,7 +681,7 @@ export default function ConfiguracionPage() {
   const [jobsData, setJobsData] = useState(null);
 
   const reportPerJob = async (id, type, dataType) => {
-    console.log({type, dataType})
+    console.log({ type, dataType });
     try {
       let response;
       switch (type) {
@@ -721,12 +721,11 @@ export default function ConfiguracionPage() {
     }
   };
 
-
   const [isModalPersonnelsOpen, setIsModalPersonnelsOpen] = useState(false);
   const [personnelsData, setPersonnelsData] = useState(null);
 
   const reportPerPersonnels = async (id, type, dataType) => {
-    console.log({type, dataType})
+    console.log({ type, dataType });
     try {
       let response;
       switch (type) {
@@ -865,7 +864,6 @@ export default function ConfiguracionPage() {
               onGetReportActiveCensus={getReportActiveCensus}
               onGetCargosReport={reportPerJob}
               onGetPersonnelsReport={reportPerPersonnels}
-
             />
             {isMapOpen ? (
               <>
@@ -880,6 +878,9 @@ export default function ConfiguracionPage() {
                   getTotalActiveCensusedInDependency={
                     getTotalActiveCensusedInDependency
                   }
+                  onGetReportActiveCensus={getReportActiveCensus}
+                  onGetCargosReport={reportPerJob}
+                  onGetPersonnelsReport={reportPerPersonnels}
                 />
               </>
             ) : (
@@ -914,13 +915,13 @@ export default function ConfiguracionPage() {
             <CargosReport data={jobsData} />
           </Modal>
 
-          <Modal 
-           isOpen={isModalPersonnelsOpen}
+          <Modal
+            isOpen={isModalPersonnelsOpen}
             onClose={() => setIsModalPersonnelsOpen(false)}
             title="Tipo de personal"
-            >
-              <PersonnelsReport data={personnelsData} />
-            </Modal>
+          >
+            <PersonnelsReport data={personnelsData} />
+          </Modal>
         </>
       ) : (
         <SyncSection />

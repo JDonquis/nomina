@@ -87,9 +87,18 @@ class PersonnelService
 
         if (!empty($params['search'])) {
             $search = $params['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('full_name', 'LIKE', "%{$search}%")
-                    ->orWhere('ci', 'LIKE', "%{$search}%");
+
+            $keywords = array_filter(explode(' ', $search));
+
+            $query->where(function ($q) use ($keywords, $search) {
+
+                $q->where(function ($subQ) use ($keywords) {
+                    foreach ($keywords as $word) {
+                        $subQ->where('full_name', 'LIKE', "%{$word}%");
+                    }
+                });
+
+                $q->orWhere('ci', 'LIKE', "%{$search}%");
 
                 foreach ($this->fieldsWithoutCensus['additional_data'] as $jsonField) {
                     $q->orWhere("additional_data->{$jsonField}", 'LIKE', "%{$search}%");
