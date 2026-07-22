@@ -80,9 +80,13 @@ export const liveProofAPI = {
     }),
   deletePersonnel: (id) => api.delete(`/admin/personnels/life_proof/${id}`),
   importExcel: (file) =>
-    api.post("/admin/personnels/life_proof/sheet", file, {
+    api.post("/admin/personnels/life_proof/import-excel", file, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
+  exportTemplate: () =>
+    api.get("/admin/personnels/life_proof/export-template", { responseType: "blob" }),
+  exportData: () =>
+    api.get("/admin/personnels/life_proof/export-data", { responseType: "blob" }),
   getDetailById: (id) => api.get(`/admin/personnels/life_proof/${id}`),
   getReport: () => api.get("/admin/personnels/generate_report/inactive"),
 };
@@ -187,6 +191,10 @@ export const activePersonnelAPI = {
   importExcel: (file) => api.post("/admin/personnels/active/import-excel", file, {
     headers: { "Content-Type": "multipart/form-data" },
   }),
+  exportTemplate: () =>
+    api.get("/admin/personnels/active/export-template", { responseType: "blob" }),
+  exportData: () =>
+    api.get("/admin/personnels/active/export-data", { responseType: "blob" }),
   getDetailById: (id) => api.get(`/admin/personnels/active/${id}`),
   getReport: () => api.get("/admin/personnels/generate_report/active"),
   getHospitalizedReport: () => api.get("/admin/personnels/generate_report/hospital/active"),

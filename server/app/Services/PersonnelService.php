@@ -64,6 +64,7 @@ class PersonnelService
             'decease_date',
             'last_payment',
             'degree_obtained',
+            'pregraduate_degree',
             'postgraduate_degree',
             'mobile_phone',
             'fixed_phone',
@@ -71,6 +72,12 @@ class PersonnelService
             'pant_size',
             'shoe_size',
             'job_title',
+            'entry_date',
+            'labor_relationship',
+            'payroll_dependency',
+            'payroll_budget',
+            'job_code',
+            'bank_account_number',
         ],
     ];
 
@@ -347,12 +354,9 @@ class PersonnelService
         return $personnel;
     }
 
-    public function exportTemplate()
+    private function getHeaders(): array
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $headers = [
+        return [
             'NAC (V/E)',
             'CEDULA',
             'NOMBRE COMPLETO',
@@ -380,20 +384,27 @@ class PersonnelService
             'CODIGO NOMINA',
             'NOMBRE NOMINA',
             'PRESUPUESTO',
-            'DEPENDENCIA NÓMINA',
+            'DEPENDENCIA NOMINA',
             'CODIGO CARGO',
-            'NUMERO DE CUENTA'
+            'NUMERO DE CUENTA',
         ];
+    }
 
+    public function exportTemplate($status = 'active')
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = $this->getHeaders();
         $sheet->fromArray($headers, null, 'A1');
 
-        $columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD'];
-        foreach ($columns as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
+        $lastCol = $sheet->getHighestColumn();
+        for ($i = 'A'; $i <= $lastCol; $i++) {
+            $sheet->getColumnDimension($i)->setAutoSize(true);
         }
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'plantilla_personal_activo.xlsx';
+        $filename = $status === 'active' ? 'plantilla_personal_activo.xlsx' : 'plantilla_fe_de_vida.xlsx';
 
         return response()->stream(function () use ($writer) {
             $writer->save('php://output');
@@ -403,9 +414,90 @@ class PersonnelService
         ]);
     }
 
-    public function importExcel(Request $request)
+    public function exportData($status = 'active')
     {
-        set_time_limit(120);
+        $personnels = Personnel::where('status', $status)
+            ->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service'])
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = $this->getHeaders();
+        $sheet->fromArray($headers, null, 'A1');
+
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2E7D32']],
+            'alignment' => ['horizontal' => 'center'],
+        ];
+        $sheet->getStyle('A1:' . $sheet->getHighestColumn() . '1')->applyFromArray($headerStyle);
+
+        $rowNum = 2;
+        foreach ($personnels as $p) {
+            $ad = $p->additional_data ?? [];
+
+            $sexMap = ['M' => 'Masculino', 'F' => 'Femenino'];
+            $civilMap = ['S' => 'Soltero', 'C' => 'Casado', 'V' => 'Viudo', 'D' => 'Divorciado'];
+
+            $sheet->fromArray([
+                $p->nac,
+                $p->ci,
+                $p->full_name,
+                $p->date_birth,
+                $sexMap[$p->sex] ?? $p->sex,
+                $civilMap[$p->civil_status] ?? $p->civil_status,
+                $ad['degree_obtained'] ?? null,
+                $ad['pregraduate_degree'] ?? null,
+                $ad['postgraduate_degree'] ?? null,
+                $p->address,
+                $p->email,
+                $p->phone_number,
+                $ad['fixed_phone'] ?? null,
+                $ad['shirt_size'] ?? null,
+                $ad['pant_size'] ?? null,
+                $ad['shoe_size'] ?? null,
+                $p->asic?->name,
+                $p->dependency?->name,
+                $p->administrativeUnit?->name,
+                $p->department?->name,
+                $p->service?->name,
+                $ad['entry_date'] ?? null,
+                $ad['job_title'] ?? null,
+                $ad['labor_relationship'] ?? null,
+                $p->typePersonnel?->code,
+                $p->typePersonnel?->name,
+                $ad['payroll_budget'] ?? null,
+                $ad['payroll_dependency'] ?? null,
+                $ad['job_code'] ?? null,
+                $ad['bank_account_number'] ?? null,
+            ], null, 'A' . $rowNum);
+
+            $rowNum++;
+        }
+
+        $lastCol = $sheet->getHighestColumn();
+        for ($i = 'A'; $i <= $lastCol; $i++) {
+            $sheet->getColumnDimension($i)->setAutoSize(true);
+        }
+
+        $sheet->setAutoFilter('A1:' . $sheet->getHighestColumn() . '1');
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = ($status === 'active' ? 'personal_activo' : 'fe_de_vida') . '_export_' . date('Y-m-d') . '.xlsx';
+
+        return response()->stream(function () use ($writer) {
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function importExcel(Request $request, $status = 'active')
+    {
+        set_time_limit(0);
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls'
@@ -434,109 +526,213 @@ class PersonnelService
 
         Excel::import($import, $request->file('file'));
 
-        $data = [];
+        $allAsics = ASIC::all()->keyBy('name');
+        $allDependencies = Dependency::all()->keyBy('name');
+        $allAdminUnits = AdministrativeUnit::all()->keyBy('name');
+        $allDepartments = Department::all()->keyBy('name');
+        $allServices = Service::all()->keyBy('name');
+        $allTypePersonnels = TypePersonnel::all();
+        $typePersonnelsByCode = $allTypePersonnels->keyBy('code');
+
+        $existingMap = Personnel::select('id', 'ci', 'additional_data')
+            ->get()
+            ->keyBy('ci');
+
+        $createdCount = 0;
+        $updatedCount = 0;
         $errors = [];
+        $userId = Auth::id();
+        $now = now();
+        $nowStr = $now->toDateTimeString();
+        $sexMap = ['Masculino' => 'M', 'Femenino' => 'F', 'M' => 'M', 'F' => 'F'];
+        $civilMap = ['Soltero' => 'S', 'Casado' => 'C', 'Viudo' => 'V', 'Divorciado' => 'D', 'S' => 'S', 'C' => 'C', 'V' => 'V', 'D' => 'D'];
 
-        foreach ($dataRows as $index => $row) {
-            $rowIndex = $index + 1;
-            $rowData = $row;
+        $chunks = array_chunk($dataRows, 500, true);
 
-            $ci = $rowData['cedula'] ?? null;
-            $fullName = $rowData['nombre_completo'] ?? null;
+        foreach ($chunks as $chunkIndex => $chunk) {
+            $auditLogsBatch = [];
 
-            if (empty($ci) || empty($fullName)) {
-                $errors[] = "Fila $rowIndex sin Cédula o Nombre";
-                continue;
+            DB::beginTransaction();
+
+            try {
+                foreach ($chunk as $index => $row) {
+                    $rowIndex = ($chunkIndex * 500) + $index + 2;
+                    $rowData = $row;
+
+                    $ci = trim($rowData['cedula'] ?? '');
+                    $fullName = trim($rowData['nombre_completo'] ?? '');
+
+                    if (empty($ci) || empty($fullName)) {
+                        $errors[] = "Fila $rowIndex: Cedula o Nombre vacios";
+                        continue;
+                    }
+
+                    $dateBirthValue = $rowData['fecha_nacimiento_yyyy_mm_dd'] ?? null;
+                    $dateBirth = $this->excelDateToDate($dateBirthValue);
+                    $entryDateValue = $rowData['fecha_ingreso_yyyy_mm_dd'] ?? $rowData['fecha_greso_yyyy_mm_dd'] ?? null;
+                    $entryDate = $this->excelDateToDate($entryDateValue);
+
+                    $sex = $sexMap[$rowData['sexo_mf']] ?? $rowData['sexo_mf'] ?? 'Sin asignar';
+                    $civilStatus = $civilMap[$rowData['estado_civil_scvd']] ?? $rowData['estado_civil_scvd'] ?? null;
+
+                    $nac = strtoupper(trim($rowData['nac_ve'] ?? 'V'));
+                    if (!in_array($nac, ['V', 'E'])) {
+                        $nac = 'V';
+                    }
+
+                    $asicNombre = trim($rowData['nombre_asic'] ?? '');
+                    $dependenciaNombre = trim($rowData['nombre_dependencia'] ?? '');
+                    $unidadAdmNombre = trim($rowData['nombre_unidad_adm'] ?? '');
+                    $departamentoNombre = trim($rowData['nombre_departamento'] ?? '');
+                    $servicioNombre = trim($rowData['nombre_servicio'] ?? '');
+
+                    $asic = $allAsics->get($asicNombre);
+                    $dependency = $allDependencies->get($dependenciaNombre);
+                    $adminUnit = $allAdminUnits->get($unidadAdmNombre);
+                    $department = $allDepartments->get($departamentoNombre);
+                    $service = $allServices->get($servicioNombre);
+
+                    if (!empty($asicNombre) && !$asic) {
+                        $errors[] = "Fila $rowIndex: ASIC '{$asicNombre}' no encontrado";
+                    }
+                    if (!empty($dependenciaNombre) && !$dependency) {
+                        $errors[] = "Fila $rowIndex: Dependencia '{$dependenciaNombre}' no encontrada";
+                    }
+                    if (!empty($unidadAdmNombre) && !$adminUnit) {
+                        $errors[] = "Fila $rowIndex: Unidad Administrativa '{$unidadAdmNombre}' no encontrada";
+                    }
+                    if (!empty($departamentoNombre) && !$department) {
+                        $errors[] = "Fila $rowIndex: Departamento '{$departamentoNombre}' no encontrado";
+                    }
+                    if (!empty($servicioNombre) && !$service) {
+                        $errors[] = "Fila $rowIndex: Servicio '{$servicioNombre}' no encontrado";
+                    }
+
+                    $typePersonnel = null;
+                    $codigoNomina = trim($rowData['codigo_nomina'] ?? '');
+                    $nombreNomina = trim($rowData['nombre_nomina'] ?? '');
+
+                    if (!empty($codigoNomina) && is_numeric($codigoNomina)) {
+                        $typePersonnel = $typePersonnelsByCode->get($codigoNomina);
+                    }
+                    if (!$typePersonnel && !empty($nombreNomina)) {
+                        $typePersonnel = $allTypePersonnels->first(function ($tp) use ($nombreNomina) {
+                            return str_contains($tp->name, $nombreNomina);
+                        });
+                    }
+
+                    if (!empty($codigoNomina) || !empty($nombreNomina)) {
+                        if (!$typePersonnel) {
+                            $errors[] = "Fila $rowIndex: Nómina '" . ($nombreNomina ?: $codigoNomina) . "' no encontrada";
+                        }
+                    }
+
+                    $additionalData = [
+                        'degree_obtained' => $rowData['grado_obtenido'] ?? null,
+                        'pregraduate_degree' => $rowData['titulo_pre_grado'] ?? null,
+                        'postgraduate_degree' => $rowData['titulo_post_grado'] ?? null,
+                        'fixed_phone' => $rowData['telefono_fijo'] ?? null,
+                        'shirt_size' => $rowData['talla_camisa'] ?? null,
+                        'pant_size' => $rowData['talla_pantalon'] ?? null,
+                        'shoe_size' => $rowData['talla_zapatos'] ?? null,
+                        'entry_date' => $entryDate,
+                        'job_title' => $rowData['cargo'] ?? null,
+                        'labor_relationship' => $rowData['relacion_laboral'] ?? null,
+                        'payroll_dependency' => $rowData['dependencia_nomina'] ?? null,
+                        'payroll_budget' => $rowData['presupuesto'] ?? null,
+                        'job_code' => $rowData['codigo_cargo'] ?? null,
+                        'bank_account_number' => trim((string) ($rowData['numero_de_cuenta'] ?? '')),
+                    ];
+
+                    $personnelData = [
+                        'status' => $status,
+                        'type_personnel_id' => $typePersonnel?->id,
+                        'nac' => $nac,
+                        'ci' => (string) $ci,
+                        'full_name' => $fullName,
+                        'date_birth' => $dateBirth,
+                        'sex' => $sex,
+                        'civil_status' => $civilStatus,
+                        'address' => $rowData['direccion'] ?? null,
+                        'email' => $rowData['email'] ?? null,
+                        'phone_number' => $rowData['telefono_movil'] ?? null,
+                        'asic_id' => $asic?->id,
+                        'dependency_id' => $dependency?->id,
+                        'administrative_unit_id' => $adminUnit?->id,
+                        'department_id' => $department?->id,
+                        'service_id' => $service?->id,
+                        'additional_data' => $additionalData,
+                    ];
+
+                    $ciStr = (string) $ci;
+
+                    if (isset($existingMap[$ciStr])) {
+                        $existing = $existingMap[$ciStr];
+                        $oldAdditional = $existing->additional_data ?? [];
+
+                        if (!empty($oldAdditional) && is_array($oldAdditional)) {
+                            $personnelData['additional_data'] = array_merge(
+                                $oldAdditional,
+                                $personnelData['additional_data']
+                            );
+                        }
+
+                        $existing->update($personnelData);
+
+                        $auditLogsBatch[] = [
+                            'action' => 'import_excel_update',
+                            'auditable_type' => Personnel::class,
+                            'auditable_id' => $existing->id,
+                            'user_id' => $userId,
+                            'old_values' => null,
+                            'new_values' => json_encode($personnelData),
+                            'created_at' => $nowStr,
+                            'updated_at' => $nowStr,
+                        ];
+
+                        $updatedCount++;
+                    } else {
+                        $personnelData['census_status'] = false;
+                        $personnelData['state'] = 'Falcon';
+                        $personnelData['city'] = 'Sin asignar';
+
+                        $personnel = Personnel::create($personnelData);
+
+                        $auditLogsBatch[] = [
+                            'action' => 'import_excel_create',
+                            'auditable_type' => Personnel::class,
+                            'auditable_id' => $personnel->id,
+                            'user_id' => $userId,
+                            'old_values' => null,
+                            'new_values' => json_encode($personnelData),
+                            'created_at' => $nowStr,
+                            'updated_at' => $nowStr,
+                        ];
+
+                        $createdCount++;
+                    }
+                }
+
+                if (!empty($auditLogsBatch)) {
+                    AuditLog::insert($auditLogsBatch);
+                }
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error en importExcel chunk ' . $chunkIndex . ': ' . $e->getMessage());
+                throw $e;
             }
-
-            if (Personnel::where('ci', $ci)->exists()) {
-                $errors[] = "Fila $rowIndex: Cédula $ci ya existe";
-                continue;
-            }
-
-            $dateBirthValue = $rowData['fecha_nacimiento_yyyy_mm_dd'] ?? null;
-            $dateBirth = $this->excelDateToDate($dateBirthValue);
-            $entryDateValue = $rowData['fecha_greso_yyyy_mm_dd'] ?? null;
-            $entryDate = $this->excelDateToDate($entryDateValue);
-
-            $sexMap = ['Masculino' => 'M', 'Femenino' => 'F'];
-            $sex = $sexMap[$rowData['sexo_mf']] ?? $rowData['sexo_mf'] ?? 'M';
-
-            $civilMap = ['Soltero' => 'S', 'Casado' => 'C', 'Viudo' => 'V', 'Divorciado' => 'D'];
-            $civilStatus = $civilMap[$rowData['estado_civil_scvd']] ?? $rowData['estado_civil_scvd'] ?? 'S';
-
-            $asic = ASIC::where('name', $rowData['nombre_asic'] ?? null)->first();
-            $dependency = Dependency::where('name', $rowData['nombre_dependencia'] ?? null)->first();
-            $adminUnit = AdministrativeUnit::where('name', $rowData['nombre_unidad_adm'] ?? null)->first();
-            $department = Department::where('name', $rowData['nombre_departamento'] ?? null)->first();
-            $service = Service::where('name', $rowData['nombre_servicio'] ?? null)->first();
-
-            $typePersonnel = null;
-            $codigoNomina = $rowData['codigo_nomina'] ?? '';
-            $nombreNomina = $rowData['nombre_nomina'] ?? '';
-
-            if (!empty($codigoNomina) && is_numeric($codigoNomina)) {
-                $typePersonnel = TypePersonnel::where('code', $codigoNomina)->first();
-            }
-            if (!$typePersonnel && !empty($nombreNomina)) {
-                $typePersonnel = TypePersonnel::where('name', 'LIKE', '%' . $nombreNomina . '%')->first();
-            }
-
-            $personnel = Personnel::create([
-                'status' => 'active',
-                'census_status' => false,
-                'type_personnel_id' => $typePersonnel?->id,
-                'nac' => $rowData['nac_ve'] ?? 'V',
-                'ci' => (string) $ci,
-                'full_name' => $fullName,
-                'date_birth' => $dateBirth,
-                'sex' => $sex,
-                'civil_status' => $civilStatus,
-                'address' => $rowData['direccion'] ?? null,
-                'email' => $rowData['email'] ?? null,
-                'phone_number' => $rowData['telefono_movil'] ?? null,
-                'state' => 'Falcón',
-                'city' => 'Sin asignar',
-                'asic_id' => $asic?->id,
-                'dependency_id' => $dependency?->id,
-                'administrative_unit_id' => $adminUnit?->id,
-                'department_id' => $department?->id,
-                'service_id' => $service?->id,
-                'is_resident' => false,
-                'additional_data' => [
-                    'degree_obtained' => $rowData['grado_obtenido'] ?? null,
-                    'postgraduate_degree' => $rowData['titulo_post_grado'] ?? null,
-                    'fixed_phone' => $rowData['telefono_fijo'] ?? null,
-                    'shirt_size' => $rowData['talla_camisa'] ?? null,
-                    'pant_size' => $rowData['talla_pantalon'] ?? null,
-                    'shoe_size' => $rowData['talla_zapatos'] ?? null,
-                    'payroll_dependency' => $rowData['dependencia_nómina'] ?? null,
-                    'entry_date' => $entryDate,
-                    'job_title' => $rowData['cargo'] ?? null,
-                    'bank_account_number' => (string) ($rowData['numero_de_cuenta'] ?? ''),
-                    'job_code' => $rowData['codigo_cargo'] ?? null,
-                ],
-            ]);
-
-            // Carga relaciones del personal importado
-            $personnel->load(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
-
-            AuditLog::create([
-                'action' => 'import_excel',
-                'auditable_type' => Personnel::class,
-                'auditable_id' => $personnel->id,
-                'user_id' => Auth::id() ?? null,
-                'old_values' => null,
-                'new_values' => $personnel->toArray(),
-            ]);
-
-            $data[] = $personnel;
         }
 
+        $statusLabel = $status === 'active' ? 'personal activo' : 'fe de vida';
+
         return response()->json([
-            'data' => $data,
-            'total' => count($data),
-            'errors' => $errors
+            'message' => "Importacion de {$statusLabel} completada. Creados: {$createdCount}, Actualizados: {$updatedCount}, Errores: " . count($errors),
+            'created_count' => $createdCount,
+            'updated_count' => $updatedCount,
+            'total' => $createdCount + $updatedCount,
+            'errors' => $errors,
         ]);
     }
 

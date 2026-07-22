@@ -1082,7 +1082,8 @@ export default function PersonalActivoPage() {
       const formDataFile = new FormData();
       formDataFile.append("file", file);
       const res = await activePersonnelAPI.importExcel(formDataFile);
-      showSuccess(res.message);
+      const msg = res.message || `Importacion completada. Creados: ${res.created?.length || 0}, Actualizados: ${res.updated?.length || 0}`;
+      showSuccess(msg);
       fetchData();
       setIsOptionsModalOpen(false);
     } catch (error) {
@@ -1091,8 +1092,47 @@ export default function PersonalActivoPage() {
       showError(errorMessage);
     } finally {
       setLoading(false);
-      e.target.value = ""; // Reset input
+      e.target.value = "";
     }
+  };
+
+  const downloadFile = async (apiCall, defaultFilename) => {
+    setLoading(true);
+    try {
+      const res = await apiCall();
+      const blob = new Blob([res], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", defaultFilename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showSuccess("Archivo descargado exitosamente");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Error al descargar";
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    downloadFile(
+      () => activePersonnelAPI.exportTemplate(),
+      "plantilla_personal_activo.xlsx"
+    );
+  };
+
+  const exportDataExcel = () => {
+    downloadFile(
+      () => activePersonnelAPI.exportData(),
+      `personal_activo_export_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
   };
 
   const getDetailsForPDF = async (id) => {
@@ -2051,6 +2091,23 @@ export default function PersonalActivoPage() {
             <Icon icon="material-symbols:download" width={24} height={24} />
             <span>Generar Reporte de Censados por ASIC </span>
             <Icon icon="tabler:pdf" width={24} height={24} />
+          </button>
+          <button
+            className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            onClick={downloadTemplate}
+            disabled={loading}
+          >
+            <Icon icon="vscode-icons:file-type-excel" width={24} height={24} />
+            <span>Descargar Plantilla Excel</span>
+          </button>
+          <button
+            className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+            onClick={exportDataExcel}
+            disabled={loading}
+          >
+            <Icon icon="material-symbols:download" width={24} height={24} />
+            <span>Exportar Datos a Excel</span>
+            <Icon icon="vscode-icons:file-type-excel" width={24} height={24} />
           </button>
           <div className="mt-4 flex flex-col">
             <label

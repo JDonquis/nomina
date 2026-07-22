@@ -164,14 +164,35 @@ class PersonnelController extends Controller
         }
     }
 
-    public function exportTemplate()
+    public function exportTemplate(Request $request)
     {
-        return $this->personnelService->exportTemplate();
+        $status = str_contains($request->path(), 'life_proof') ? 'inactive' : 'active';
+        return $this->personnelService->exportTemplate($status);
+    }
+
+    public function exportData(Request $request)
+    {
+        $status = str_contains($request->path(), 'life_proof') ? 'inactive' : 'active';
+        return $this->personnelService->exportData($status);
     }
 
     public function importExcel(Request $request)
     {
-        return $this->personnelService->importExcel($request);
+        $status = str_contains($request->path(), 'life_proof') ? 'inactive' : 'active';
+
+        try {
+            return $this->personnelService->importExcel($request, $status);
+        } catch (Exception $e) {
+            Log::error('Error al importar Excel: ', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al importar el archivo Excel'
+            ], 500);
+        }
     }
 
     public function generateReport(Request $request, $status)

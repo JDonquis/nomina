@@ -759,14 +759,57 @@ export default function FeDeVidaPage() {
       const formData = new FormData();
       formData.append("file", file);
       const res = await liveProofAPI.importExcel(formData);
-      showSuccess(res.message);
+      const msg = res.message || `Importacion completada. Creados: ${res.created?.length || 0}, Actualizados: ${res.updated?.length || 0}`;
+      showSuccess(msg);
       fetchData();
+      setIsOptionsModalOpen(false);
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || error.message || "An error occurred";
+        error.response?.data?.message || error.message || "Error al importar";
       showError(errorMessage);
+    } finally {
+      setLoading(false);
+      e.target.value = "";
     }
-    setLoading(false);
+  };
+
+  const downloadFile = async (apiCall, defaultFilename) => {
+    setLoading(true);
+    try {
+      const res = await apiCall();
+      const blob = new Blob([res], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", defaultFilename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showSuccess("Archivo descargado exitosamente");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Error al descargar";
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    downloadFile(
+      () => liveProofAPI.exportTemplate(),
+      "plantilla_fe_de_vida.xlsx"
+    );
+  };
+
+  const exportDataExcel = () => {
+    downloadFile(
+      () => liveProofAPI.exportData(),
+      `fe_de_vida_export_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
   };
 
   const columns = useMemo(
@@ -1662,6 +1705,23 @@ export default function FeDeVidaPage() {
               <Icon icon="material-symbols:download" width={24} height={24} />
               <span>Generar Reporte de Censados por ASIC </span>
               <Icon icon="tabler:pdf" width={24} height={24} />
+            </button>
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={downloadTemplate}
+              disabled={loading}
+            >
+              <Icon icon="vscode-icons:file-type-excel" width={24} height={24} />
+              <span>Descargar Plantilla Excel</span>
+            </button>
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={exportDataExcel}
+              disabled={loading}
+            >
+              <Icon icon="material-symbols:download" width={24} height={24} />
+              <span>Exportar Datos a Excel</span>
+              <Icon icon="vscode-icons:file-type-excel" width={24} height={24} />
             </button>
             <button
               className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"

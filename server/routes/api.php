@@ -58,6 +58,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     Route::get('personnels/life_proof/generate_report', [PersonnelController::class, 'generateReport']);
+    Route::get('personnels/life_proof/export-template', [PersonnelController::class, 'exportTemplate']);
+    Route::get('personnels/life_proof/export-data', [PersonnelController::class, 'exportData']);
+    Route::post('personnels/life_proof/import-excel', [PersonnelController::class, 'importExcel']);
     Route::get('personnels/life_proof', [PersonnelController::class, 'lifeProof']);
     Route::post('personnels/life_proof', [PersonnelController::class, 'store']);
     Route::get('personnels/life_proof/{personnel}', [PersonnelController::class, 'show']);
@@ -67,12 +70,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 
     Route::get('personnels/active/export-template', [PersonnelController::class, 'exportTemplate']);
+    Route::get('personnels/active/export-data', [PersonnelController::class, 'exportData']);
+    Route::post('personnels/active/import-excel', [PersonnelController::class, 'importExcel']);
     Route::get('personnels/active', [PersonnelController::class, 'active']);
     Route::post('personnels/active', [PersonnelController::class, 'store']);
     Route::put('personnels/active/{personnel}', [PersonnelController::class, 'update']);
     Route::get('personnels/active/{personnel}', [PersonnelController::class, 'show']);
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
-    Route::post('personnels/active/import-excel', [PersonnelController::class, 'importExcel']);
     Route::delete('personnels/active/{personnel}', [PersonnelController::class, 'destroy']);
 
     Route::get('activities', [AuditLogController::class, 'index']);
