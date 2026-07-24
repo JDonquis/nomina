@@ -13,6 +13,20 @@ class AuditLogService
         $filters = json_decode($generalFilters['filters'], true);
         $query = AuditLog::query();
 
+        $search = $generalFilters['search'] ?? null;
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHasMorph(
+                    'auditable',
+                    '*',
+                    function ($subQuery) use ($search) {
+                        $subQuery->where('ci', 'like', "%{$search}%");
+                    }
+                );
+            });
+        }
+
         // if (isset($filters['action'])) {
         //     $query->where('action', $filters['action']);
         // }
