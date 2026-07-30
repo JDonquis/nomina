@@ -65,6 +65,7 @@ const PrintableContent = forwardRef((props, ref) => {
               </React.Fragment>
             ))}
           </div>
+          <p className="text-xs">TOTAL: <b> {Object.entries(props.data.data).length}</b></p>
           <p className="text-[11px] text-gray-400 mt-1">
             Generado el {new Date().toLocaleDateString()} a las{" "}
             {new Date().toLocaleTimeString()}

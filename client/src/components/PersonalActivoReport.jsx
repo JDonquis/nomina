@@ -42,7 +42,6 @@ const PrintableContent = forwardRef((props, ref) => {
     return [filtered, totals];
   }, [hospitals, days]);
 
-  console.log({filteredDays, dayTotals, filteredHospitals, dayHospitalTotals});
 
   const hospitalTotals = React.useMemo(() => {
     return hospitals.map(hospital => ({
@@ -86,6 +85,7 @@ const PrintableContent = forwardRef((props, ref) => {
           </h4>
           <p className="text-center text-sm -mt-3 text-gray-600" >Generado el {new Date().toLocaleDateString()} a las {new Date().toLocaleTimeString()}</p>
         </div>
+        
         <img
           src={secretaria_logo}
           alt=""
