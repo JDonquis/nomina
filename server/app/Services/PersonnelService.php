@@ -161,8 +161,13 @@ class PersonnelService
                 });
             }
 
-            if (isset($filters['work_status'])) {
-                $query->where('work_status', $filters['work_status']);
+            if (isset($filters['additional_data.work_status'])) {
+                Log::info('Filtro adicional_data.work_status: ', ['value' => $filters['additional_data.work_status']]);
+                $query->where('additional_data->work_status', $filters['additional_data.work_status']);
+            }
+
+            if (isset($filters['additional_data.job_title'])) {
+                $query->where("additional_data->job_title", 'LIKE', "%{$filters['additional_data.job_title']}%");
             }
 
             if (isset($filters['dependency_id'])) {
@@ -170,7 +175,8 @@ class PersonnelService
             }
         }
 
-        $sortField = $params['sortField'] ?? 'id';
+        // $sortField = $params['sortField'] ?? 'id';
+        $sortField = 'id';
         $sortDirection = $params['sortOrder'] ?? 'desc';
         $query->orderBy($sortField, $sortDirection);
 
