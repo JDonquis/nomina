@@ -242,11 +242,93 @@ const MapComponent = ({
                   }}
                 >
                   <Popup>
-                    <div className="text-center p-1">
+                    <div className="text-center p-1 min-w-[200px] ">
                       <span className="font-bold text-xs text-gray-800 block">
                         Área Geográfica
                       </span>
-                      <span className="text-xs text-gray-500">{asic.name}</span>
+                      <div className="flex justify-center mt-2 items-center gap-1">
+                      <span className="text-xs text-gray-500 ">{asic.name}</span>
+                       
+                          <div className="relative">
+                            <button
+                              ref={actionsButtonRef}
+                              type="button"
+                              onClick={() => setIsActionsOpen((prev) => !prev)}
+                              className="rounded p-1 hover:bg-gray-100"
+                              title="Acciones de reporte"
+                            >
+                              <Icon
+                                icon="mage:dots"
+                                className="text-lg text-gray-500"
+                              />
+                            </button>
+
+                            {isActionsOpen && (
+                              <div
+                                ref={actionsMenuRef}
+                                className="absolute right-0 top-full z-20 mt-2 flex w-48 flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+                              >
+                                <button
+                                  className="hover:font-bold flex items-center justify-between rounded bg-color2/10 px-2 py-1.5 text-sm text-color2 hover:text-green-500"
+                                  title="Cantidad personal activo censado"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetReportActiveCensus(
+                                        asic.id,
+                                        "ASIC",
+                                        {
+                                          asicName: asic.name,
+                                        },
+                                      ),
+                                    )
+                                  }
+                                >
+                                  <span>Censados</span>
+                                  <Icon
+                                    icon="ci:wavy-check"
+                                    className="ml-1 text-gray-500"
+                                    width={12}
+                                    height={12}
+                                  />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetPersonnelsReport(
+                                        asic.id,
+                                        "Dependencia",
+                                        {
+                                          asicName: asic.name,
+
+                                        },
+                                      ),
+                                    )
+                                  }
+                                  className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                                >
+                                  Tipos de personal
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetCargosReport(asic.id, "Dependencia", {
+                                        asicName: asic.name,
+
+                                      }),
+                                    )
+                                  }
+                                  className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                                >
+                                  Cargos
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                     </div>
                   </Popup>
                 </Polygon>
@@ -269,9 +351,90 @@ const MapComponent = ({
                 >
                   <Popup>
                     <div className="p-1 max-w-[220px] ">
-                      <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">
-                        {asic.name}
-                      </h3>
+                       <div className="flex justify-between gap-1">
+                          <h3 className="font-bold text-sm text-gray-900 m-0 leading-tight">
+                            {asic.name}
+                          </h3>
+                          <div className="relative">
+                            <button
+                              ref={actionsButtonRef}
+                              type="button"
+                              onClick={() => setIsActionsOpen((prev) => !prev)}
+                              className="rounded p-1 hover:bg-gray-100"
+                              title="Acciones de reporte"
+                            >
+                              <Icon
+                                icon="mage:dots"
+                                className="text-lg text-gray-500"
+                              />
+                            </button>
+
+                            {isActionsOpen && (
+                              <div
+                                ref={actionsMenuRef}
+                                className="absolute right-0 top-full z-20 mt-2 flex w-48 flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+                              >
+                                <button
+                                  className="hover:font-bold flex items-center justify-between rounded bg-color2/10 px-2 py-1.5 text-sm text-color2 hover:text-green-500"
+                                  title="Cantidad personal activo censado"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetReportActiveCensus(
+                                        asic.id,
+                                        "ASIC",
+                                        {
+                                          asicName: asic.name,
+                                        },
+                                      ),
+                                    )
+                                  }
+                                >
+                                  <span>Censados</span>
+                                  <Icon
+                                    icon="ci:wavy-check"
+                                    className="ml-1 text-gray-500"
+                                    width={12}
+                                    height={12}
+                                  />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetPersonnelsReport(
+                                        asic.id,
+                                        "Dependencia",
+                                        {
+                                          asicName: asic.name,
+
+                                        },
+                                      ),
+                                    )
+                                  }
+                                  className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                                >
+                                  Tipos de personal
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActionClick(() =>
+                                      onGetCargosReport(asic.id, "Dependencia", {
+                                        asicName: asic.name,
+
+                                      }),
+                                    )
+                                  }
+                                  className="hover:font-bold rounded bg-color1/10 px-2 py-1.5 text-left text-xs text-color1 hover:text-color1/90"
+                                >
+                                  Cargos
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       <span
                         className="text-[10px] font-bold px-1.5 py-0.5 rounded mr-auto text-white"
                         style={{ backgroundColor: asicColor }}

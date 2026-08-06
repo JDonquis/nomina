@@ -65,6 +65,7 @@ const PrintableContent = forwardRef((props, ref) => {
               </React.Fragment>
             ))}
           </div>
+          <p className="text-xs">TOTAL: <b> {Object.entries(props.data.data).length}</b></p>
 
           <h4 className="font-bold text-xs tracking-wider text-gray-500 uppercase mt-2">
             Oficina de Recursos Humanos
