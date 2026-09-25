@@ -296,7 +296,7 @@ const DependencyRow = React.memo(function DependencyRow({
             >
               <Icon
                 icon="mdi:location"
-                className="text-lg text-black/10 hover:text-color2"
+                className={`text-lg ${dependency.coordinates?.trim() ? "text-black/10 hover:text-color2" : "text-red-500 hover:text-red-700"}`}
               />
             </button>
           </div>
