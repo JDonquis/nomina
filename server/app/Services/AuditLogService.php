@@ -63,7 +63,7 @@ class AuditLogService
                 Personnel::class => ['typePersonnel', 'asic', 'service', 'dependency', 'administrativeUnit', 'department'],
             ]);}])
             ->orderBy('created_at', 'desc')
-            ->paginate()
+            ->paginate($generalFilters['per_page'] ?? 25)
             ->through(function ($log) use ($actionLabels) {
                 $log->action = $actionLabels[$log->action] ?? $log->action;
                 return $log;

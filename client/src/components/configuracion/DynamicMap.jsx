@@ -298,7 +298,7 @@ const MapComponent = ({
                                     handleActionClick(() =>
                                       onGetPersonnelsReport(
                                         asic.id,
-                                        "Dependencia",
+                                        "ASIC",
                                         {
                                           asicName: asic.name,
 
@@ -315,7 +315,7 @@ const MapComponent = ({
                                   type="button"
                                   onClick={() =>
                                     handleActionClick(() =>
-                                      onGetCargosReport(asic.id, "Dependencia", {
+                                      onGetCargosReport(asic.id, "ASIC", {
                                         asicName: asic.name,
 
                                       }),
@@ -404,7 +404,7 @@ const MapComponent = ({
                                     handleActionClick(() =>
                                       onGetPersonnelsReport(
                                         asic.id,
-                                        "Dependencia",
+                                        "ASIC",
                                         {
                                           asicName: asic.name,
 
@@ -421,7 +421,7 @@ const MapComponent = ({
                                   type="button"
                                   onClick={() =>
                                     handleActionClick(() =>
-                                      onGetCargosReport(asic.id, "Dependencia", {
+                                      onGetCargosReport(asic.id, "ASIC", {
                                         asicName: asic.name,
 
                                       }),
