@@ -202,13 +202,13 @@ const MapComponent = ({
         zoom={13}
         scrollWheelZoom={true}
         className="w-full h-full"
-        maxBounds={[
-          [FALCON_BOUNDS.south, FALCON_BOUNDS.west],
-          [FALCON_BOUNDS.north, FALCON_BOUNDS.east],
-        ]}
-        maxBoundsViscosity={1.0} // Evita que se salga de los límites
-        minZoom={8.3} // Evita zoom out excesivo
-        maxZoom={18} // Evita zoom in excesivo
+        // maxBounds={[
+        //   [FALCON_BOUNDS.south, FALCON_BOUNDS.west],
+        //   [FALCON_BOUNDS.north, FALCON_BOUNDS.east],
+        // ]}
+        // maxBoundsViscosity={1.0} // Evita que se salga de los límites
+        // minZoom={8.3} // Evita zoom out excesivo
+        // maxZoom={18} // Evita zoom in excesivo
       >
         <TileLayer
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
