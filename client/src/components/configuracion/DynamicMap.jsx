@@ -329,6 +329,9 @@ const MapComponent = ({
                             )}
                           </div>
                         </div>
+                        <p className="text-xs text-gray-600 m-0 py-0">
+                        Dependencias: {asic.dependencies?.length || 0}
+                      </p>
                     </div>
                   </Popup>
                 </Polygon>
@@ -447,6 +450,9 @@ const MapComponent = ({
                         {selectedAsic !== null
                           ? selectedAsic.active_censused_count
                           : "cargando..."}
+                      </p>
+                      <p className="text-xs text-gray-600 m-0 py-0">
+                        Dependencias: {asic.dependencies?.length || 0}
                       </p>
                       <p className="text-xs text-gray-600 m-0 py-0">
                         {asic.address || "Sin dirección registrada"}
