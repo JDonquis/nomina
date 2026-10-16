@@ -34,6 +34,56 @@ import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
 import PrintPage from "../../components/PersonalActivoReport.jsx";
 
+const FIELD_TO_LEVEL = {
+  dependency_id: "dependency",
+  administrative_unit_id: "administrative_unit",
+  department_id: "department",
+  service_id: "service",
+};
+
+// Calcula los ids permitidos por nivel a partir del alcance por árbol del
+// usuario (inclusiones/exclusiones). Devuelve null si no aplica.
+const computeAllowedIds = (relations, scope) => {
+  if (!relations || !scope) return null;
+
+  const grants = scope.granted || {};
+  const revokes = scope.revoked || {};
+  const sets = {
+    dependency: new Set(),
+    administrative_unit: new Set(),
+    department: new Set(),
+    service: new Set(),
+  };
+
+  const decide = (level, id, inherited) => {
+    if ((grants[level] || []).map(Number).includes(Number(id))) return true;
+    if ((revokes[level] || []).map(Number).includes(Number(id))) return false;
+    return inherited;
+  };
+
+  (relations.dependencies || []).forEach((dep) => {
+    const depOk = decide("dependency", dep.id, true);
+    if (depOk) sets.dependency.add(dep.id);
+
+    (dep.administrative_units || []).forEach((unit) => {
+      const unitOk = decide("administrative_unit", unit.id, depOk);
+      if (unitOk) sets.administrative_unit.add(unit.id);
+
+      (unit.departments || []).forEach((dept) => {
+        const deptOk = decide("department", dept.id, unitOk);
+        if (deptOk) sets.department.add(dept.id);
+
+        (dept.services || []).forEach((service) => {
+          const serviceOk = decide("service", service.id, deptOk);
+          if (serviceOk) sets.service.add(service.id);
+        });
+      });
+    });
+  });
+
+  return sets;
+};
+
 const defaultFormData = {
   nac: "V",
   ci: "",
@@ -276,14 +326,25 @@ export default function PersonalActivoPage() {
     [user],
   );
 
-  // Limita las opciones de un nivel al valor del alcance del usuario (si lo tiene).
+  const allowedTreeIds = useMemo(
+    () => computeAllowedIds(asicRelations, user?.access_scope),
+    [asicRelations, user?.access_scope],
+  );
+
+  // Limita las opciones de un nivel al alcance del usuario (árbol o legacy).
   const restrictByScope = useCallback(
-    (options, field) => {
+    (options, field, sets = allowedTreeIds) => {
+      const level = FIELD_TO_LEVEL[field];
+
+      if (level && sets) {
+        return options.filter((option) => sets[level].has(Number(option.value)));
+      }
+
       const limit = scopeFilter[field];
       if (!limit) return options;
       return options.filter((option) => Number(option.value) === Number(limit));
     },
-    [scopeFilter],
+    [scopeFilter, allowedTreeIds],
   );
 
   const fetchASICRelations = useCallback(async (asicId, forEdit = false) => {
@@ -300,11 +361,14 @@ export default function PersonalActivoPage() {
       const res = await ASICAPI.getASICRelations(asicId);
       setAsicRelations(res);
 
+      const sets = computeAllowedIds(res, user?.access_scope);
+
       const deps = res.dependencies || [];
       setDependencyOptions(
         restrictByScope(
           deps.map((d) => ({ value: d.id, label: d.name })),
           "dependency_id",
+          sets,
         ),
       );
 
@@ -315,6 +379,7 @@ export default function PersonalActivoPage() {
               .flatMap((d) => d.administrative_units || [])
               .map((u) => ({ value: u.id, label: u.name })),
             "administrative_unit_id",
+            sets,
           ),
         );
         setDepartmentOptions(
@@ -324,6 +389,7 @@ export default function PersonalActivoPage() {
               .flatMap((u) => u.departments || [])
               .map((dept) => ({ value: dept.id, label: dept.name })),
             "department_id",
+            sets,
           ),
         );
         setServiceOptions(
@@ -334,6 +400,7 @@ export default function PersonalActivoPage() {
               .flatMap((dept) => dept.services || [])
               .map((s) => ({ value: s.id, label: s.name })),
             "service_id",
+            sets,
           ),
         );
       } else {
@@ -345,7 +412,7 @@ export default function PersonalActivoPage() {
       console.error("Failed to fetch ASIC relations", e);
       showError("Error al cargar relaciones del ASIC");
     }
-  }, [restrictByScope, showError]);
+  }, [restrictByScope, showError, user?.access_scope]);
 
   const handleASICChange = useCallback(
     (asicId) => {

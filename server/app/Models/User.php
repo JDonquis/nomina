@@ -26,6 +26,7 @@ class User extends Authenticatable
         'administrative_unit_id',
         'department_id',
         'service_id',
+        'access_scope',
         'can_register_personnel',
     ];
 
@@ -40,6 +41,16 @@ class User extends Authenticatable
         'service_id' => 'Servicio',
     ];
 
+    /**
+     * Niveles del alcance por árbol (bajo el ASIC) y su columna asociada.
+     */
+    public const SCOPE_LEVELS = [
+        'dependency' => 'dependency_id',
+        'administrative_unit' => 'administrative_unit_id',
+        'department' => 'department_id',
+        'service' => 'service_id',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -51,6 +62,7 @@ class User extends Authenticatable
             'email_verified_at' => 'boolean',
             'password' => 'hashed',
             'can_register_personnel' => 'boolean',
+            'access_scope' => 'array',
         ];
     }
 
@@ -114,7 +126,46 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->scopeField() === null;
+        return $this->scopeAsicId() === null && $this->scopeField() === null;
+    }
+
+    /**
+     * Indica si el usuario usa el alcance por árbol (inclusiones/exclusiones).
+     */
+    public function usesTreeScope(): bool
+    {
+        return is_array($this->access_scope);
+    }
+
+    /**
+     * Nodos concedidos explícitamente, agrupados por nivel.
+     */
+    public function scopeGrants(): array
+    {
+        return $this->normalizeScopeList($this->access_scope['granted'] ?? []);
+    }
+
+    /**
+     * Nodos revocados explícitamente, agrupados por nivel.
+     */
+    public function scopeRevokes(): array
+    {
+        return $this->normalizeScopeList($this->access_scope['revoked'] ?? []);
+    }
+
+    private function normalizeScopeList($list): array
+    {
+        $result = [];
+
+        foreach (array_keys(self::SCOPE_LEVELS) as $level) {
+            $ids = is_array($list) && isset($list[$level]) && is_array($list[$level])
+                ? $list[$level]
+                : [];
+
+            $result[$level] = array_values(array_unique(array_map('intval', $ids)));
+        }
+
+        return $result;
     }
 
     /**

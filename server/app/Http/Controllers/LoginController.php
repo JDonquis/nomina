@@ -51,6 +51,7 @@ class LoginController extends Controller
             'administrative_unit_id' => $user->administrative_unit_id,
             'department_id' => $user->department_id,
             'service_id' => $user->service_id,
+            'access_scope' => $user->access_scope,
             'can_register_personnel' => (bool) $user->can_register_personnel,
         ]);
     }

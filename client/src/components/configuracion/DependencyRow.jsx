@@ -194,8 +194,8 @@ const DependencyRow = React.memo(function DependencyRow({
 
   return (
     <>
-      <div className="bg-color2/10  rounded-lg mb-3 overflow-hidden">
-        <div className="flex sticky top-0 z-10 bg-color2/10 items-center gap-0 pr-3 pl-0 group">
+      <div className="bg-color2/10  rounded-lg mb-3 overflow-visible">
+        <div className={`flex sticky top-0 ${isActionsOpen ? "z-40" : "z-10"} bg-color2/10 items-center gap-0 pr-3 pl-0 group`}>
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
@@ -312,7 +312,7 @@ const DependencyRow = React.memo(function DependencyRow({
         </div>
 
         {isExpanded && (
-          <div className="p-3 bg-white">
+          <div className="p-3 bg-white rounded-b-lg">
             {dependency.administrative_units?.map((unit, uIndex) => (
               <UnitRow
                 key={unit.id}

@@ -94,8 +94,12 @@ class UserService
                 $data[$field] = null;
             }
 
+            $data['access_scope'] = null;
+
             return $data;
         }
+
+        $hasTreeScope = array_key_exists('access_scope', $data);
 
         // Si no se envían campos de alcance y ya existía, no tocar el actual.
         $containsScope = false;
@@ -105,7 +109,24 @@ class UserService
             }
         }
 
-        if (!$containsScope && $user && !$user->is_admin) {
+        if (!$hasTreeScope && !$containsScope && $user && !$user->is_admin) {
+            return $data;
+        }
+
+        if ($hasTreeScope) {
+            // Alcance por árbol: solo tiene sentido dentro de un ASIC.
+            $data['access_scope'] = $this->sanitizeAccessScope($data['access_scope']);
+
+            // Los niveles inferiores se representan mediante el árbol.
+            foreach (['dependency_id', 'administrative_unit_id', 'department_id', 'service_id'] as $field) {
+                $data[$field] = null;
+            }
+
+            if (empty($data['asic_id'])) {
+                $data['asic_id'] = null;
+                $data['access_scope'] = null;
+            }
+
             return $data;
         }
 
@@ -124,6 +145,32 @@ class UserService
         }
 
         return $data;
+    }
+
+    /**
+     * Normaliza el alcance por árbol a la estructura {granted, revoked} por nivel.
+     */
+    private function sanitizeAccessScope($scope): ?array
+    {
+        if (!is_array($scope)) {
+            return null;
+        }
+
+        $result = ['granted' => [], 'revoked' => []];
+
+        foreach (['granted', 'revoked'] as $group) {
+            foreach (array_keys(User::SCOPE_LEVELS) as $level) {
+                $ids = $scope[$group][$level] ?? [];
+
+                $ids = is_array($ids)
+                    ? array_values(array_unique(array_filter(array_map('intval', $ids))))
+                    : [];
+
+                $result[$group][$level] = $ids;
+            }
+        }
+
+        return $result;
     }
 
     public function suspendUser($user){

@@ -33,6 +33,22 @@ class AccessScopeService
             return $query;
         }
 
+        if ($user->usesTreeScope()) {
+            $asicId = $user->scopeAsicId();
+
+            if ($asicId) {
+                $query->where('asic_id', $asicId);
+            }
+
+            $condition = $this->treeScopeCondition($user);
+
+            if ($condition) {
+                $query->where($condition);
+            }
+
+            return $query;
+        }
+
         $field = $user->scopeField();
 
         if ($field) {
@@ -57,6 +73,16 @@ class AccessScopeService
             return !$asicId || (int) $personnel->asic_id === $asicId;
         }
 
+        if ($user->usesTreeScope()) {
+            $asicId = $user->scopeAsicId();
+
+            if ($asicId && (int) $personnel->asic_id !== $asicId) {
+                return false;
+            }
+
+            return $this->allowsWithTree($personnel, $user);
+        }
+
         $field = $user->scopeField();
 
         if (!$field) {
@@ -76,6 +102,16 @@ class AccessScopeService
             return true;
         }
 
+        if ($user->usesTreeScope()) {
+            $asicId = $user->scopeAsicId();
+
+            if ($asicId && (int) ($data['asic_id'] ?? 0) !== $asicId) {
+                return false;
+            }
+
+            return $this->allowsWithTree((object) $data, $user);
+        }
+
         $field = $user->scopeField();
 
         if (!$field) {
@@ -83,6 +119,84 @@ class AccessScopeService
         }
 
         return !empty($data[$field]) && (int) $data[$field] === (int) $user->{$field};
+    }
+
+    /**
+     * Evalúa si un registro con columnas de ubicación está dentro del alcance
+     * por árbol. Se recorre del nivel más específico al más general: el nodo
+     * explícito más profundo decide (concedido o revocado).
+     */
+    private function allowsWithTree(object $model, User $user): bool
+    {
+        $grants = $user->scopeGrants();
+        $revokes = $user->scopeRevokes();
+
+        foreach (array_reverse(array_keys(User::SCOPE_LEVELS)) as $level) {
+            $field = User::SCOPE_LEVELS[$level];
+            $id = $model->{$field} ?? null;
+
+            if (empty($id)) {
+                continue;
+            }
+
+            $id = (int) $id;
+
+            if (in_array($id, $grants[$level], true)) {
+                return true;
+            }
+
+            if (in_array($id, $revokes[$level], true)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Construye la condición SQL del alcance por árbol. Se arma desde el nivel
+     * más general (dependencia) hacia el más específico (servicio), donde cada
+     * nivel "envuelve" al anterior: un nodo concedido o revocado en un nivel
+     * más específico tiene prioridad sobre los ancestros.
+     */
+    private function treeScopeCondition(User $user): ?\Closure
+    {
+        $grants = $user->scopeGrants();
+        $revokes = $user->scopeRevokes();
+
+        $condition = null;
+
+        foreach (User::SCOPE_LEVELS as $level => $field) {
+            $g = $grants[$level] ?? [];
+            $r = $revokes[$level] ?? [];
+
+            if (empty($g) && empty($r)) {
+                continue;
+            }
+
+            $deeper = $condition;
+            $explicit = array_values(array_unique(array_merge($g, $r)));
+
+            $condition = function ($q) use ($field, $g, $explicit, $deeper) {
+                $q->where(function ($outer) use ($field, $g, $explicit, $deeper) {
+                    if (!empty($g)) {
+                        $outer->whereIn($field, $g);
+                    }
+
+                    $outer->orWhere(function ($sub) use ($field, $explicit, $deeper) {
+                        $sub->where(function ($nn) use ($field, $explicit) {
+                            $nn->whereNotIn($field, $explicit)->orWhereNull($field);
+                        });
+
+                        if ($deeper) {
+                            $deeper($sub);
+                        }
+                    });
+                });
+            };
+        }
+
+        return $condition;
     }
 
     /**

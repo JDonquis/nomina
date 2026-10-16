@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
 import FuturisticButton from "../../components/FuturisticButton";
 import { MaterialReactTable } from "material-react-table";
-import { ReusableForm } from "../../components/forms";
+import { ReusableForm, ScopeTree, SCOPE_LEVELS } from "../../components/forms";
 import { useFeedback } from "../../context/FeedbackContext";
 import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 
@@ -12,6 +12,60 @@ import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 // La versión Community ya incluye el ClientSideRowModel por defecto
 
 // Función reutilizable para crear operadores de filtro para columnas de texto
+
+const emptyTreeScope = () => ({
+  granted: {
+    dependency: [],
+    administrative_unit: [],
+    department: [],
+    service: [],
+  },
+  revoked: {
+    dependency: [],
+    administrative_unit: [],
+    department: [],
+    service: [],
+  },
+});
+
+// Convierte un alcance legacy (una sola ruta) a la estructura de árbol,
+// revocando los nodos hermanos que quedan fuera de dicha ruta.
+const legacyScopeToTree = (data, relations) => {
+  const scope = emptyTreeScope();
+
+  if (!data?.dependency_id) return scope;
+
+  const dependencies = relations?.dependencies || [];
+  const depId = Number(data.dependency_id);
+  dependencies.forEach((dep) => {
+    if (Number(dep.id) !== depId) scope.revoked.dependency.push(dep.id);
+  });
+
+  if (!data.administrative_unit_id) return scope;
+  const dep = dependencies.find((d) => Number(d.id) === depId);
+  const unitId = Number(data.administrative_unit_id);
+  (dep?.administrative_units || []).forEach((unit) => {
+    if (Number(unit.id) !== unitId) scope.revoked.administrative_unit.push(unit.id);
+  });
+
+  if (!data.department_id) return scope;
+  const unit = (dep?.administrative_units || []).find(
+    (u) => Number(u.id) === unitId,
+  );
+  const deptId = Number(data.department_id);
+  (unit?.departments || []).forEach((dept) => {
+    if (Number(dept.id) !== deptId) scope.revoked.department.push(dept.id);
+  });
+
+  if (!data.service_id) return scope;
+  const dept = (unit?.departments || []).find((d) => Number(d.id) === deptId);
+  const serviceId = Number(data.service_id);
+  (dept?.services || []).forEach((service) => {
+    if (Number(service.id) !== serviceId) scope.revoked.service.push(service.id);
+  });
+
+  return scope;
+};
 
 export default function UsuariosPage() {
   const [columnVisibility, setColumnVisibility] = useTableVisibility(
@@ -27,28 +81,15 @@ export default function UsuariosPage() {
     status: false,
     can_register_personnel: false,
     asic_id: "",
-    dependency_id: "",
-    administrative_unit_id: "",
-    department_id: "",
-    service_id: "",
+    access_scope: null,
   };
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Crear");
   const { showError, showSuccess, showInfo } = useFeedback();
 
   const [asicOptions, setAsicOptions] = useState([]);
-  const [dependencyOptions, setDependencyOptions] = useState([]);
-  const [unitOptions, setUnitOptions] = useState([]);
-  const [departmentOptions, setDepartmentOptions] = useState([]);
-  const [serviceOptions, setServiceOptions] = useState([]);
   const [asicRelations, setAsicRelations] = useState(null);
-
-  const clearChildOptions = () => {
-    setDependencyOptions([]);
-    setUnitOptions([]);
-    setDepartmentOptions([]);
-    setServiceOptions([]);
-  };
+  const [relationsLoading, setRelationsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -61,126 +102,66 @@ export default function UsuariosPage() {
     })();
   }, []);
 
-  const prepareScopeOptions = useCallback(async (data) => {
-    if (!data?.asic_id) {
+  const loadAsicRelations = useCallback(async (asicId) => {
+    if (!asicId) {
       setAsicRelations(null);
-      clearChildOptions();
-      return;
+      return null;
     }
 
+    setRelationsLoading(true);
     try {
-      const rel = await ASICAPI.getASICRelations(data.asic_id);
+      const rel = await ASICAPI.getASICRelations(asicId);
       setAsicRelations(rel);
-
-      const deps = rel.dependencies || [];
-      setDependencyOptions(deps.map((d) => ({ value: d.id, label: d.name })));
-
-      const dep = deps.find((d) => d.id === data.dependency_id);
-      const units = dep?.administrative_units || [];
-      setUnitOptions(units.map((u) => ({ value: u.id, label: u.name })));
-
-      const unit = units.find((u) => u.id === data.administrative_unit_id);
-      const depts = unit?.departments || [];
-      setDepartmentOptions(depts.map((d) => ({ value: d.id, label: d.name })));
-
-      const dept = depts.find((d) => d.id === data.department_id);
-      const services = dept?.services || [];
-      setServiceOptions(services.map((s) => ({ value: s.id, label: s.name })));
+      return rel;
     } catch (e) {
       console.error("Error cargando relaciones del ASIC", e);
+      return null;
+    } finally {
+      setRelationsLoading(false);
     }
   }, []);
 
-  const handleAsicChange = async (e, _formData, updateFormData) => {
-    const value = e.target.value;
-
-    updateFormData({
-      asic_id: value,
-      dependency_id: "",
-      administrative_unit_id: "",
-      department_id: "",
-      service_id: "",
-    });
-
-    setAsicRelations(null);
-    clearChildOptions();
-
-    if (!value) return;
-
-    try {
-      const rel = await ASICAPI.getASICRelations(value);
-      setAsicRelations(rel);
-      setDependencyOptions(
-        (rel.dependencies || []).map((d) => ({ value: d.id, label: d.name })),
-      );
-    } catch (e) {
-      console.error("Error cargando relaciones del ASIC", e);
-    }
-  };
-
-  const handleDependencyChange = (e, _formData, updateFormData) => {
-    const value = e.target.value;
-
-    updateFormData({
-      dependency_id: value,
-      administrative_unit_id: "",
-      department_id: "",
-      service_id: "",
-    });
-
-    setUnitOptions([]);
-    setDepartmentOptions([]);
-    setServiceOptions([]);
-
-    const dep = (asicRelations?.dependencies || []).find(
-      (d) => d.id === Number(value),
-    );
-    const units = dep?.administrative_units || [];
-    setUnitOptions(units.map((u) => ({ value: u.id, label: u.name })));
-  };
-
-  const handleUnitChange = (e, _formData, updateFormData) => {
-    const value = e.target.value;
-
-    updateFormData({
-      administrative_unit_id: value,
-      department_id: "",
-      service_id: "",
-    });
-
-    setDepartmentOptions([]);
-    setServiceOptions([]);
-
-    let unit = null;
-    for (const dep of asicRelations?.dependencies || []) {
-      unit = (dep.administrative_units || []).find(
-        (u) => u.id === Number(value),
-      );
-      if (unit) break;
-    }
-
-    const depts = unit?.departments || [];
-    setDepartmentOptions(depts.map((d) => ({ value: d.id, label: d.name })));
-  };
-
-  const handleDepartmentChange = (e, _formData, updateFormData) => {
-    const value = e.target.value;
-
-    updateFormData({ department_id: value, service_id: "" });
-    setServiceOptions([]);
-
-    let dept = null;
-    for (const dep of asicRelations?.dependencies || []) {
-      for (const unit of dep.administrative_units || []) {
-        dept = (unit.departments || []).find((d) => d.id === Number(value));
-        if (dept) break;
+  const prepareScopeOptions = useCallback(
+    async (data) => {
+      if (!data?.asic_id) {
+        setAsicRelations(null);
+        return;
       }
-      if (dept) break;
-    }
 
-    const services = dept?.services || [];
-    setServiceOptions(services.map((s) => ({ value: s.id, label: s.label || s.name })));
-  };
+      const rel = await loadAsicRelations(data.asic_id);
+
+      const hasLegacyPath =
+        data.dependency_id ||
+        data.administrative_unit_id ||
+        data.department_id ||
+        data.service_id;
+
+      if (rel && !data.access_scope && hasLegacyPath) {
+        setFormData((prev) => ({
+          ...prev,
+          access_scope: legacyScopeToTree(data, rel),
+        }));
+      }
+    },
+    [loadAsicRelations],
+  );
+
+  const handleAsicChange = useCallback(
+    async (asicId) => {
+      setFormData((prev) => ({
+        ...prev,
+        asic_id: asicId ?? "",
+        access_scope: null,
+      }));
+
+      await loadAsicRelations(asicId);
+    },
+    [loadAsicRelations],
+  );
+
+  const handleScopeChange = useCallback((scope) => {
+    setFormData((prev) => ({ ...prev, access_scope: scope }));
+  }, []);
 
   // Form configuration for ReusableForm
   const userFormFields = [
@@ -222,48 +203,20 @@ export default function UsuariosPage() {
         "Permite crear personal (activo y fe de vida) dentro de su alcance",
     },
     {
-      name: "asic_id",
-      label: "Alcance: ASIC",
-      type: "select",
-      options: asicOptions,
-      disabled: formData.is_admin,
-      onChangeCustom: handleAsicChange,
+      name: "access_scope",
       className: "col-span-2",
-    },
-    {
-      name: "dependency_id",
-      label: "Alcance: Dependencia",
-      type: "select",
-      options: dependencyOptions,
-      disabled: formData.is_admin || !formData.asic_id,
-      onChangeCustom: handleDependencyChange,
-      className: "col-span-2",
-    },
-    {
-      name: "administrative_unit_id",
-      label: "Alcance: Unidad Administrativa",
-      type: "select",
-      options: unitOptions,
-      disabled: formData.is_admin || !formData.dependency_id,
-      onChangeCustom: handleUnitChange,
-      className: "col-span-2",
-    },
-    {
-      name: "department_id",
-      label: "Alcance: Departamento",
-      type: "select",
-      options: departmentOptions,
-      disabled: formData.is_admin || !formData.administrative_unit_id,
-      onChangeCustom: handleDepartmentChange,
-      className: "col-span-2",
-    },
-    {
-      name: "service_id",
-      label: "Alcance: Servicio",
-      type: "select",
-      options: serviceOptions,
-      disabled: formData.is_admin || !formData.department_id,
-      className: "col-span-2",
+      render: ({ formData: current, disabled }) => (
+        <ScopeTree
+          asics={asicOptions}
+          asicId={current.asic_id}
+          asicRelations={asicRelations}
+          accessScope={current.access_scope}
+          onAsicChange={handleAsicChange}
+          onScopeChange={handleScopeChange}
+          disabled={disabled || current.is_admin}
+          loading={relationsLoading}
+        />
+      ),
     },
     {
       name: "status",
@@ -302,7 +255,6 @@ export default function UsuariosPage() {
       // Reset form data after successful submission
       setFormData(structuredClone(defaultFormData));
       setAsicRelations(null);
-      clearChildOptions();
 
       setIsModalOpen(false);
       showSuccess("Usuario creado");
@@ -381,10 +333,38 @@ export default function UsuariosPage() {
       Cell: ({ row }) => {
         const u = row.original;
         if (u.is_admin) return "Administrador (total)";
-        const parts = [u.asic, u.dependency, u.administrative_unit, u.department, u.service]
+        if (!u.asic) return "Todos los ASIC";
+
+        const name = u.asic.name.replace("ASIC", "").trim();
+
+        if (u.access_scope) {
+          const count = (group) =>
+            SCOPE_LEVELS.reduce(
+              (total, level) => total + (u.access_scope[group]?.[level]?.length || 0),
+              0,
+            );
+          const revokes = count("revoked");
+          const grants = count("granted");
+
+          if (!revokes && !grants) return name;
+
+          const detail = [];
+          if (revokes) detail.push(`${revokes} exclusión(es)`);
+          if (grants) detail.push(`${grants} excepción(es)`);
+
+          return `${name} · ${detail.join(", ")}`;
+        }
+
+        const parts = [
+          u.dependency,
+          u.administrative_unit,
+          u.department,
+          u.service,
+        ]
           .filter(Boolean)
           .map((s) => s.name.replace("ASIC", "").trim());
-        return parts.length ? parts.join(" / ") : "Todos los ASIC";
+
+        return [name, ...parts].join(" / ");
       },
     },
     {
@@ -518,7 +498,6 @@ export default function UsuariosPage() {
                 setSubmitString("Crear");
                 setFormData(structuredClone(defaultFormData));
                 setAsicRelations(null);
-                clearChildOptions();
               }
               setIsModalOpen(true);
             }}
@@ -532,24 +511,16 @@ export default function UsuariosPage() {
             setIsModalOpen(false);
           }}
           title="Crear Nuevo Usuario"
-          size="md"
+          size="lg"
           aria-labelledby="modal-title"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2 p-3 bg-amber-50 rounded-md border border-amber-100 text-sm text-amber-800">
-              <strong>Alcance:</strong> si deja todos los campos vacíos, el
-              usuario podrá gestionar todos los ASIC. Al seleccionar un ASIC se
-              limita a él; y puede seguir bajando (Dependencia, Unidad, etc.)
-              para restringir el área de acceso. Los usuarios administradores no
-              usan alcance.
-            </div>
             <ReusableForm
               fields={userFormFields}
               onSubmit={onSubmit}
               onCancel={() => {
                 setFormData(structuredClone(defaultFormData));
                 setAsicRelations(null);
-                clearChildOptions();
                 setIsModalOpen(false);
               }}
               submitText={submitString}

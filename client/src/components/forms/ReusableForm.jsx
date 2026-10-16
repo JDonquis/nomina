@@ -144,20 +144,36 @@ export default function ReusableForm({
         </Alert>
       )}
       
-      {fields.map((field) => (
-        <FormField
-          key={field.name}
-          {...field}
-          value={currentFormData[field.name]}
-          onChange={(e) =>
-            field.onChangeCustom
-              ? field.onChangeCustom(e, currentFormData, updateFormData)
-              : handleChange(e)
-          }
-          error={errors[field.name]}
-          disabled={field.disabled || loading}
-        />
-      ))}
+      {fields.map((field) => {
+        if (typeof field.render === 'function') {
+          return (
+            <div key={field.name} className={field.className || ''}>
+              {field.render({
+                value: currentFormData[field.name],
+                formData: currentFormData,
+                updateFormData,
+                disabled: field.disabled || loading,
+                error: errors[field.name],
+              })}
+            </div>
+          );
+        }
+
+        return (
+          <FormField
+            key={field.name}
+            {...field}
+            value={currentFormData[field.name]}
+            onChange={(e) =>
+              field.onChangeCustom
+                ? field.onChangeCustom(e, currentFormData, updateFormData)
+                : handleChange(e)
+            }
+            error={errors[field.name]}
+            disabled={field.disabled || loading}
+          />
+        );
+      })}
       
       <div className="flex justify-end space-x-4 pt-4">
         {showCancelButton && (
