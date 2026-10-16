@@ -64,6 +64,7 @@ export const usersAPI = {
   createUser: (userData) => api.post("/admin/users", userData),
   updateUser: (id, userData) => api.put(`/admin/users/${id}`, userData),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  resendInvitation: (id) => api.post(`/admin/users/${id}/resend-invitation`),
 };
 
 export const liveProofAPI = {

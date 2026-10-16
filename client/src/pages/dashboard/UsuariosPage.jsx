@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { usersAPI } from "../../services/api";
+import { usersAPI, ASICAPI } from "../../services/api";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal";
 import FuturisticButton from "../../components/FuturisticButton";
@@ -25,10 +25,162 @@ export default function UsuariosPage() {
     is_admin: false,
     charge: "",
     status: false,
+    can_register_personnel: false,
+    asic_id: "",
+    dependency_id: "",
+    administrative_unit_id: "",
+    department_id: "",
+    service_id: "",
   };
   const [formData, setFormData] = useState(structuredClone(defaultFormData));
   const [submitString, setSubmitString] = useState("Crear");
   const { showError, showSuccess, showInfo } = useFeedback();
+
+  const [asicOptions, setAsicOptions] = useState([]);
+  const [dependencyOptions, setDependencyOptions] = useState([]);
+  const [unitOptions, setUnitOptions] = useState([]);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [serviceOptions, setServiceOptions] = useState([]);
+  const [asicRelations, setAsicRelations] = useState(null);
+
+  const clearChildOptions = () => {
+    setDependencyOptions([]);
+    setUnitOptions([]);
+    setDepartmentOptions([]);
+    setServiceOptions([]);
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await ASICAPI.getASIC();
+        setAsicOptions(res.map((asic) => ({ value: asic.id, label: asic.name })));
+      } catch (e) {
+        console.error("Error cargando ASIC", e);
+      }
+    })();
+  }, []);
+
+  const prepareScopeOptions = useCallback(async (data) => {
+    if (!data?.asic_id) {
+      setAsicRelations(null);
+      clearChildOptions();
+      return;
+    }
+
+    try {
+      const rel = await ASICAPI.getASICRelations(data.asic_id);
+      setAsicRelations(rel);
+
+      const deps = rel.dependencies || [];
+      setDependencyOptions(deps.map((d) => ({ value: d.id, label: d.name })));
+
+      const dep = deps.find((d) => d.id === data.dependency_id);
+      const units = dep?.administrative_units || [];
+      setUnitOptions(units.map((u) => ({ value: u.id, label: u.name })));
+
+      const unit = units.find((u) => u.id === data.administrative_unit_id);
+      const depts = unit?.departments || [];
+      setDepartmentOptions(depts.map((d) => ({ value: d.id, label: d.name })));
+
+      const dept = depts.find((d) => d.id === data.department_id);
+      const services = dept?.services || [];
+      setServiceOptions(services.map((s) => ({ value: s.id, label: s.name })));
+    } catch (e) {
+      console.error("Error cargando relaciones del ASIC", e);
+    }
+  }, []);
+
+  const handleAsicChange = async (e, _formData, updateFormData) => {
+    const value = e.target.value;
+
+    updateFormData({
+      asic_id: value,
+      dependency_id: "",
+      administrative_unit_id: "",
+      department_id: "",
+      service_id: "",
+    });
+
+    setAsicRelations(null);
+    clearChildOptions();
+
+    if (!value) return;
+
+    try {
+      const rel = await ASICAPI.getASICRelations(value);
+      setAsicRelations(rel);
+      setDependencyOptions(
+        (rel.dependencies || []).map((d) => ({ value: d.id, label: d.name })),
+      );
+    } catch (e) {
+      console.error("Error cargando relaciones del ASIC", e);
+    }
+  };
+
+  const handleDependencyChange = (e, _formData, updateFormData) => {
+    const value = e.target.value;
+
+    updateFormData({
+      dependency_id: value,
+      administrative_unit_id: "",
+      department_id: "",
+      service_id: "",
+    });
+
+    setUnitOptions([]);
+    setDepartmentOptions([]);
+    setServiceOptions([]);
+
+    const dep = (asicRelations?.dependencies || []).find(
+      (d) => d.id === Number(value),
+    );
+    const units = dep?.administrative_units || [];
+    setUnitOptions(units.map((u) => ({ value: u.id, label: u.name })));
+  };
+
+  const handleUnitChange = (e, _formData, updateFormData) => {
+    const value = e.target.value;
+
+    updateFormData({
+      administrative_unit_id: value,
+      department_id: "",
+      service_id: "",
+    });
+
+    setDepartmentOptions([]);
+    setServiceOptions([]);
+
+    let unit = null;
+    for (const dep of asicRelations?.dependencies || []) {
+      unit = (dep.administrative_units || []).find(
+        (u) => u.id === Number(value),
+      );
+      if (unit) break;
+    }
+
+    const depts = unit?.departments || [];
+    setDepartmentOptions(depts.map((d) => ({ value: d.id, label: d.name })));
+  };
+
+  const handleDepartmentChange = (e, _formData, updateFormData) => {
+    const value = e.target.value;
+
+    updateFormData({ department_id: value, service_id: "" });
+    setServiceOptions([]);
+
+    let dept = null;
+    for (const dep of asicRelations?.dependencies || []) {
+      for (const unit of dep.administrative_units || []) {
+        dept = (unit.departments || []).find((d) => d.id === Number(value));
+        if (dept) break;
+      }
+      if (dept) break;
+    }
+
+    const services = dept?.services || [];
+    setServiceOptions(services.map((s) => ({ value: s.id, label: s.label || s.name })));
+  };
 
   // Form configuration for ReusableForm
   const userFormFields = [
@@ -61,6 +213,57 @@ export default function UsuariosPage() {
       type: "checkbox",
       helperText:
         "Gestiona otros usuarios, además de tener ciertos privilegios en nómina",
+    },
+    {
+      name: "can_register_personnel",
+      label: "Puede registrar personal",
+      type: "checkbox",
+      helperText:
+        "Permite crear personal (activo y fe de vida) dentro de su alcance",
+    },
+    {
+      name: "asic_id",
+      label: "Alcance: ASIC",
+      type: "select",
+      options: asicOptions,
+      disabled: formData.is_admin,
+      onChangeCustom: handleAsicChange,
+      className: "col-span-2",
+    },
+    {
+      name: "dependency_id",
+      label: "Alcance: Dependencia",
+      type: "select",
+      options: dependencyOptions,
+      disabled: formData.is_admin || !formData.asic_id,
+      onChangeCustom: handleDependencyChange,
+      className: "col-span-2",
+    },
+    {
+      name: "administrative_unit_id",
+      label: "Alcance: Unidad Administrativa",
+      type: "select",
+      options: unitOptions,
+      disabled: formData.is_admin || !formData.dependency_id,
+      onChangeCustom: handleUnitChange,
+      className: "col-span-2",
+    },
+    {
+      name: "department_id",
+      label: "Alcance: Departamento",
+      type: "select",
+      options: departmentOptions,
+      disabled: formData.is_admin || !formData.administrative_unit_id,
+      onChangeCustom: handleDepartmentChange,
+      className: "col-span-2",
+    },
+    {
+      name: "service_id",
+      label: "Alcance: Servicio",
+      type: "select",
+      options: serviceOptions,
+      disabled: formData.is_admin || !formData.department_id,
+      className: "col-span-2",
     },
     {
       name: "status",
@@ -98,6 +301,8 @@ export default function UsuariosPage() {
 
       // Reset form data after successful submission
       setFormData(structuredClone(defaultFormData));
+      setAsicRelations(null);
+      clearChildOptions();
 
       setIsModalOpen(false);
       showSuccess("Usuario creado");
@@ -127,13 +332,33 @@ export default function UsuariosPage() {
     }
   };
 
+  const handleResendInvitation = async (id) => {
+    if (
+      !window.confirm(
+        "¿Reenviar el correo de creación de usuario a este usuario?",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await usersAPI.resendInvitation(id);
+      showSuccess("Correo de creación reenviado exitosamente");
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Error al reenviar el correo";
+      showError(errorMessage);
+    }
+  };
+
   const columns = useMemo(() => [
     {
       accessorKey: "id",
       header: "ID",
       size: 75,
-    },
-    {
+    },    {
       accessorKey: "full_name",
       header: "Nombre",
       size: 310,
@@ -148,6 +373,19 @@ export default function UsuariosPage() {
       accessorKey: "email",
       header: "Correo Electrónico",
       size: 200,
+    },
+    {
+      id: "scope",
+      header: "Alcance",
+      size: 260,
+      Cell: ({ row }) => {
+        const u = row.original;
+        if (u.is_admin) return "Administrador (total)";
+        const parts = [u.asic, u.dependency, u.administrative_unit, u.department, u.service]
+          .filter(Boolean)
+          .map((s) => s.name.replace("ASIC", "").trim());
+        return parts.length ? parts.join(" / ") : "Todos los ASIC";
+      },
     },
     {
       accessorKey: "charge",
@@ -213,13 +451,22 @@ export default function UsuariosPage() {
           <button
             onClick={() => {
               setIsModalOpen(true);
-              setFormData({ ...row.original });
+              setFormData({ ...defaultFormData, ...row.original });
               setSubmitString("Actualizar");
+              prepareScopeOptions(row.original);
             }}
             className="mx-1 p-1 hover:p-2 duration-75 text-gray-500 hover:bg-blue-100 hover:text-color3 rounded-full"
             title="Editar"
           >
             <Icon icon="material-symbols:edit" width={20} height={20} />
+          </button>
+
+          <button
+            onClick={() => handleResendInvitation(row.original.id)}
+            className="mx-1 p-1 hover:p-2 duration-75 text-gray-500 hover:bg-green-100 hover:text-green-600 rounded-full"
+            title="Reenviar correo de creación"
+          >
+            <Icon icon="material-symbols:mail-outline" width={20} height={20} />
           </button>
 
           <button
@@ -270,6 +517,8 @@ export default function UsuariosPage() {
               if (submitString === "Actualizar") {
                 setSubmitString("Crear");
                 setFormData(structuredClone(defaultFormData));
+                setAsicRelations(null);
+                clearChildOptions();
               }
               setIsModalOpen(true);
             }}
@@ -287,11 +536,20 @@ export default function UsuariosPage() {
           aria-labelledby="modal-title"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2 p-3 bg-amber-50 rounded-md border border-amber-100 text-sm text-amber-800">
+              <strong>Alcance:</strong> si deja todos los campos vacíos, el
+              usuario podrá gestionar todos los ASIC. Al seleccionar un ASIC se
+              limita a él; y puede seguir bajando (Dependencia, Unidad, etc.)
+              para restringir el área de acceso. Los usuarios administradores no
+              usan alcance.
+            </div>
             <ReusableForm
               fields={userFormFields}
               onSubmit={onSubmit}
               onCancel={() => {
                 setFormData(structuredClone(defaultFormData));
+                setAsicRelations(null);
+                clearChildOptions();
                 setIsModalOpen(false);
               }}
               submitText={submitString}

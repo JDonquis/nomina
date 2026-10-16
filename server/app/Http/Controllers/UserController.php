@@ -123,4 +123,28 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function resendInvitation(User $user)
+    {
+        try {
+            $this->userService->resendInvitation($user);
+
+            return response()->json([
+                'message' => 'Correo de creación de usuario reenviado exitosamente',
+            ]);
+        } catch (Exception $e) {
+            Log::error(
+                'Error al reenviar correo de creación de usuario',
+                [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]
+            );
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Ha ocurrido un error al reenviar el correo'
+            ], 500);
+        }
+    }
 }

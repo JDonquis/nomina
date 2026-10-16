@@ -6,22 +6,47 @@ import cintilloCorto from "../assets/cintilloCorto.webp";
 
 import FuturisticButton from "./FuturisticButton";
 
+const isValidName = (item) =>
+  Boolean(item?.name) && !/^sin(\s|$)/i.test(item.name.trim());
+
 const PrintableContent = forwardRef((props, ref) => {
   const { data, year } = props;
-  const { asics, days, hospitals } = data;
 
+  const asics = React.useMemo(
+    () => (data.asics || []).filter(isValidName),
+    [data.asics],
+  );
+  const hospitals = React.useMemo(
+    () => (data.hospitals || []).filter(isValidName),
+    [data.hospitals],
+  );
+  const days = React.useMemo(() => data.days || [], [data.days]);
 
-  // compute some aggregates once so the render loops are cheap
-  const [filteredDays, dayTotals] = React.useMemo(() => {
+  // Un día se muestra si alguna ASIC u hospital tuvo censos ese día. Usar el
+  // mismo conjunto de días en ambas tablas evita columnas desalineadas.
+  const [filteredDays, dayTotals, dayHospitalTotals] = React.useMemo(() => {
     const totals = {};
+    const hospitalTotals = {};
+
     asics.forEach(asic => {
       days.forEach(day => {
         totals[day.id] = (totals[day.id] || 0) + (asic.censadosPorDia[day.id] || 0);
       });
     });
-    const filtered = days.filter(day => totals[day.id] > 0);
-    return [filtered, totals];
-  }, [asics, days]);
+
+    hospitals.forEach(hospital => {
+      days.forEach(day => {
+        hospitalTotals[day.id] =
+          (hospitalTotals[day.id] || 0) + (hospital.censadosPorDia[day.id] || 0);
+      });
+    });
+
+    const filtered = days.filter(
+      day => (totals[day.id] || 0) > 0 || (hospitalTotals[day.id] || 0) > 0,
+    );
+
+    return [filtered, totals, hospitalTotals];
+  }, [asics, hospitals, days]);
 
   const asicTotals = React.useMemo(() => {
     return asics.map(asic => ({
@@ -29,19 +54,6 @@ const PrintableContent = forwardRef((props, ref) => {
       total: Object.values(asic.censadosPorDia).reduce((a, b) => a + b, 0),
     }));
   }, [asics]);
-
-
-  const [filteredHospitals, dayHospitalTotals] = React.useMemo(() => {
-    const totals = {};
-    hospitals.forEach(hospital => {
-      days.forEach(day => {
-        totals[day.id] = (totals[day.id] || 0) + (hospital.censadosPorDia[day.id] || 0);
-      });
-    });
-    const filtered = days.filter(day => totals[day.id] > 0);
-    return [filtered, totals];
-  }, [hospitals, days]);
-
 
   const hospitalTotals = React.useMemo(() => {
     return hospitals.map(hospital => ({
@@ -167,7 +179,7 @@ const PrintableContent = forwardRef((props, ref) => {
 
             <th
               className=" bg-gray-200 text-center px-2 p-1 "
-              colSpan={filteredHospitals.length}
+              colSpan={filteredDays.length}
             >
               DIA
             </th>
@@ -187,30 +199,30 @@ const PrintableContent = forwardRef((props, ref) => {
         </thead>
 
         <tbody className="">
-          {hospitalTotals.map((asic) => (
-            <tr key={asic.id} className="odd:bg-white even:bg-gray-50">
-              <td className="p-1 px-2 border-r text-sm">{asic.name.replace("ASIC", "")}</td>
+          {hospitalTotals.map((hospital) => (
+            <tr key={hospital.id} className="odd:bg-white even:bg-gray-50">
+              <td className="p-1 px-2 border-r text-sm">{hospital.name}</td>
 
-              {filteredHospitals.map((hospital) => (
+              {filteredDays.map((day) => (
                 <td
                   className="p-1 px-2 w-[37px] text-right border-r"
-                  key={hospital.id}
+                  key={day.id}
                 >
-                  {asic.censadosPorDia[hospital.id] ?? "-"}
+                  {hospital.censadosPorDia[day.id] ?? "-"}
                 </td>
               ))}
-              <td className="p-1 px-2 text-right">{asic.total}</td>
+              <td className="p-1 px-2 text-right">{hospital.total}</td>
             </tr>
           ))}
          
           <tr className="bg-gray-100 text-sm text-right font-bold">
             <td className="p-1 px-2 border-r text-left text-sm ">TOTAL</td>
-            {filteredHospitals.map((hospital) => (
+            {filteredDays.map((day) => (
               <td
                 className="p-1 px-2 w-[37px] text-right border-r"
-                key={hospital.id}
+                key={day.id}
               >
-                {dayHospitalTotals[hospital.id] || 0}
+                {dayHospitalTotals[day.id] || 0}
               </td>
             ))}
             <td className="p-1 px-2 text-right">

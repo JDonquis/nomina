@@ -29,13 +29,10 @@ export default function ReusableForm({
   const [localError, setLocalError] = useState('');
   const { showSuccess, showError } = useFeedback();
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
-
+  const updateFormData = (partial) => {
     const newFormData = {
       ...currentFormData,
-      [name]: newValue
+      ...partial
     };
 
     if (isControlled) {
@@ -43,6 +40,13 @@ export default function ReusableForm({
     } else {
       setInternalFormData(newFormData);
     }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    updateFormData({ [name]: newValue });
 
     // Clear field error when user starts typing
     if (errors[name]) {
@@ -145,9 +149,13 @@ export default function ReusableForm({
           key={field.name}
           {...field}
           value={currentFormData[field.name]}
-          onChange={handleChange}
+          onChange={(e) =>
+            field.onChangeCustom
+              ? field.onChangeCustom(e, currentFormData, updateFormData)
+              : handleChange(e)
+          }
           error={errors[field.name]}
-          disabled={loading}
+          disabled={field.disabled || loading}
         />
       ))}
       

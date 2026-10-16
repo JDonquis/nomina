@@ -38,17 +38,19 @@ class UpdatePersonnelRequest extends FormRequest
             'state' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'asic_id' => 'nullable|integer|exists:asics,id',
-            'dependency_id' => 'nullable|integer|exists:dependencies,id',
-            'administrative_unit_id' => 'nullable|integer|exists:administrative_units,id',
-            'department_id' => 'nullable|integer|exists:departments,id',
-            'service_id' => 'nullable|integer|exists:services,id',
+            'asic_id' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'integer', 'exists:asics,id'],
+            'dependency_id' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'integer', 'exists:dependencies,id'],
+            'administrative_unit_id' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'integer', 'exists:administrative_units,id'],
+            'department_id' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'integer', 'exists:departments,id'],
+            'service_id' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'integer', 'exists:services,id'],
             'receive_pension_from_another_organization_status' => 'boolean',
             'has_authorizations' => 'boolean',
             'pension_survivor_status' => 'boolean',
             'suspend_payment_status' => 'boolean',
             'is_resident' => 'boolean',
             'additional_data' => 'nullable|array',
+            'additional_data.work_status' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'string', 'max:100'],
+            'additional_data.job_title' => [Rule::requiredIf($this->boolean('to_census')), 'nullable', 'string', 'max:255'],
             'work_status' => 'nullable|string|max:100',
             'to_census' => 'boolean',
         ];
@@ -58,6 +60,13 @@ class UpdatePersonnelRequest extends FormRequest
     {
         return [
             'ci.unique' => 'La cédula de identidad ya está registrada.',
+            'asic_id.required' => 'El ASIC es requerido para realizar el censo.',
+            'dependency_id.required' => 'La dependencia es requerida para realizar el censo.',
+            'administrative_unit_id.required' => 'La unidad administrativa es requerida para realizar el censo.',
+            'department_id.required' => 'El departamento es requerido para realizar el censo.',
+            'service_id.required' => 'El servicio es requerido para realizar el censo.',
+            'additional_data.work_status.required' => 'El estatus laboral es requerido para realizar el censo.',
+            'additional_data.job_title.required' => 'El cargo es requerido para realizar el censo.',
         ];
     }
 
@@ -69,6 +78,7 @@ class UpdatePersonnelRequest extends FormRequest
             'pension_survivor_status' => $this->boolean('pension_survivor_status'),
             'suspend_payment_status' => $this->boolean('suspend_payment_status'),
             'is_resident' => $this->boolean('is_resident'),
+            'to_census' => $this->boolean('to_census'),
         ]);
     }
 }

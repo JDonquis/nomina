@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdministrativeUnitController;
 use App\Http\Controllers\ASICController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\CensusController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DependencyController;
 use App\Http\Controllers\JobPositionController;
@@ -52,6 +53,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::resource('users', UserController::class)->except(['edit', 'create'])
         ->middleware('admin');
 
+    Route::post('users/{user}/resend-invitation', [UserController::class, 'resendInvitation'])
+        ->middleware('admin');
+
     Route::get('personnels/generate_report/{status}', [PersonnelController::class, 'generateReport']);
     Route::get('personnels/generate_report/hospital/{status}', [PersonnelController::class, 'generateReportWithHospital']);
 
@@ -80,6 +84,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::delete('personnels/active/{personnel}', [PersonnelController::class, 'destroy']);
 
     Route::get('activities', [AuditLogController::class, 'index']);
+
+    // Censos (Fe de Vida y Personal Activo)
+    Route::get('censuses/export', [CensusController::class, 'export']);
+    Route::post('censuses/import', [CensusController::class, 'import']);
+    Route::get('censuses', [CensusController::class, 'index']);
+    Route::post('censuses', [CensusController::class, 'store']);
+    Route::delete('censuses/{census}', [CensusController::class, 'destroy']);
 
 
     Route::prefix('sync')->group(function () {
