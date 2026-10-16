@@ -12,49 +12,13 @@ use Illuminate\Database\Eloquent\Builder;
 class AccessScopeService
 {
     /**
-     * Aplica el alcance del usuario a una consulta de personal.
-     * - Personal activo: se filtra por el nivel más específico del alcance.
-     * - Fe de vida (inactivo): se filtra por el ASIC del alcance (no tiene
-     *   dependencia/unidad/departamento/servicio).
+     * Aplica el alcance del usuario a una consulta de personal. La
+     * visualización no está restringida: cualquier usuario puede consultar
+     * personal de cualquier ASIC. El alcance sólo se valida al registrar,
+     * mover o eliminar registros (allowsLocation / allowsPersonnel).
      */
     public function applyPersonnelScope(Builder $query, ?User $user, string $type = 'active'): Builder
     {
-        if (!$user || $user->hasFullAccess()) {
-            return $query;
-        }
-
-        if ($type === 'inactive') {
-            $asicId = $user->scopeAsicId();
-
-            if ($asicId) {
-                $query->where('asic_id', $asicId);
-            }
-
-            return $query;
-        }
-
-        if ($user->usesTreeScope()) {
-            $asicId = $user->scopeAsicId();
-
-            if ($asicId) {
-                $query->where('asic_id', $asicId);
-            }
-
-            $condition = $this->treeScopeCondition($user);
-
-            if ($condition) {
-                $query->where($condition);
-            }
-
-            return $query;
-        }
-
-        $field = $user->scopeField();
-
-        if ($field) {
-            $query->where($field, $user->{$field});
-        }
-
         return $query;
     }
 

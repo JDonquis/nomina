@@ -251,6 +251,7 @@ export default function PersonalActivoPage() {
   const photoInputRef = useRef(null);
 
   const [asicOptions, setAsicOptions] = useState([]);
+  const [asicFilterOptions, setAsicFilterOptions] = useState([]);
   const [asicRelations, setAsicRelations] = useState(null);
   const [dependencyOptions, setDependencyOptions] = useState([]);
   const [unitOptions, setUnitOptions] = useState([]);
@@ -276,6 +277,9 @@ export default function PersonalActivoPage() {
         asicRes
           .filter((item) => !scopedAsicId || item.id === Number(scopedAsicId))
           .map((item) => ({ value: item.id, label: item.name })),
+      );
+      setAsicFilterOptions(
+        asicRes.map((item) => ({ value: item.id, label: item.name })),
       );
       const nominas = await nominaNamesAPI.get();
       const formattedNominas = nominas.map((nomina) => ({
@@ -1404,7 +1408,7 @@ export default function PersonalActivoPage() {
         header: "ASIC",
         size: 120,
         filterVariant: "select",
-        filterSelectOptions: asicOptions.map((a) => a.label),
+        filterSelectOptions: asicFilterOptions.map((a) => a.label),
         enableColumnFilter: true,
         enableSorting: true,
       },
@@ -1522,7 +1526,7 @@ export default function PersonalActivoPage() {
         ),
       },
     ],
-    [handleCensus, handleDelete],
+    [handleCensus, handleDelete, asicFilterOptions],
   );
 
   const [data, setData] = useState([]);

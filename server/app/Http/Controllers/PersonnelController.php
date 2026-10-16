@@ -45,10 +45,6 @@ class PersonnelController extends Controller
 
     public function show(Personnel $personnel)
     {
-        if ($response = $this->forbiddenIfOutOfScope($personnel)) {
-            return $response;
-        }
-
         $personnel = $this->personnelService->show($personnel);
 
         return response()->json([
