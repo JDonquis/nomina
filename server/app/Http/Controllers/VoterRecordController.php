@@ -202,6 +202,7 @@ class VoterRecordController extends Controller
         $headers = [
             'Cédula',
             'Nombre y Apellido',
+            'Cargo',
             'Tipo de Centro',
             'Centro de Adscripción',
             'ASIC',
@@ -225,6 +226,7 @@ class VoterRecordController extends Controller
             $sheet->fromArray([
                 $record->ci,
                 $record->full_name ?? $record->personnel?->full_name,
+                $record->personnel?->additional_data['job_title'] ?? null,
                 $centerTypeMap[$record->center_type] ?? $record->center_type,
                 $record->center_name,
                 $record->asic?->name,
