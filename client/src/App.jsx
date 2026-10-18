@@ -14,6 +14,9 @@ const FeDeVidaPage = lazy(() => import("./pages/dashboard/FeDeVidaPage"));
 const MovimientosPage = lazy(() => import("./pages/dashboard/MovimientosPage"));
 const PersonalActivoPage = lazy(() => import("./pages/dashboard/PersonalActivoPage"));
 const ConfiguracionPage = lazy(() => import("./pages/dashboard/ConfiguracionPage"));
+const ReporteVotantesPage = lazy(
+  () => import("./pages/dashboard/ReporteVotantesPage"),
+);
 import UsuariosPage from "./pages/dashboard/UsuariosPage";
 import ActivateAccountPage from "./pages/ActivateAccountPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -38,6 +41,14 @@ function AppContent() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
           <Route path="/olvide-contrasena" element={<ActivateAccountPage />} />
+          <Route
+            path="/reporte-votantes"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <ReporteVotantesPage />
+              </Suspense>
+            }
+          />
 
           <Route
             path="/dashboard"

@@ -19,6 +19,7 @@ import {
   censusAPI,
   nominaNamesAPI,
   jobsAPI,
+  voterRecordsAPI,
 } from "../../services/api.js";
 import { Icon } from "@iconify/react";
 import Modal from "../../components/Modal.jsx";
@@ -1135,6 +1136,13 @@ export default function PersonalActivoPage() {
     );
   };
 
+  const exportVotersExcel = () => {
+    downloadFile(
+      () => voterRecordsAPI.exportVoters(),
+      `votantes_export_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+  };
+
   const getDetailsForPDF = async (id) => {
     try {
       const res = await activePersonnelAPI.getDetailById(id);
@@ -2109,6 +2117,21 @@ export default function PersonalActivoPage() {
             <span>Exportar Datos a Excel</span>
             <Icon icon="vscode-icons:file-type-excel" width={24} height={24} />
           </button>
+          {user?.is_admin && (
+            <button
+              className="items-center flex p-2 py-2.5 hover:bg-gray-300 gap-2 rounded-md"
+              onClick={exportVotersExcel}
+              disabled={loading}
+            >
+              <Icon icon="mdi:vote" width={24} height={24} />
+              <span>Exportar Votantes a Excel</span>
+              <Icon
+                icon="vscode-icons:file-type-excel"
+                width={24}
+                height={24}
+              />
+            </button>
+          )}
           <div className="mt-4 flex flex-col">
             <label
               htmlFor="importExcelPersonnel"

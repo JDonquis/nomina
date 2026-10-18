@@ -12,6 +12,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SyncController;
 use App\Http\Controllers\TypePersonnelController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoterRecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [LoginController::class, 'login'])->name('login');
@@ -19,6 +20,9 @@ Route::post('verify-invitation', [LoginController::class, 'checkSetPasswordToken
 Route::post('activate-account', [LoginController::class, 'setPassword']);
 
 Route::post('forgot-password', [LoginController::class, 'forgotPassword'])->name('login');
+
+Route::get('voter-records/centers', [VoterRecordController::class, 'centers']);
+Route::post('voter-records', [VoterRecordController::class, 'store']);
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
@@ -78,6 +82,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('personnels/active/{personnel}', [PersonnelController::class, 'show']);
     Route::post('personnels/active/photo/{personnel}', [PersonnelController::class, 'updatePhoto']);
     Route::delete('personnels/active/{personnel}', [PersonnelController::class, 'destroy']);
+
+    Route::get('voter-records/export', [VoterRecordController::class, 'export'])
+        ->middleware('admin');
 
     Route::get('activities', [AuditLogController::class, 'index']);
 

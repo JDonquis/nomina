@@ -174,6 +174,13 @@ export const syncAPI = {
   resolve: (data) => api.post("/admin/sync/resolve", data),
 };
 
+export const voterRecordsAPI = {
+  getCenters: () => api.get("/voter-records/centers"),
+  register: (data) => api.post("/voter-records", data),
+  exportVoters: () =>
+    api.get("/admin/voter-records/export", { responseType: "blob" }),
+};
+
 export const activePersonnelAPI = {
   getPersonnel: (params) => api.get("/admin/personnels/active", { params }),
   getPersonnelById: (id) => api.get(`/admin/personnels/active/${id}`),
