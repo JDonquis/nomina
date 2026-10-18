@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Facades\Excel;
@@ -64,7 +65,7 @@ class PersonnelService
             'decease_date',
             'last_payment',
             'degree_obtained',
-            'pregraduate_degree',
+            'undergraduate_degree',
             'postgraduate_degree',
             'mobile_phone',
             'fixed_phone',
@@ -88,6 +89,8 @@ class PersonnelService
         $query = Personnel::query()->with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service']);
 
         $query->where('status', $type === 'active' ? 'active' : 'inactive');
+
+        app(AccessScopeService::class)->applyPersonnelScope($query, Auth::user(), $type);
 
         if (!empty($params['search'])) {
             $search = $params['search'];
@@ -203,7 +206,7 @@ class PersonnelService
 
         foreach ($this->fieldsWithoutCensus as $key => $value) {
             if (is_array($value)) {
-                $allowedFields['additional_data'] = array_keys($value);
+                $allowedFields['additional_data'] = array_values($value);
             } else {
                 $allowedFields[] = $value;
             }
@@ -322,6 +325,109 @@ class PersonnelService
         ]);
 
         return $personnel;
+    }
+
+    public function census($id)
+    {
+        $personnel = Personnel::with(['typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service'])
+            ->findOrFail($id);
+
+        $missing = $this->missingCensusFields($personnel->toArray());
+
+        if (!empty($missing)) {
+            throw ValidationException::withMessages([
+                'active_personnel_id' => 'No se puede censar. Complete: ' . implode(', ', $missing) . '.'
+            ]);
+        }
+
+        $oldValues = $personnel->toArray();
+
+        $personnel->update([
+            'census_status' => true,
+            'census_date' => Carbon::now(),
+        ]);
+
+        AuditLog::create([
+            'action' => 'census',
+            'auditable_type' => Personnel::class,
+            'auditable_id' => $personnel->id,
+            'user_id' => Auth::id(),
+            'old_values' => $oldValues,
+            'new_values' => $personnel->fresh()->toArray(),
+        ]);
+
+        return $personnel;
+    }
+
+    /**
+     * Campos de ubicación requeridos para censar, con su etiqueta legible.
+     */
+    public function locationFieldLabels(): array
+    {
+        return [
+            'asic_id' => 'ASIC',
+            'dependency_id' => 'Dependencia',
+            'administrative_unit_id' => 'Unidad Administrativa',
+            'department_id' => 'Departamento',
+            'service_id' => 'Servicio',
+        ];
+    }
+
+    /**
+     * Campos requeridos para censar (ubicación + datos laborales), con su
+     * etiqueta legible.
+     */
+    public function censusFieldLabels(): array
+    {
+        return array_merge($this->locationFieldLabels(), [
+            'work_status' => 'Estatus Laboral',
+            'job_title' => 'Cargo',
+        ]);
+    }
+
+    /**
+     * Devuelve los campos requeridos para censar que están vacíos. Vacío = todo
+     * completo. Los campos laborales pueden venir en additional_data.
+     */
+    public function missingCensusFields(array $data): array
+    {
+        $missing = [];
+
+        foreach ($this->censusFieldLabels() as $field => $label) {
+            if (empty($this->censusFieldValue($data, $field))) {
+                $missing[] = $label;
+            }
+        }
+
+        return $missing;
+    }
+
+    private function censusFieldValue(array $data, string $field)
+    {
+        $value = $data[$field] ?? null;
+
+        if (empty($value) && isset($data['additional_data'][$field])) {
+            $value = $data['additional_data'][$field];
+        }
+
+        return $value;
+    }
+
+    /**
+     * Devuelve los campos de ubicación que están vacíos (ASIC, dependencia,
+     * unidad administrativa, departamento y servicio). Vacío = ubicación completa.
+     */
+    public function missingLocationFields(array $data): array
+    {
+        $missing = [];
+
+        foreach ($this->locationFieldLabels() as $field => $label) {
+            if (empty($data[$field])) {
+                $missing[] = $label;
+            }
+        }
+
+        return $missing;
     }
 
     public function destroy(Personnel $personnel)
@@ -455,7 +561,7 @@ class PersonnelService
                 $sexMap[$p->sex] ?? $p->sex,
                 $civilMap[$p->civil_status] ?? $p->civil_status,
                 $ad['degree_obtained'] ?? null,
-                $ad['pregraduate_degree'] ?? null,
+                $ad['undergraduate_degree'] ?? null,
                 $ad['postgraduate_degree'] ?? null,
                 $p->address,
                 $p->email,
@@ -635,7 +741,7 @@ class PersonnelService
 
                     $additionalData = [
                         'degree_obtained' => $rowData['grado_obtenido'] ?? null,
-                        'pregraduate_degree' => $rowData['titulo_pre_grado'] ?? null,
+                        'undergraduate_degree' => $rowData['titulo_pre_grado'] ?? null,
                         'postgraduate_degree' => $rowData['titulo_post_grado'] ?? null,
                         'fixed_phone' => $rowData['telefono_fijo'] ?? null,
                         'shirt_size' => $rowData['talla_camisa'] ?? null,
@@ -683,6 +789,13 @@ class PersonnelService
                             );
                         }
 
+                        // En personal activo, si la ubicación queda incompleta
+                        // no puede quedar censado. Fe de Vida no usa ubicación.
+                        if ($status === 'active' && !empty($this->missingLocationFields($personnelData))) {
+                            $personnelData['census_status'] = false;
+                            $personnelData['census_date'] = null;
+                        }
+
                         $existing->update($personnelData);
 
                         $auditLogsBatch[] = [
@@ -699,6 +812,7 @@ class PersonnelService
                         $updatedCount++;
                     } else {
                         $personnelData['census_status'] = false;
+                        $personnelData['census_date'] = null;
                         $personnelData['state'] = 'Falcon';
                         $personnelData['city'] = 'Sin asignar';
 
@@ -763,8 +877,11 @@ class PersonnelService
         $personnels = Personnel::where('census_status', true)
             ->where('status', $status)
             ->whereYear('census_date', $year)
-            ->with(['asic'])
-            ->get();
+            ->with(['asic']);
+
+        app(AccessScopeService::class)->applyPersonnelScope($personnels, Auth::user(), $status);
+
+        $personnels = $personnels->get();
 
         if ($personnels->isEmpty()) {
             return response()->json([
@@ -832,8 +949,21 @@ class PersonnelService
         $personnels = Personnel::where('census_status', true)
             ->where('status', $status)
             ->whereYear('census_date', $year)
-            ->with(['asic', 'dependency'])
-            ->get();
+            ->with(['asic', 'dependency']);
+
+        app(AccessScopeService::class)->applyPersonnelScope($personnels, Auth::user(), $status);
+
+        $personnels = $personnels->get();
+
+        // Se descartan los registros sin ASIC ("SIN ASIC") para que no
+        // aparezcan en el reporte ni generen columnas de fechas aisladas.
+        $personnels = $personnels->filter(function ($personnel) {
+            return !is_null($personnel->asic_id);
+        });
+
+        $hospitalPersonnels = $personnels->filter(function ($personnel) {
+            return $this->isHospitalDependency($personnel->dependency);
+        });
 
         if ($personnels->isEmpty()) {
             return response()->json([
@@ -845,72 +975,72 @@ class PersonnelService
 
         $asics = $personnels
             ->groupBy(function ($personnel) {
-                return $personnel->asic->id ?? 'sin-asic';
+                return $personnel->asic->id;
             })
             ->map(function ($asicPersonnels, $asicId) {
                 $asic = $asicPersonnels->first()->asic;
-                $asicName = $asic->name ?? 'SIN ASIC';
-
-                if ($asicName == 'SIN ASIC') {
-                    Log::warning("ASIC no encontrado para personal id " . $asicPersonnels->first()->id);
-                }
-
-                $censadosPorDia = $asicPersonnels
-                    ->groupBy(function ($personnel) {
-                        return $personnel->census_date->format('Y-m-d');
-                    })
-                    ->map(function ($dayCensuses) {
-                        return count($dayCensuses);
-                    })
-                    ->toArray();
 
                 return [
                     'id' => $asicId,
-                    'name' => $asicName,
-                    'censadosPorDia' => $censadosPorDia
+                    'name' => $asic->name,
+                    'censadosPorDia' => $this->countCensusesPerDay($asicPersonnels)
                 ];
             })
             ->values()
             ->toArray();
 
-        $hospitals = $personnels
-            ->filter(function ($personnel) {
-                if (!$personnel->dependency) {
-                    return false;
-                }
-
-                $name = mb_strtolower($personnel->dependency->name);
-
-                return str_contains($name, 'hospital') ||
-                    str_contains($name, 'mision sonrisa') ||
-                    str_contains($name, 'misión sonrisa') ||
-                    str_contains($name, 'secretaria de salud') ||
-                    str_contains($name, 'secretaría de salud');
-            })
+        $hospitals = $hospitalPersonnels
             ->groupBy(function ($personnel) {
                 return $personnel->dependency->id;
             })
             ->map(function ($hospitalPersonnels, $hospitalId) {
                 $hospitalName = $hospitalPersonnels->first()->dependency->name;
 
-                $censadosPorDia = $hospitalPersonnels
-                    ->groupBy(function ($personnel) {
-                        return $personnel->census_date->format('Y-m-d');
-                    })
-                    ->map(function ($dayCensuses) {
-                        return count($dayCensuses);
-                    })
-                    ->toArray();
-
                 return [
                     'id' => $hospitalId,
                     'name' => $hospitalName,
-                    'censadosPorDia' => $censadosPorDia
+                    'censadosPorDia' => $this->countCensusesPerDay($hospitalPersonnels)
                 ];
             })
             ->values()
             ->toArray();
 
+        return response()->json([
+            'asics' => $asics,
+            'hospitals' => $hospitals,
+            'days' => $this->buildReportDays($personnels)
+        ]);
+    }
+
+    private function isHospitalDependency($dependency): bool
+    {
+        if (!$dependency) {
+            return false;
+        }
+
+        $name = mb_strtolower($dependency->name);
+
+        return str_contains($name, 'hospital') ||
+            str_contains($name, 'mision sonrisa') ||
+            str_contains($name, 'misión sonrisa') ||
+            str_contains($name, 'secretaria de salud') ||
+            str_contains($name, 'secretaría de salud');
+    }
+
+    private function countCensusesPerDay(Collection $personnels): array
+    {
+        return $personnels
+            ->groupBy(function ($personnel) {
+                return $personnel->census_date->format('Y-m-d');
+            })
+            ->map(function ($dayCensuses) {
+                return count($dayCensuses);
+            })
+            ->toArray();
+    }
+
+    private function buildReportDays(Collection $personnels): array
+    {
         $firstDate = $personnels->min('census_date');
         $lastDate = $personnels->max('census_date');
 
@@ -926,11 +1056,7 @@ class PersonnelService
             $start->addDay();
         }
 
-        return response()->json([
-            'asics' => $asics,
-            'hospitals' => $hospitals,
-            'days' => $days
-        ]);
+        return $days;
     }
 }
 

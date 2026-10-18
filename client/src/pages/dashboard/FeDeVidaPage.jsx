@@ -1014,19 +1014,17 @@ export default function FeDeVidaPage() {
               ) : (
                 <div className="w-7"></div>
               )}
-              {user.is_admin ? (
-                <button
-                  onClick={() => handleDelete(cell.row.original.id)}
-                  className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
-                  title="Eliminar"
-                >
-                  <Icon
-                    icon="material-symbols:delete-outline"
-                    width={20}
-                    height={20}
-                  />
-                </button>
-              ) : null}
+              <button
+                onClick={() => handleDelete(cell.row.original.id)}
+                className="text-red-500 ml-auto p-1 rounded-full hover:bg-gray-300 hover:underline "
+                title="Eliminar"
+              >
+                <Icon
+                  icon="material-symbols:delete-outline"
+                  width={20}
+                  height={20}
+                />
+              </button>
             </div>
           );
         },

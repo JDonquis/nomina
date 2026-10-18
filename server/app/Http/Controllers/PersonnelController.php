@@ -6,9 +6,11 @@ use App\Http\Requests\StorePersonnelRequest;
 use App\Http\Requests\UpdatePersonnelRequest;
 use App\Http\Requests\UpdatePhotoPersonnelRequest;
 use App\Services\PersonnelService;
+use App\Services\AccessScopeService;
 use Exception;
 use App\Models\Personnel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -53,6 +55,22 @@ class PersonnelController extends Controller
 
     public function store(StorePersonnelRequest $request)
     {
+        $user = Auth::user();
+
+        if ($user && !$user->is_admin && !$user->can_register_personnel) {
+            return response()->json([
+                'message' => 'No tiene permisos para registrar personal.'
+            ], 403);
+        }
+
+        $scope = app(AccessScopeService::class);
+
+        if (!$scope->allowsLocation($request->validated(), Auth::user())) {
+            return response()->json([
+                'message' => 'No tiene permisos para registrar personal fuera de su alcance.'
+            ], 403);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -84,6 +102,18 @@ class PersonnelController extends Controller
 
     public function update(UpdatePersonnelRequest $request, Personnel $personnel)
     {
+        if ($response = $this->forbiddenIfOutOfScope($personnel)) {
+            return $response;
+        }
+
+        $scope = app(AccessScopeService::class);
+
+        if (!$scope->allowsLocation($request->validated(), Auth::user())) {
+            return response()->json([
+                'message' => 'No tiene permisos para mover este personal fuera de su alcance.'
+            ], 403);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -115,6 +145,10 @@ class PersonnelController extends Controller
 
     public function destroy(Personnel $personnel)
     {
+        if ($response = $this->forbiddenIfOutOfScope($personnel)) {
+            return $response;
+        }
+
         try {
             DB::beginTransaction();
 
@@ -143,6 +177,10 @@ class PersonnelController extends Controller
 
     public function updatePhoto(UpdatePhotoPersonnelRequest $request, Personnel $personnel)
     {
+        if ($response = $this->forbiddenIfOutOfScope($personnel)) {
+            return $response;
+        }
+
         try {
             $photo = $request->file('photo');
 
@@ -203,5 +241,16 @@ class PersonnelController extends Controller
     public function generateReportWithHospital(Request $request, $status)
     {
         return $this->personnelService->generateReportWithHospital($request, $status);
+    }
+
+    private function forbiddenIfOutOfScope(Personnel $personnel)
+    {
+        if (!app(AccessScopeService::class)->allowsPersonnel($personnel, Auth::user())) {
+            return response()->json([
+                'message' => 'No tiene permisos sobre este registro.'
+            ], 403);
+        }
+
+        return null;
     }
 }

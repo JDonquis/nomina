@@ -46,6 +46,13 @@ class LoginController extends Controller
             'ci' => $user->ci,
             'email' => $user->email,
             'is_admin' => $user->is_admin,
+            'asic_id' => $user->asic_id,
+            'dependency_id' => $user->dependency_id,
+            'administrative_unit_id' => $user->administrative_unit_id,
+            'department_id' => $user->department_id,
+            'service_id' => $user->service_id,
+            'access_scope' => $user->access_scope,
+            'can_register_personnel' => (bool) $user->can_register_personnel,
         ]);
     }
 

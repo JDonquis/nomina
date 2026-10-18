@@ -35,6 +35,56 @@ import { useTableVisibility } from "../../hooks/useTablePersistence.js";
 import withoutPhoto from "../../assets/withoutPhoto.webp";
 import PrintPage from "../../components/PersonalActivoReport.jsx";
 
+const FIELD_TO_LEVEL = {
+  dependency_id: "dependency",
+  administrative_unit_id: "administrative_unit",
+  department_id: "department",
+  service_id: "service",
+};
+
+// Calcula los ids permitidos por nivel a partir del alcance por árbol del
+// usuario (inclusiones/exclusiones). Devuelve null si no aplica.
+const computeAllowedIds = (relations, scope) => {
+  if (!relations || !scope) return null;
+
+  const grants = scope.granted || {};
+  const revokes = scope.revoked || {};
+  const sets = {
+    dependency: new Set(),
+    administrative_unit: new Set(),
+    department: new Set(),
+    service: new Set(),
+  };
+
+  const decide = (level, id, inherited) => {
+    if ((grants[level] || []).map(Number).includes(Number(id))) return true;
+    if ((revokes[level] || []).map(Number).includes(Number(id))) return false;
+    return inherited;
+  };
+
+  (relations.dependencies || []).forEach((dep) => {
+    const depOk = decide("dependency", dep.id, true);
+    if (depOk) sets.dependency.add(dep.id);
+
+    (dep.administrative_units || []).forEach((unit) => {
+      const unitOk = decide("administrative_unit", unit.id, depOk);
+      if (unitOk) sets.administrative_unit.add(unit.id);
+
+      (unit.departments || []).forEach((dept) => {
+        const deptOk = decide("department", dept.id, unitOk);
+        if (deptOk) sets.department.add(dept.id);
+
+        (dept.services || []).forEach((service) => {
+          const serviceOk = decide("service", service.id, deptOk);
+          if (serviceOk) sets.service.add(service.id);
+        });
+      });
+    });
+  });
+
+  return sets;
+};
+
 const defaultFormData = {
   nac: "V",
   ci: "",
@@ -83,6 +133,24 @@ const defaultFormData = {
   fotoChanged: false,
   family_members: [],
 };
+
+const CENSUS_REQUIRED_FIELDS = [
+  { key: "asic_id", label: "ASIC" },
+  { key: "dependency_id", label: "Dependencia" },
+  { key: "administrative_unit_id", label: "Unidad Administrativa" },
+  { key: "department_id", label: "Departamento" },
+  { key: "service_id", label: "Servicio" },
+  { key: "work_status", label: "Estatus Laboral" },
+  { key: "job_title", label: "Cargo" },
+];
+
+const getMissingCensusFields = (data) =>
+  CENSUS_REQUIRED_FIELDS.filter(({ key }) => {
+    const top = data?.[key];
+    const nested = data?.additional_data?.[key];
+    const value = top !== null && top !== undefined && top !== "" ? top : nested;
+    return value === null || value === undefined || String(value).trim() === "";
+  }).map(({ label }) => label);
 
 const residencyTypeOptions = [
   { value: "Postgrado Universitario", label: "Postgrado Universitario" },
@@ -167,6 +235,8 @@ const studyLevelOptions = [
 
 export default function PersonalActivoPage() {
   const [loading, setLoading] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { showError, showSuccess, showInfo } = useFeedback();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
@@ -182,6 +252,7 @@ export default function PersonalActivoPage() {
   const photoInputRef = useRef(null);
 
   const [asicOptions, setAsicOptions] = useState([]);
+  const [asicFilterOptions, setAsicFilterOptions] = useState([]);
   const [asicRelations, setAsicRelations] = useState(null);
   const [dependencyOptions, setDependencyOptions] = useState([]);
   const [unitOptions, setUnitOptions] = useState([]);
@@ -202,7 +273,13 @@ export default function PersonalActivoPage() {
   const fetchInitialData = useCallback(async () => {
     try {
       const asicRes = await ASICAPI.getASIC();
+      const scopedAsicId = !user?.is_admin ? user?.asic_id : null;
       setAsicOptions(
+        asicRes
+          .filter((item) => !scopedAsicId || item.id === Number(scopedAsicId))
+          .map((item) => ({ value: item.id, label: item.name })),
+      );
+      setAsicFilterOptions(
         asicRes.map((item) => ({ value: item.id, label: item.name })),
       );
       const nominas = await nominaNamesAPI.get();
@@ -239,7 +316,41 @@ export default function PersonalActivoPage() {
       console.error("Failed to fetch initial data", e);
       showError("Error al cargar datos iniciales");
     }
-  }, []);
+  }, [user?.is_admin, user?.asic_id]);
+
+  const scopeFilter = useMemo(
+    () => ({
+      asic_id: user?.is_admin ? null : user?.asic_id ?? null,
+      dependency_id: user?.is_admin ? null : user?.dependency_id ?? null,
+      administrative_unit_id: user?.is_admin
+        ? null
+        : user?.administrative_unit_id ?? null,
+      department_id: user?.is_admin ? null : user?.department_id ?? null,
+      service_id: user?.is_admin ? null : user?.service_id ?? null,
+    }),
+    [user],
+  );
+
+  const allowedTreeIds = useMemo(
+    () => computeAllowedIds(asicRelations, user?.access_scope),
+    [asicRelations, user?.access_scope],
+  );
+
+  // Limita las opciones de un nivel al alcance del usuario (árbol o legacy).
+  const restrictByScope = useCallback(
+    (options, field, sets = allowedTreeIds) => {
+      const level = FIELD_TO_LEVEL[field];
+
+      if (level && sets) {
+        return options.filter((option) => sets[level].has(Number(option.value)));
+      }
+
+      const limit = scopeFilter[field];
+      if (!limit) return options;
+      return options.filter((option) => Number(option.value) === Number(limit));
+    },
+    [scopeFilter, allowedTreeIds],
+  );
 
   const fetchASICRelations = useCallback(async (asicId, forEdit = false) => {
     if (!asicId) {
@@ -255,29 +366,48 @@ export default function PersonalActivoPage() {
       const res = await ASICAPI.getASICRelations(asicId);
       setAsicRelations(res);
 
+      const sets = computeAllowedIds(res, user?.access_scope);
+
       const deps = res.dependencies || [];
-      setDependencyOptions(deps.map((d) => ({ value: d.id, label: d.name })));
+      setDependencyOptions(
+        restrictByScope(
+          deps.map((d) => ({ value: d.id, label: d.name })),
+          "dependency_id",
+          sets,
+        ),
+      );
 
       if (forEdit) {
         setUnitOptions(
-          deps
-            .flatMap((d) => d.administrative_units || [])
-            .map((u) => ({ value: u.id, label: u.name })),
+          restrictByScope(
+            deps
+              .flatMap((d) => d.administrative_units || [])
+              .map((u) => ({ value: u.id, label: u.name })),
+            "administrative_unit_id",
+            sets,
+          ),
         );
         setDepartmentOptions(
-          deps
-            .flatMap((d) => d.administrative_units || [])
-            .flatMap((u) => u.departments || [])
-            .map((dept) => ({ value: dept.id, label: dept.name })),
+          restrictByScope(
+            deps
+              .flatMap((d) => d.administrative_units || [])
+              .flatMap((u) => u.departments || [])
+              .map((dept) => ({ value: dept.id, label: dept.name })),
+            "department_id",
+            sets,
+          ),
         );
         setServiceOptions(
-          deps
-            .flatMap((d) => d.administrative_units || [])
-            .flatMap((u) => u.departments || [])
-            .flatMap((dept) => dept.services || [])
-            .map((s) => ({ value: s.id, label: s.name })),
+          restrictByScope(
+            deps
+              .flatMap((d) => d.administrative_units || [])
+              .flatMap((u) => u.departments || [])
+              .flatMap((dept) => dept.services || [])
+              .map((s) => ({ value: s.id, label: s.name })),
+            "service_id",
+            sets,
+          ),
         );
-
       } else {
         setUnitOptions([]);
         setDepartmentOptions([]);
@@ -287,7 +417,7 @@ export default function PersonalActivoPage() {
       console.error("Failed to fetch ASIC relations", e);
       showError("Error al cargar relaciones del ASIC");
     }
-  }, []);
+  }, [restrictByScope, showError, user?.access_scope]);
 
   const handleASICChange = useCallback(
     (asicId) => {
@@ -321,11 +451,16 @@ export default function PersonalActivoPage() {
         service_id: "",
       }));
 
-      setUnitOptions(units.map((u) => ({ value: u.id, label: u.name })));
+      setUnitOptions(
+        restrictByScope(
+          units.map((u) => ({ value: u.id, label: u.name })),
+          "administrative_unit_id",
+        ),
+      );
       setDepartmentOptions([]);
       setServiceOptions([]);
     },
-    [asicRelations],
+    [asicRelations, restrictByScope],
   );
 
   const handleUnitChange = useCallback(
@@ -337,42 +472,42 @@ export default function PersonalActivoPage() {
           (u) => u.id === Number(unitId),
         );
         if (unit) {
-          const depts = unit.departments || [];
+          const depts = restrictByScope(
+            (unit.departments || []).map((d) => ({
+              value: d.id,
+              label: d.name,
+              services: d.services || [],
+            })),
+            "department_id",
+          );
+
+          const availableServices = restrictByScope(
+            depts.flatMap((d) =>
+              d.services.map((s) => ({ value: s.id, label: s.name })),
+            ),
+            "service_id",
+          );
 
           const autoSelectDept = depts.length === 1;
           const autoSelectService =
-            autoSelectDept && depts[0].services?.length === 1;
+            autoSelectDept && availableServices.length === 1;
 
           setFormData((prev) => ({
             ...prev,
             administrative_unit_id: unitId,
-            department_id: autoSelectDept ? depts[0].id : "",
-            service_id: autoSelectService ? depts[0].services[0].id : "",
+            department_id: autoSelectDept ? depts[0].value : "",
+            service_id: autoSelectService ? availableServices[0].value : "",
           }));
 
           setDepartmentOptions(
-            depts.map((d) => ({ value: d.id, label: d.name })),
+            depts.map((d) => ({ value: d.value, label: d.label })),
           );
-
-          if (autoSelectService) {
-            setServiceOptions([
-              {
-                value: depts[0].services[0].id,
-                label: depts[0].services[0].name,
-              },
-            ]);
-          } else {
-            setServiceOptions(
-              depts
-                .flatMap((d) => d.services || [])
-                .map((s) => ({ value: s.id, label: s.name })),
-            );
-          }
+          setServiceOptions(availableServices);
           break;
         }
       }
     },
-    [asicRelations],
+    [asicRelations, restrictByScope],
   );
 
   const handleDepartmentChange = useCallback(
@@ -385,26 +520,31 @@ export default function PersonalActivoPage() {
             (d) => d.id === Number(departmentId),
           );
           if (dept) {
-            const servs = dept.services || [];
+            const servs = restrictByScope(
+              (dept.services || []).map((s) => ({
+                value: s.id,
+                label: s.name,
+              })),
+              "service_id",
+            );
+
             const autoSelectService =
               servs.length === 1 &&
-              servs[0].name.toLowerCase() === dept.name.toLowerCase();
+              servs[0].label.toLowerCase() === dept.name.toLowerCase();
 
             setFormData((prev) => ({
               ...prev,
               department_id: departmentId,
-              service_id: autoSelectService ? servs[0].id : "",
+              service_id: autoSelectService ? servs[0].value : "",
             }));
 
-            setServiceOptions(
-              servs.map((s) => ({ value: s.id, label: s.name })),
-            );
+            setServiceOptions(servs);
             break;
           }
         }
       }
     },
-    [asicRelations],
+    [asicRelations, restrictByScope],
   );
 
   useEffect(() => {
@@ -942,6 +1082,15 @@ export default function PersonalActivoPage() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    if (censusStatus) {
+      const missing = getMissingCensusFields(formData);
+      if (missing.length > 0) {
+        showError(`Para censar debe completar: ${missing.join(", ")}.`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -1059,9 +1208,15 @@ export default function PersonalActivoPage() {
     }
   };
 
-  const handleCensus = async (id) => {
+  const handleCensus = async (personnel) => {
+    const missing = getMissingCensusFields(personnel);
+    if (missing.length > 0) {
+      showError(`No se puede censar. Complete: ${missing.join(", ")}.`);
+      return;
+    }
+
     try {
-      await censusAPI.createCensus({ active_personnel_id: id });
+      await censusAPI.createCensus({ active_personnel_id: personnel.id });
       showSuccess("Censo realizado con éxito");
       fetchData();
     } catch (error) {
@@ -1078,6 +1233,7 @@ export default function PersonalActivoPage() {
 
   const importExcel = async (e) => {
     setLoading(true);
+    setIsImporting(true);
     try {
       const file = e.target.files[0];
       const formDataFile = new FormData();
@@ -1093,12 +1249,14 @@ export default function PersonalActivoPage() {
       showError(errorMessage);
     } finally {
       setLoading(false);
+      setIsImporting(false);
       e.target.value = "";
     }
   };
 
   const downloadFile = async (apiCall, defaultFilename) => {
     setLoading(true);
+    setIsDownloading(true);
     try {
       const res = await apiCall();
       const blob = new Blob([res], {
@@ -1119,6 +1277,7 @@ export default function PersonalActivoPage() {
       showError(errorMessage);
     } finally {
       setLoading(false);
+      setIsDownloading(false);
     }
   };
 
@@ -1146,7 +1305,17 @@ export default function PersonalActivoPage() {
   const getDetailsForPDF = async (id) => {
     try {
       const res = await activePersonnelAPI.getDetailById(id);
-      setPDFdata({ ...res.personnel, ...res.personnel.additional_data });
+      const personnel = res.personnel;
+
+      const missing = getMissingCensusFields(personnel);
+      if (missing.length > 0) {
+        showError(
+          `No se puede generar la planilla porque faltan: ${missing.join(", ")}.`,
+        );
+        return;
+      }
+
+      setPDFdata({ ...personnel, ...personnel.additional_data });
 
       setPDFmodal(true);
     } catch (error) {
@@ -1247,7 +1416,7 @@ export default function PersonalActivoPage() {
         header: "ASIC",
         size: 120,
         filterVariant: "select",
-        filterSelectOptions: asicOptions.map((a) => a.label),
+        filterSelectOptions: asicFilterOptions.map((a) => a.label),
         enableColumnFilter: true,
         enableSorting: true,
       },
@@ -1301,40 +1470,7 @@ export default function PersonalActivoPage() {
                 const row = cell.row.original;
 
                 if (row.asic_id) {
-                  const res = await ASICAPI.getASICRelations(row.asic_id);
-                  setAsicRelations(res);
-
-                  const deps = res.dependencies || [];
-                  setDependencyOptions(
-                    deps.map((d) => ({ value: d.id, label: d.name })),
-                  );
-
-                  // Filter units by selected dependency
-                  const selectedDep = deps.find(
-                    (d) => d.id === row.dependency_id,
-                  );
-                  const units = selectedDep?.administrative_units || [];
-                  setUnitOptions(
-                    units.map((u) => ({ value: u.id, label: u.name })),
-                  );
-
-                  // Filter departments by selected unit
-                  const selectedUnit = units.find(
-                    (u) => u.id === row.administrative_unit_id,
-                  );
-                  const depts = selectedUnit?.departments || [];
-                  setDepartmentOptions(
-                    depts.map((d) => ({ value: d.id, label: d.name })),
-                  );
-
-                  // Filter services by selected department
-                  const selectedDept = depts.find(
-                    (d) => d.id === row.department_id,
-                  );
-                  const services = selectedDept?.services || [];
-                  setServiceOptions(
-                    services.map((s) => ({ value: s.id, label: s.name })),
-                  );
+                  await fetchASICRelations(row.asic_id, true);
                 }
 
                 setFormData({
@@ -1375,7 +1511,7 @@ export default function PersonalActivoPage() {
                   <Icon icon="proicons:pdf-2" width={18} height={18} />
                 </button>
                 <button
-                  onClick={() => handleCensus(cell.row.original.id)}
+                  onClick={() => handleCensus(cell.row.original)}
                   className="text-color2 p-1.5 rounded-full hover:bg-gray-200"
                   title="Censar"
                 >
@@ -1383,24 +1519,22 @@ export default function PersonalActivoPage() {
                 </button>
               </>
             ) : null}
-            {user?.is_admin ? (
-              <button
-                onClick={() => handleDelete(cell.row.original.id)}
-                className="text-red-500 p-1.5 rounded-full hover:bg-gray-200"
-                title="Eliminar"
-              >
-                <Icon
-                  icon="material-symbols:delete-outline"
-                  width={18}
-                  height={18}
-                />
-              </button>
-            ) : null}
+            <button
+              onClick={() => handleDelete(cell.row.original.id)}
+              className="text-red-500 p-1.5 rounded-full hover:bg-gray-200"
+              title="Eliminar"
+            >
+              <Icon
+                icon="material-symbols:delete-outline"
+                width={18}
+                height={18}
+              />
+            </button>
           </div>
         ),
       },
     ],
-    [handleCensus, handleDelete],
+    [handleCensus, handleDelete, asicFilterOptions],
   );
 
   const [data, setData] = useState([]);
@@ -1603,8 +1737,10 @@ export default function PersonalActivoPage() {
           <div className="flex gap-3 z-50 relative">
             <FuturisticButton
               onClick={() => {
-                if (!user?.is_admin) {
-                  showInfo("Solo los administradores pueden usar esta función");
+                if (!user?.is_admin && !user?.can_register_personnel) {
+                  showInfo(
+                    "No tiene permiso para registrar personal. Contacte a un administrador.",
+                  );
                   return;
                 }
                 if (submitString === "Actualizar") {
@@ -1756,6 +1892,7 @@ export default function PersonalActivoPage() {
                           <FormField
                             key={field.name}
                             {...field}
+                            required
                             value={formData[field.name] ?? ""}
                             onChange={(e) => handleFieldChange(e, field)}
                           />
@@ -1791,6 +1928,10 @@ export default function PersonalActivoPage() {
                           <FormField
                             key={field.name}
                             {...field}
+                            required={
+                              field.name === "work_status" ||
+                              field.name === "job_id"
+                            }
                             value={formData[field.name] ?? ""}
                             onChange={(e) => handleFieldChange(e, field)}
                           />
@@ -2141,7 +2282,7 @@ export default function PersonalActivoPage() {
                   : "bg-green-600 hover:bg-green-700 text-white"
               }`}
             >
-              {loading ? (
+              {isImporting ? (
                 <>
                   <Icon
                     icon="eos-icons:loading"
@@ -2189,7 +2330,13 @@ export default function PersonalActivoPage() {
                   height={24}
                   className="animate-spin"
                 />
-                <span>Subiendo...</span>
+                <span>
+                  {isImporting
+                    ? "Importando..."
+                    : isDownloading
+                      ? "Exportando..."
+                      : "Procesando..."}
+                </span>
               </div>
             )}
           </div>

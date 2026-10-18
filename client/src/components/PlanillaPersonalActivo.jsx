@@ -31,6 +31,8 @@ const civilStatusMap = {
 const PrintablePersonalActivo = forwardRef((props, ref) => {
   const { data } = props;
   const familyMembers = data?.family_members || [];
+  const auditLogs = data?.audit_logs || [];
+  const lastAuditLog = auditLogs[auditLogs.length - 1] || null;
 
   console.log("Datos del personal activo:", data);
 
@@ -58,7 +60,11 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
         />
         <h3 className="text-center flex font-bold gap-3 my-3 mt-4 text-color1 text-lg">
           FICHA DE PERSONAL ACTIVO
-          <span className="text-xs text-dark bg-gray-200 px-2 py-1 rounded">{data.audit_logs[data.audit_logs.length - 1].id}</span>
+          {lastAuditLog?.id && (
+            <span className="text-xs text-dark bg-gray-200 px-2 py-1 rounded">
+              {lastAuditLog.id}
+            </span>
+          )}
         </h3>
         <h4 className="text-center font-bold gap-3 -mt-2 text-gray-600 text-sm">
           OFICINA DE RECURSOS HUMANOS
@@ -258,7 +264,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             </div>
             <div className="px-2 py-1">
               <p className="font-semibold">
-                {data.asic.name || "N/A"}
+                {data.asic?.name || "N/A"}
               </p>
             </div>
           </div>
@@ -309,9 +315,9 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             <div className="px-2 py-1">
               <p className="font-semibold">
                 <span className="font-semibold">
-                  {data.type_personnel.code}
+                  {data.type_personnel?.code}
                 </span>{" "}
-                | {data.type_personnel.name || "N/A"}
+                | {data.type_personnel?.name || "N/A"}
               </p>
             </div>
           </div>
@@ -480,7 +486,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
             <p>Funcionario responsable del censo</p>
           </div>
           <div className="text-sm flex justify-between items-center">
-            <p>{props.data?.audit_logs[props.data?.audit_logs.length - 1]?.user?.full_name}</p>
+            <p>{lastAuditLog?.user?.full_name}</p>
             <p className="text-xs mt-1">
               Censado el{" "}
               {new Date(props.data?.updated_at).toLocaleString(
@@ -491,7 +497,7 @@ const PrintablePersonalActivo = forwardRef((props, ref) => {
                 }
               )}
             </p>
-            <p>{props.data?.audit_logs[props.data?.audit_logs.length - 1]?.user?.charge}</p>
+            <p>{lastAuditLog?.user?.charge}</p>
           </div>
         </>
       )}

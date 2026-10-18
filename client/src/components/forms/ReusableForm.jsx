@@ -29,13 +29,10 @@ export default function ReusableForm({
   const [localError, setLocalError] = useState('');
   const { showSuccess, showError } = useFeedback();
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
-
+  const updateFormData = (partial) => {
     const newFormData = {
       ...currentFormData,
-      [name]: newValue
+      ...partial
     };
 
     if (isControlled) {
@@ -43,6 +40,13 @@ export default function ReusableForm({
     } else {
       setInternalFormData(newFormData);
     }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    updateFormData({ [name]: newValue });
 
     // Clear field error when user starts typing
     if (errors[name]) {
@@ -140,16 +144,36 @@ export default function ReusableForm({
         </Alert>
       )}
       
-      {fields.map((field) => (
-        <FormField
-          key={field.name}
-          {...field}
-          value={currentFormData[field.name]}
-          onChange={handleChange}
-          error={errors[field.name]}
-          disabled={loading}
-        />
-      ))}
+      {fields.map((field) => {
+        if (typeof field.render === 'function') {
+          return (
+            <div key={field.name} className={field.className || ''}>
+              {field.render({
+                value: currentFormData[field.name],
+                formData: currentFormData,
+                updateFormData,
+                disabled: field.disabled || loading,
+                error: errors[field.name],
+              })}
+            </div>
+          );
+        }
+
+        return (
+          <FormField
+            key={field.name}
+            {...field}
+            value={currentFormData[field.name]}
+            onChange={(e) =>
+              field.onChangeCustom
+                ? field.onChangeCustom(e, currentFormData, updateFormData)
+                : handleChange(e)
+            }
+            error={errors[field.name]}
+            disabled={field.disabled || loading}
+          />
+        );
+      })}
       
       <div className="flex justify-end space-x-4 pt-4">
         {showCancelButton && (

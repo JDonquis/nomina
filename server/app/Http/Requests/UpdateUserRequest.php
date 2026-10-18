@@ -45,7 +45,16 @@ class UpdateUserRequest extends FormRequest
             ],
             'password_confirmation' => ['sometimes', 'nullable', 'min:4'],
             'email_verified_status' => ['sometimes', 'boolean'],
-            'status' => ['required','boolean']
+            'status' => ['required','boolean'],
+            'asic_id' => ['nullable', 'integer', 'exists:asics,id', 'required_with:dependency_id,administrative_unit_id,department_id,service_id'],
+            'dependency_id' => ['nullable', 'integer', 'exists:dependencies,id', 'required_with:administrative_unit_id,department_id,service_id'],
+            'administrative_unit_id' => ['nullable', 'integer', 'exists:administrative_units,id', 'required_with:department_id,service_id'],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id', 'required_with:service_id'],
+            'service_id' => ['nullable', 'integer', 'exists:services,id'],
+            'access_scope' => ['nullable', 'array'],
+            'access_scope.granted' => ['nullable', 'array'],
+            'access_scope.revoked' => ['nullable', 'array'],
+            'can_register_personnel' => ['nullable', 'boolean'],
 
         ];
     }
