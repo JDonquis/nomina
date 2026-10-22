@@ -68,7 +68,7 @@ class ServiceController extends Controller
 
     public function report(Service $service): JsonResponse
     {
-        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+        $personnels = Personnel::with('typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service')
             ->where('service_id', $service->id)
             ->where('status', 'active')
             ->where('census_status', true)

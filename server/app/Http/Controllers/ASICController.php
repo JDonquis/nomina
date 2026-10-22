@@ -104,7 +104,7 @@ class ASICController extends Controller
 
     public function report(ASIC $asic): JsonResponse
     {
-        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+        $personnels = Personnel::with('typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service')
             ->where('asic_id', $asic->id)
             ->where('status', 'active')
             ->where('census_status', true)
@@ -115,7 +115,7 @@ class ASICController extends Controller
 
     public function reportAllDetailed()
     {
-        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+        $personnels = Personnel::with('typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service')
             ->where('status', 'active')
             ->where('census_status', true)
             ->get();

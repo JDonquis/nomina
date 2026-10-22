@@ -86,7 +86,7 @@ class AdministrativeUnitController extends Controller
 
     public function report(AdministrativeUnit $administrativeUnit): JsonResponse
     {
-        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+        $personnels = Personnel::with('typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service')
             ->where('administrative_unit_id', $administrativeUnit->id)
             ->where('status', 'active')
             ->where('census_status', true)

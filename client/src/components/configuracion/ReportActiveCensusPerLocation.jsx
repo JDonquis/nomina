@@ -130,7 +130,8 @@ const PrintableContent = forwardRef((props, ref) => {
                 {item.additional_data.job_title}
               </td>
               <td className="py-2 px-3 border-r">
-                {item.additional_data.personnel_type}
+                {item.type_personnel?.name ||
+                  item.additional_data?.personnel_type}
               </td>
               <td className="py-2 px-3">{item.additional_data.work_status}</td>
             </tr>

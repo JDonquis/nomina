@@ -68,7 +68,7 @@ class DepartmentController extends Controller
 
     public function report(Department $department): JsonResponse
     {
-        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+        $personnels = Personnel::with('typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service')
             ->where('department_id', $department->id)
             ->where('status', 'active')
             ->where('census_status', true)

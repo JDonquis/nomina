@@ -74,7 +74,7 @@ class DependencyController extends Controller
 
     public function report(Dependency $dependency): JsonResponse
     {
-        $personnels = Personnel::with('asic', 'dependency', 'administrativeUnit', 'department', 'service')
+        $personnels = Personnel::with('typePersonnel', 'asic', 'dependency', 'administrativeUnit', 'department', 'service')
             ->where('dependency_id', $dependency->id)
             ->where('status', 'active')
             ->where('census_status', true)
